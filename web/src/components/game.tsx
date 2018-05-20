@@ -1,5 +1,5 @@
 import * as React from 'react';
-import BHex from 'swg-common/bin/hex/hex';
+import {Grid, Drawing, DrawingOptions, Point} from 'swg-common/bin/hex/hex';
 import {withRouter} from 'react-router-dom';
 import {connect} from 'react-redux';
 import {HttpUser} from '../../../common/bin/models/http/httpUser';
@@ -26,21 +26,23 @@ export class Component extends React.Component<Props, State> {
     componentDidMount() {
         if (!this.props.user) {
             this.props.history.push('/login');
+            return;
         }
 
-        const options = new BHex.Drawing.Options(
+        const options = new DrawingOptions(
             70,
-            BHex.Drawing.Static.Orientation.PointyTop,
-            new BHex.Drawing.Point(window.innerWidth / 2, window.innerHeight / 2)
+            Drawing.Orientation.PointyTop,
+            new Point(window.innerWidth / 2, window.innerHeight / 2)
         );
 
-        let grid = new BHex.Grid(15);
-        let gridDrawing = new BHex.Drawing.Drawing(grid, options);
+        let grid = new Grid(15);
+        let gridDrawing = new Drawing(grid, options);
         this.setState({
             grid,
             gridDrawing
         });
     }
+
     render() {
         const divs = [];
         if (this.state.grid) {
@@ -50,8 +52,8 @@ export class Component extends React.Component<Props, State> {
                 divs.push(
                     <img
                         key={i}
-                        style={{position: 'absolute', width: 120, height: 140, left: hex.center.x-120/2, top: hex.center.y-140/2}}
-                        src={`./assets/dirt_${this.items()[Math.floor((Math.random()*this.items().length))]}.png`}
+                        style={{position: 'absolute', width: 120, height: 140, left: hex.center.x - 120 / 2, top: hex.center.y - 140 / 2}}
+                        src={`./assets/dirt_${this.items()[Math.floor((Math.random() * this.items().length))]}.png`}
                     />
                 );
             }
@@ -59,7 +61,8 @@ export class Component extends React.Component<Props, State> {
 
         return divs;
     }
-    public items(){
+
+    public items() {
         return [
             '02',
             '03',
