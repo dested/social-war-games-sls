@@ -100,6 +100,21 @@ export class Grid<T extends Hexagon = Hexagon> {
         this.hexes = [];
     }
 
+    getCircle(a: Point, radius: number): T[] {
+        const hexes: T[] = [];
+        for (let x = -radius; x <= radius; x++) {
+            for (let y = -radius; y <= radius; y++) {
+                for (let z = -radius; z <= radius; z++) {
+                    if (x + y + z == 0) {
+                        const hex = this.getHexAt({x: x + a.x, y: y + a.y});
+                        if (hex) hexes.push(hex);
+                    }
+                }
+            }
+        }
+        return hexes;
+    }
+
     /**
      * Get the hexagon at a given axial position.
      * @param {Axial} a - The axial position to look for.
@@ -121,7 +136,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             new Axial(a.x, a.y - 1),
             new Axial(a.x + 1, a.y - 1),
             new Axial(a.x + 1, a.y),
-            new Axial(a.x, a.y + 1),
+            new Axial(a.x, a.y + 1)
         ];
         return directions.map(d => this.getHexAt(d));
     }

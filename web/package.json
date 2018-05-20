@@ -15,12 +15,13 @@
   "dependencies": {
     "glamor": "^2.20.40",
     "glamorous": "^4.10.0",
+    "hammerjs": "^2.0.8",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
+    "react-redux": "^5.0.7",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
     "redux": "^4.0.0",
-    "react-redux": "^5.0.7",
     "swg-common": "file:../common"
   },
   "devDependencies": {
@@ -30,6 +31,7 @@
     "@types/redux": "^3.6.0",
     "@types/react-redux": "^6.0.0",
     "@types/react-dom": "^16.0.2",
+    "@types/hammerjs": "^2.0.35",
     "ts-loader": "^3.0.5",
     "typescript": "^2.5.3",
     "webpack": "^3.8.1",

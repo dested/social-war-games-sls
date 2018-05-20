@@ -59,6 +59,7 @@ export declare class Hexagon extends Axial {
 export declare class Grid<T extends Hexagon = Hexagon> {
     hexes: T[];
     constructor();
+    getCircle(a: Point, radius: number): T[];
     /**
      * Get the hexagon at a given axial position.
      * @param {Axial} a - The axial position to look for.

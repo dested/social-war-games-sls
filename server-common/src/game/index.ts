@@ -1,23 +1,48 @@
 import {Grid, Axial, Hexagon} from 'swg-common/bin/hex/hex';
 
-export class GameLogic {
-    static createGame(): Grid<GameHexagon> {
-        const grid = new Grid<GameHexagon>();
-        for (let y = 0; y < 30; y++) {
-            for (let x = -y; x < 30 - y; x++) {
-                const r = Math.random() * 3;
+export class GameEntity {
+    id: string;
+    x: number;
+    y: number;
+    entityType: 'infantry' | 'tank' | 'plane' | 'factory';
+    health: number;
+}
 
-                grid.hexes.push(
-                    new GameHexagon(
-                        HexagonTypes.dirt,
-                        (Math.random() * 5656468).toString(),
-                        Math.round(r).toString(),
-                        x,
-                        y
-                    )
-                );
+export class GameLogic {
+    grid: Grid<GameHexagon>;
+    entities: GameEntity[];
+
+    static createGame(): GameLogic {
+        const grid = new Grid<GameHexagon>();
+        const entities: GameEntity[] = [];
+
+        for (let y = 0; y < 50; y++) {
+            for (let x = -Math.floor(y/2); x < 50-Math.floor(y/2); x++) {
+                grid.hexes.push(new GameHexagon(HexagonTypes.dirt, `${x}-${y}`, x, y));
             }
         }
+
+        for (const hex of grid.getCircle({x: 10, y: 10}, 4)) {
+            hex.setFactionId('1');
+        }
+        for (const hex of grid.getCircle({x: 20, y: 10}, 4)) {
+            hex.setFactionId('2');
+        }
+        for (const hex of grid.getCircle({x: 15, y: 20}, 4)) {
+            hex.setFactionId('3');
+        }
+        grid.getHexAt({x: 17, y: 15}).setFactionId('3');
+        grid.getHexAt({x: 17, y: 14}).setFactionId('3');
+        grid.getHexAt({x: 17, y: 13}).setFactionId('3');
+        grid.getHexAt({x: 17, y: 12}).setFactionId('3');
+        grid.getHexAt({x: 17, y: 11}).setFactionId('3');
+        grid.getHexAt({x: 16, y: 12}).setFactionId('3');
+        grid.getHexAt({x: 16, y: 11}).setFactionId('3');
+        grid.getHexAt({x: 15, y: 11}).setFactionId('3');
+        grid.getHexAt({x: 14, y: 11}).setFactionId('3');
+        grid.getHexAt({x: 13, y: 11}).setFactionId('3');
+        grid.getHexAt({x: 12, y: 12}).setFactionId('3');
+        grid.getHexAt({x: 13, y: 12}).setFactionId('3');
 
         const line = grid.getLine(new Axial(3, 0), new Axial(Math.round(3 - 25 / 2), 25));
 
@@ -31,7 +56,23 @@ export class GameLogic {
         for (let i = 0; i < 100; i++) {
             grid.hexes[Math.floor(Math.random() * grid.hexes.length)].setType(HexagonTypes.clay);
         }
-        return grid;
+
+        for (let i = 0; i < 40; i++) {
+            const hex = grid.hexes[Math.floor(Math.random() * grid.hexes.length)];
+            if (entities.find(a => a.x === hex.x && a.y === hex.y)) continue;
+            entities.push({
+                id: (Math.random() * 5656468).toString(),
+                health: 10,
+                x: hex.x,
+                y: hex.y,
+                entityType: 'infantry'
+            });
+        }
+
+        return {
+            grid,
+            entities
+        };
     }
 }
 
@@ -67,7 +108,8 @@ export class HexagonTypes {
 }
 
 export class GameHexagon extends Hexagon {
-    constructor(public type: HexagonType, public id: string, public factionId: string, x: number, y: number) {
+    public factionId: string = '0';
+    constructor(public type: HexagonType, public id: string, x: number, y: number) {
         super(x, y, type.cost, type.blocked);
     }
 
@@ -75,5 +117,9 @@ export class GameHexagon extends Hexagon {
         this.type = type;
         this.cost = type.cost;
         this.blocked = type.blocked;
+    }
+
+    setFactionId(factionId: string) {
+        this.factionId = factionId;
     }
 }
