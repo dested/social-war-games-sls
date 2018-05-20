@@ -1,3 +1,4 @@
+import { HttpUser } from './httpUser';
 export interface RegisterRequest {
     email: string;
     password: string;
@@ -10,7 +11,8 @@ export interface JwtGetUserResponse extends GetUserResponse {
     jwt: string;
 }
 export interface GetUserResponse {
-    email: string;
-    factionId: string;
-    maxVotesPerRound: number;
+    user: HttpUser;
+}
+export interface StatsResponse {
+    foo: boolean;
 }

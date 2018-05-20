@@ -15,8 +15,6 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
     "outDir": "./bin",
-    "skipLibCheck": true,
-    "paths": {
-    }
+    "skipLibCheck": true
   }
 }

@@ -18,10 +18,10 @@ export class JwtStrategy extends Strategy {
         passport.use(this);
     }
 
-    async validateUser(req: any, relationship: JwtModel, done: any): Promise<boolean> {
-        req.relationshipId = relationship.relationshipId;
-        req.userNumber = relationship.userNumber;
-        done(null, relationship.relationshipId);
+    async validateUser(req: any, payload: JwtModel, done: any): Promise<boolean> {
+        req.factionId = payload.factionId;
+        req.userId = payload.userId;
+        done(null, payload.factionId);
         return true;
     }
 }

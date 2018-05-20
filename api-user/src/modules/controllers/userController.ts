@@ -5,6 +5,8 @@ import {AuthService} from '../auth/auth.service';
 import {AuthGuard} from '../guards/authGuard';
 import {JwtGetUserResponse, LoginRequest, RegisterRequest} from 'swg-common/bin/models/http/userController';
 import {DBUser} from 'swg-server-common/bin/db/models/dbUser';
+import {FactionUtils} from '../../utils/factionUtils';
+import {StatsResponse} from 'swg-common/bin/models/http/userController';
 
 @Controller('user')
 export class UserController {
@@ -12,87 +14,51 @@ export class UserController {
 
     @Post('/register')
     async register(@Body() model: RegisterRequest): Promise<JwtGetUserResponse> {
+        const foundUsers = await DBUser.db.count(DBUser.db.query.parse((a, email) => a.email === email, model.email));
+        if (foundUsers > 0) {
+            throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
+        }
         const user = new DBUser();
-
+        user.email = model.email;
+        user.maxVotesPerRound = 5;
+        user.passwordHash = await bcrypt.hash(model.password, 10);
+        user.factionId = FactionUtils.randomFaction();
         await DBUser.db.insertDocument(user);
 
         const httpUser = DBUser.map(user);
         const jwt = await this.authService.createToken(httpUser);
         return {
             jwt,
-            email: '',
-            maxVotesPerRound: 1,
-            factionId: ''
+            user: httpUser
         };
     }
 
     @Post('/login')
-    async login(@Body() request: LoginRequest): Promise<JwtGetUserResponse> {
-        /*let relationship: DBRelationship;
-        let userNumber: UserNumber;
-        if (request.email && request.password) {
-            const relationships = await DBRelationship.db.getAll(
-                DBRelationship.db.query.parse(
-                    (m, params) =>
-                        (m.user1.email === params.email && m.user1.passwordHash != null) ||
-                        (m.user2.email === params.email && m.user2.passwordHash != null),
-                    {
-                        email: request.email
-                    }
-                )
-            );
+    async login(@Body() model: LoginRequest): Promise<JwtGetUserResponse> {
+        const user = await DBUser.db.getOne(DBUser.db.query.parse((a, email) => a.email === email, model.email));
 
-            for (const r of relationships) {
-                if (r.user1.passwordHash && (await bcrypt.compare(request.password, r.user1.passwordHash))) {
-                    relationship = r;
-                    userNumber = '1';
-                }
-                if (r.user2.passwordHash && (await bcrypt.compare(request.password, r.user2.passwordHash))) {
-                    relationship = r;
-                    userNumber = '2';
-                }
-            }
-
-            if (!relationship) {
-                return Response.fail({
-                    message: 'Invalid credentials'
-                });
-            }
-        } else if (request.facebookId) {
-            // todo this needs to verify the access token too
-            relationship = await DBRelationship.db.getOne(
-                DBRelationship.db.query.parse(
-                    (m, params) => m.user1.facebookId === params.facebookId || m.user2.facebookId === params.facebookId,
-                    {
-                        facebookId: request.facebookId
-                    }
-                )
-            );
-            if (!relationship) {
-                return Response.fail({
-                    message: 'Invalid credentials'
-                });
-            }
-            userNumber = relationship.user1.facebookId === request.facebookId ? '1' : '2';
-        } else {
-            throw new HttpException('Missing username and password', HttpStatus.BAD_REQUEST);
+        if (!user) {
+            await bcrypt.compare('dog', 'cat');
+            throw new HttpException('Email or Password Incorrect', HttpStatus.BAD_REQUEST);
         }
 
-        const httpRelationship = DBRelationship.map(relationship);
-        const jwt = await this.authService.createToken(httpRelationship, userNumber);
-*/
-        const jwt = await this.authService.createToken(null);
+        if (!await bcrypt.compare(model.password, user.passwordHash)) {
+            throw new HttpException('Email or Password Incorrect', HttpStatus.BAD_REQUEST);
+        }
+
+        const httpUser = DBUser.map(user);
+        const jwt = await this.authService.createToken(httpUser);
         return {
             jwt,
-            email: '',
-            maxVotesPerRound: 1,
-            factionId: ''
+            user: httpUser
         };
     }
 
     @UseGuards(AuthGuard)
-    @Get('/')
-    async getStats(@Req() req: JwtModel): Promise<any> {
-        return null;
+    @Get('/stats')
+    async getStats(@Req() req: JwtModel): Promise<StatsResponse> {
+        return {
+            foo: true
+        };
     }
 }

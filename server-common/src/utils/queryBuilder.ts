@@ -267,7 +267,10 @@ export class QueryBuilder<T> {
         return result;
     }
 
-    private flattenObject(member: MemberExpression | Identifier | UnaryExpression | Literal, variableNames: string[]) {
+    private flattenObject(
+        member: MemberExpression | Identifier | UnaryExpression | Literal,
+        variableNames: string[]
+    ): string {
         switch (member.type) {
             case 'Identifier':
                 return (member as Identifier).name;
@@ -305,7 +308,7 @@ export class QueryBuilder<T> {
         }
     }
 
-    locationSearch(latitude: number, longitude: number, minDistance: number, maxDistance): [number, number] {
+    locationSearch(latitude: number, longitude: number, minDistance: number, maxDistance: number): [number, number] {
         return ({
             $near: {
                 $geometry: {type: 'Point', coordinates: [longitude, latitude]},

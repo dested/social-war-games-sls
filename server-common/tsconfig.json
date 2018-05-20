@@ -1,24 +1,20 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "noLib": false,
-    "emitDecoratorMetadata": true,
+    "noEmitOnError": false,
     "experimentalDecorators": true,
-    "target": "es6",
-    "strictNullChecks": false,
-    "inlineSourceMap": true,
+    "allowUnreachableCode": true,
     "strict": true,
-    "noImplicitAny": false,
-    "allowJs": true,
+    "target": "es2015",
+    "module": "commonjs",
+    "inlineSourceMap": true,
+    "strictNullChecks": false,
+    "declaration": true,
+    "pretty": true,
+    "moduleResolution": "node",
     "strictPropertyInitialization": false,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "./src",
     "outDir": "./bin",
-    "baseUrl": "."
-  },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
-  ]
+    "skipLibCheck": true
+  }
 }

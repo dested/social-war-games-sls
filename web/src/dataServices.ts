@@ -1,7 +1,49 @@
+import {JwtGetUserResponse} from 'swg-common/bin/models/http/userController';
+
 export class DataService {
     // private static voteServer: string = 'https://vote.socialwargames.com/';
-    private static voteServer: string = 'http://localhost:3568/';
-/*
+    private static userServer: string = 'http://localhost:4568';
+
+    static async login(email: string, password: string): Promise<JwtGetUserResponse> {
+        let response = await fetch(this.userServer + '/user/login', {
+            method: 'POST',
+            body: JSON.stringify({
+                email,
+                password
+            }),
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok)
+            // or check for response.status
+            throw new Error(response.statusText);
+        const json = await response.json();
+
+        return json;
+    }
+
+    static async register(email: string, password: string): Promise<JwtGetUserResponse> {
+        let response = await fetch(this.userServer + '/user/register', {
+            method: 'POST',
+            body: JSON.stringify({
+                email,
+                password
+            }),
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok)
+            // or check for response.status
+            throw new Error(response.statusText);
+        const json = await response.json();
+
+        return json;
+    }
+    /*
     static async getGameMetrics(): Promise<GameMetrics> {
         try {
             let response = await fetch(this.voteServer + 'api/game/metrics', {
