@@ -1,3 +1,5 @@
+// https://github.com/bodinaren/BHex.js
+
 /**
  * Axial is a axial position of a Hexagon within a grid.
  */
@@ -18,10 +20,8 @@ export class Axial {
 
     /**
      * Check if two Axial items has the same x and y.
-     * @param {Axial} other - The object to compare to.
-     * @returns {boolean}
      */
-    compareTo(other: Axial | undefined) {
+    compareTo(other: Point | undefined) {
         if (!other) return false;
         return this.x === other.x && this.y === other.y;
     }
@@ -49,7 +49,7 @@ export class Cube extends Axial {
      * Rounds the values of x, y and z. Needed to find a hex at a specific position. Returns itself after.
      */
     round() {
-        var cx = this.x,
+        const cx = this.x,
             cy = this.y,
             cz = this.z;
 
@@ -57,7 +57,7 @@ export class Cube extends Axial {
         this.y = Math.round(cy);
         this.z = Math.round(cz);
 
-        var x_diff = Math.abs(this.x - cx),
+        const x_diff = Math.abs(this.x - cx),
             y_diff = Math.abs(this.y - cy),
             z_diff = Math.abs(this.z - cz);
 
@@ -93,15 +93,11 @@ export class Hexagon extends Axial {
  * @property {number} radius - The radius of the grid with 0 being just the center piece.
  * @property {Array} hexes - The hexes of the grid.
  */
-export class Grid {
-    hexes: Hexagon[];
+export class Grid<T extends Hexagon = Hexagon> {
+    hexes: T[];
 
-    constructor(public radius: number = 0) {
+    constructor() {
         this.hexes = [];
-
-        for (let x = -radius; x <= radius; x++)
-            for (let y = -radius; y <= radius; y++)
-                for (let z = -radius; z <= radius; z++) if (x + y + z === 0) this.hexes.push(new Hexagon(x, y));
     }
 
     /**
@@ -109,7 +105,7 @@ export class Grid {
      * @param {Axial} a - The axial position to look for.
      * @returns {Hexagon}
      */
-    getHexAt(a: Axial): Hexagon | undefined {
+    getHexAt(a: Point): T | undefined {
         return this.hexes.find(h => h.compareTo(a));
     }
 
@@ -118,16 +114,16 @@ export class Grid {
      * @param {Axial} a - The axial position to get neighbors for.
      * @returns {Hexagon[]} Array of neighboring hexagons.
      */
-    getNeighbors(a: Axial): Hexagon[] {
+    getNeighbors(a: Point): T[] {
         const directions = [
-            new Axial(a.x + 1, a.y),
-            new Axial(a.x + 1, a.y - 1),
-            new Axial(a.x, a.y - 1),
-            new Axial(a.x - 1, a.y),
             new Axial(a.x - 1, a.y + 1),
-            new Axial(a.x, a.y + 1)
+            new Axial(a.x - 1, a.y),
+            new Axial(a.x, a.y - 1),
+            new Axial(a.x + 1, a.y - 1),
+            new Axial(a.x + 1, a.y),
+            new Axial(a.x, a.y + 1),
         ];
-        return directions.map(d => this.getHexAt(d)!).filter(d => d);
+        return directions.map(d => this.getHexAt(d));
     }
 
     /**
@@ -136,7 +132,7 @@ export class Grid {
      * @param {Axial} b - The second axial position.
      * @returns {number} How many hexes it is between the given Axials.
      */
-    getDistance(a: Axial, b: Axial) {
+    getDistance(a: Point, b: Point) {
         return (Math.abs(a.x - b.x) + Math.abs(a.x + a.y - b.x - b.y) + Math.abs(a.y - b.y)) / 2;
     }
 
@@ -180,12 +176,12 @@ export class Grid {
             }
         }
 
-        for (var i = 0; i <= N; i++) {
-            var axial = cube_lerp(cStart, cEnd2, 1.0 / N * i)
+        for (let i = 0; i <= N; i++) {
+            const axial = cube_lerp(cStart, cEnd2, 1.0 / N * i)
                 .round()
                 .toAxial();
 
-            var hex = this.getHexAt(axial);
+            const hex = this.getHexAt(axial);
 
             if (!start.compareTo(hex)) {
                 if (hex && !hex.blocked) {
@@ -199,11 +195,8 @@ export class Grid {
 
     /**
      * Gets all the hexes within a specified range, taking inertia (Hexagon.cost) into account.
-     * @param {Axial} a - The starting axial position.
-     * @param {number} movement - How far from the starting axial should be fetched.
-     * @returns {Hexagon[]} All the hexes within range (excluding the starting position).
      */
-    getRange(start: Hexagon, movement: number) {
+    getRange(start: T, movement: number) {
         const grid = this;
         const openHeap = new BinaryHeap((node: Grid_Search_Node) => node.F);
         const closedHexes: {[key: string]: Hexagon} = {};
@@ -260,7 +253,7 @@ export class Grid {
      * @param {Axial} end - The ending axial position.
      * @returns {Hexagon[]} The path from the first hex to the last hex (excluding the starting position).
      */
-    findPath(start: Hexagon, end: Hexagon) {
+    findPath(start: T, end: T) {
         const grid = this;
         const openHeap = new BinaryHeap(node => node.F);
         const closedHexes: {[key: string]: Grid_Search_Node} = {};
@@ -411,10 +404,7 @@ export class Drawing {
         const offset = options.orientation === Drawing.Orientation.PointyTop ? 90 : 0;
         const angle_deg = 60 * corner + offset;
         const angle_rad = Math.PI / 180 * angle_deg;
-        return new Point(
-            Math.round(center.x + options.size * Math.cos(angle_rad)),
-            Math.round(center.y + options.size * Math.sin(angle_rad))
-        );
+        return new Point(center.x + options.size * Math.cos(angle_rad), center.y + options.size * Math.sin(angle_rad));
     }
 
     /**
@@ -437,7 +427,7 @@ export class Drawing {
         }
         x += options.center.x;
         y += options.center.y;
-        return new Point(Math.round(x), Math.round(y));
+        return new Point(x, y);
     }
 
     /**

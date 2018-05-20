@@ -2,19 +2,21 @@ import * as React from 'react';
 import {Grid, Drawing, DrawingOptions, Point} from 'swg-common/bin/hex/hex';
 import {withRouter} from 'react-router-dom';
 import {connect} from 'react-redux';
-import {HttpUser} from '../../../common/bin/models/http/httpUser';
+import {HttpUser} from 'swg-common/bin/models/http/httpUser';
 import {SwgStore} from '../store/reducers';
 import {Dispatch} from 'redux';
 import {AppAction, AppActions} from '../store/app/actions';
 import {RouteComponentProps} from 'react-router';
+import {GameHexagon, GameLogic, HexagonType} from '../../../server-common/src/game';
+import {HexagonTile, HexagonTileBorder} from './hexagonTile';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
 }
 
 interface State {
-    grid?: any;
-    gridDrawing?: any;
+    grid?: Grid<GameHexagon>;
+    gridDrawing?: Drawing;
 }
 
 export class Component extends React.Component<Props, State> {
@@ -29,13 +31,9 @@ export class Component extends React.Component<Props, State> {
             return;
         }
 
-        const options = new DrawingOptions(
-            70,
-            Drawing.Orientation.PointyTop,
-            new Point(window.innerWidth / 2, window.innerHeight / 2)
-        );
+        const options = new DrawingOptions(69, Drawing.Orientation.PointyTop, new Point(0, 0));
 
-        let grid = new Grid(15);
+        let grid = GameLogic.createGame();
         let gridDrawing = new Drawing(grid, options);
         this.setState({
             grid,
@@ -44,44 +42,17 @@ export class Component extends React.Component<Props, State> {
     }
 
     render() {
-        const divs = [];
+        const tiles = [];
+        const borders = [];
         if (this.state.grid) {
-            console.log(this.state.grid);
             for (let i = 0; i < this.state.grid.hexes.length; i++) {
                 let hex = this.state.grid.hexes[i];
-                divs.push(
-                    <img
-                        key={i}
-                        style={{position: 'absolute', width: 120, height: 140, left: hex.center.x - 120 / 2, top: hex.center.y - 140 / 2}}
-                        src={`./assets/dirt_${this.items()[Math.floor((Math.random() * this.items().length))]}.png`}
-                    />
-                );
+                tiles.push(<HexagonTile grid={this.state.grid} hexagon={hex} />);
+                borders.push(<HexagonTileBorder grid={this.state.grid} hexagon={hex} />);
             }
         }
 
-        return divs;
-    }
-
-    public items() {
-        return [
-            '02',
-            '03',
-            '04',
-            '05',
-            '06',
-            '07',
-            '08',
-            '09',
-            '10',
-            '11',
-            '12',
-            '13',
-            '14',
-            '15',
-            '16',
-            '17',
-            '18',
-        ]
+        return <svg style={{width:'100%',height:'100%'}}>{tiles}{borders}</svg>;
     }
 }
 
