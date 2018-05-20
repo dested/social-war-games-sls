@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "noLib": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es6",
+    "strictNullChecks": false,
+    "inlineSourceMap": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "strictPropertyInitialization": false,
+    "outDir": "./bin",
+    "baseUrl": "."
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "swg",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Salvatore <dested@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "bump" : "cd common && npm run bump && cd ../server-common && npm run bump && npm run common && cd ../api-user && npm run common && cd ../web && npm run common"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "removeComments": false,
+    "moduleResolution": "node",
+    "target": "es2015",
+    "lib": [
+      "dom",
+      "es2017",
+      "esnext.asynciterable"
+    ],
+    "outDir": "./dist/",
+    "inlineSourceMap": true,
+    "baseUrl": "./",
+    "jsx": "react"
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
