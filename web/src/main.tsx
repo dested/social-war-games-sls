@@ -2,7 +2,6 @@
 import {Fragment} from 'react';
 import * as ReactDOM from 'react-dom';
 import {Route} from 'react-router';
-import {Home} from './components/home';
 import {Register} from './components/register';
 import {Game} from './components/game';
 import {BrowserRouter} from 'react-router-dom';
@@ -10,6 +9,7 @@ import {BrowserRouter} from 'react-router-dom';
 import {Provider} from 'react-redux';
 import {createStore, applyMiddleware, compose} from 'redux';
 import reducers from './store/reducers';
+import {Login} from './components/login';
 
 const composeEnhancers =
     typeof window === 'object' &&
@@ -31,9 +31,9 @@ export class Main {
             <Provider store={store}>
                 <BrowserRouter>
                     <Fragment>
-                        <Route exact path="/" component={Home} />
+                        <Route exact path="/" component={Game} />
                         <Route path="/register" component={Register} />
-                        <Route path="/game" component={Game} />
+                        <Route path="/login" component={Login} />
                     </Fragment>
                 </BrowserRouter>
             </Provider>,

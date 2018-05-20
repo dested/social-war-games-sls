@@ -34,7 +34,7 @@ class Component extends React.Component<Props, State> {
             console.log(response);
             this.props.setJwt(response.jwt);
             this.props.setUser(response.user);
-            this.props.history.push('/game');
+            this.props.history.push('/');
         } catch (ex) {
             alert(ex);
         }
@@ -78,7 +78,7 @@ class Component extends React.Component<Props, State> {
     }
 }
 
-export let Home = connect(
+export let Login = connect(
     (state: SwgStore) => ({}),
     (dispatch: Dispatch<AppAction>) => ({
         setJwt: (jwt: string) => void dispatch(AppActions.setJWT(jwt)),

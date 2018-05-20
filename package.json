@@ -5,6 +5,6 @@
   "author": "Salvatore <dested@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "bump" : "cd common && npm run bump && cd ../server-common && npm run bump && npm run common && cd ../api-user && npm run common && cd ../web && npm run common"
+    "bump" : "cd common && tsc &&  npm run bump && cd ../server-common && tsc &&  npm run bump && npm run common && cd ../api-user && npm run common && cd ../web && npm run common"
   }
 }

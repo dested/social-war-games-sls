@@ -1,8 +1,9 @@
-create dumb node api folder
-plumb nest
-connect to mongo
-add create account
-add validation jwt
+'/ create dumb node api folder
+'/ plumb nest
+'/ connect to mongo
+'/ add create account
+'/ add validation jwt
+
 write server util code
   
   hex board

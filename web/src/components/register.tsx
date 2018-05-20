@@ -33,7 +33,7 @@ class Component extends React.Component<Props, State> {
             const response = await DataService.register(this.state.email, this.state.password);
             this.props.setJwt(response.jwt);
             this.props.setUser(response.user);
-            this.props.history.push('/game');
+            this.props.history.push('/');
         } catch (ex) {
             alert(ex);
         }
