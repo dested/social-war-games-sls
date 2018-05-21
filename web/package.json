@@ -34,8 +34,8 @@
     "@types/react-redux": "^6.0.0",
     "@types/react-dom": "^16.0.2",
     "@types/hammerjs": "^2.0.35",
+    "typescript": "^2.8.3",
     "ts-loader": "^3.0.5",
-    "typescript": "^2.5.3",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.3"
   }
