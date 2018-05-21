@@ -10,6 +10,10 @@ export class Axial {
         return `${this.x}x${this.y}`;
     }
 
+    add(x: number, y: number) {
+        return new Axial(this.x + x, this.y + y);
+    }
+
     /**
      * Return a Cube representation of the axial.
      * @returns {Cube}
@@ -84,6 +88,7 @@ export class Hexagon extends Axial {
 
     center: Point;
     points: Point[];
+    pointsSvg: string;
 }
 
 /**
@@ -96,8 +101,17 @@ export class Hexagon extends Axial {
 export class Grid<T extends Hexagon = Hexagon> {
     hexes: T[];
 
-    constructor() {
+    constructor(
+        public boundsX: number,
+        public boundsY: number,
+        public boundsWidth: number,
+        public boundsHeight: number
+    ) {
         this.hexes = [];
+    }
+
+    easyBounds(x: number, y: number): Axial {
+        return new Axial(x - Math.floor(y / 2), y);
     }
 
     getCircle(a: Point, radius: number): T[] {
@@ -389,6 +403,7 @@ export class Drawing {
         this.grid.hexes.forEach(hex => {
             hex.center = Drawing.getCenter(hex, options);
             hex.points = Drawing.getCorners(hex.center, options);
+            hex.pointsSvg = hex.points.map(a => `${a.x},${a.y}`).join(' ');
         });
     }
 

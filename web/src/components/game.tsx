@@ -10,8 +10,10 @@ import {RouteComponentProps} from 'react-router';
 import {GameLogic} from '../../../server-common/src/game';
 import {HexagonTile} from './hexagonTile';
 import {HexagonEntity} from './hexagonEntities';
-import {HexagonTileBorder} from './hexagonTileBorder';
+import {HexagonDefaultTileBorder, HexagonTileBorder} from './hexagonTileBorder';
 import {Manager, Swipe, Pan} from 'hammerjs';
+import {HexConstants} from '../utils/hexConstants';
+import {DebounceUtils} from '../utils/debounceUtils';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -40,29 +42,40 @@ export class Component extends React.Component<Props, State> {
         }
 
         const manager = new Manager(document.body);
-        const swipe = new Swipe();
+        // const swipe = new Swipe();
         manager.add(new Pan({direction: Hammer.DIRECTION_ALL, threshold: 5}));
-        manager.add(swipe);
-        let deltaX = 0;
-        let deltaY = 0;
+        // manager.add(swipe);
+        let startX = 0;
+        let startY = 0;
+        let startViewX = 0;
+        let startViewY = 0;
         manager.on('panmove', e => {
+            if (e.velocity === 0) return;
+            DebounceUtils.wait('pan', 16, () => {
+                this.setState({
+                    viewX: startViewX + (startX - e.center.x),
+                    viewY: startViewY + (startY - e.center.y)
+                });
+            });
+        });
+        manager.on('panstart', e => {
+            startX = e.center.x;
+            startY = e.center.y;
+            startViewX = this.state.viewX;
+            startViewY = this.state.viewY;
+        });
+        /*        manager.on('swipe', e => {
             deltaX = deltaX + e.deltaX;
             deltaY = deltaY + e.deltaY;
             this.setState({
                 viewX: deltaX,
                 viewY: deltaY
             });
-        });
-        manager.on('swipe', e => {
-            deltaX = deltaX + e.deltaX;
-            deltaY = deltaY + e.deltaY;
-            this.setState({
-                viewX: deltaX,
-                viewY: deltaY
-            });
-        });
-
-        const options = new DrawingOptions(69, Drawing.Orientation.PointyTop, new Point(0, 0));
+        })*/ const options = new DrawingOptions(
+            HexConstants.height / 2 - 1,
+            Drawing.Orientation.PointyTop,
+            new Point(0, 0)
+        );
 
         let game = GameLogic.createGame();
         let gridDrawing = new Drawing(game.grid, options);
@@ -75,6 +88,7 @@ export class Component extends React.Component<Props, State> {
     render() {
         const tiles = [];
         const borders = [];
+        const defaultBorders = [];
         const entities = [];
         const viewSlop = 100;
         const view = {
@@ -95,6 +109,13 @@ export class Component extends React.Component<Props, State> {
                     borders.push(
                         <HexagonTileBorder key={hexagon.id + '-border'} game={this.state.game} hexagon={hexagon} />
                     );
+                    defaultBorders.push(
+                        <HexagonDefaultTileBorder
+                            key={hexagon.id + '-default-border'}
+                            game={this.state.game}
+                            hexagon={hexagon}
+                        />
+                    );
                     const entity = this.state.game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
                     if (entity) {
                         entities.push(
@@ -104,11 +125,11 @@ export class Component extends React.Component<Props, State> {
                 }
             }
         }
-        console.log(`translateX(${-(view.x + viewSlop)}px) translateY(${-(view.y + viewSlop)}px)`)
         return (
             <svg style={{width: '100%', height: '100%'}}>
                 <g style={{transform: `translateX(${-(view.x + viewSlop)}px) translateY(${-(view.y + viewSlop)}px)`}}>
                     {tiles}
+                    {defaultBorders}
                     {borders}
                     {entities}
                 </g>

@@ -3,6 +3,7 @@ export declare class GameEntity {
     id: string;
     x: number;
     y: number;
+    factionId: FactionId;
     entityType: 'infantry' | 'tank' | 'plane' | 'factory';
     health: number;
 }
@@ -11,23 +12,28 @@ export declare class GameLogic {
     entities: GameEntity[];
     static createGame(): GameLogic;
 }
-export declare type TileType = 'Dirt' | 'Grass' | 'Stone' | 'Clay';
-export interface HexagonType {
+export declare type TileType = 'Dirt' | 'Grass' | 'Stone' | 'Clay' | 'Water';
+export declare type TileSubType = '1' | '2' | '3' | '4' | '5';
+export interface HexagonTileType {
     type: TileType;
+    subType: TileSubType;
     cost: number;
     blocked: boolean;
 }
 export declare class HexagonTypes {
-    static dirt: HexagonType;
-    static grass: HexagonType;
-    static stone: HexagonType;
-    static clay: HexagonType;
+    static dirt: (subType: TileSubType) => HexagonTileType;
+    static grass: (subType: TileSubType) => HexagonTileType;
+    static stone: (subType: TileSubType) => HexagonTileType;
+    static clay: (subType: TileSubType) => HexagonTileType;
+    static water: (subType: TileSubType) => HexagonTileType;
+    static randomSubType(): TileSubType;
 }
+export declare type FactionId = '0' | '1' | '2' | '3';
 export declare class GameHexagon extends Hexagon {
-    type: HexagonType;
+    tileType: HexagonTileType;
     id: string;
-    factionId: string;
-    constructor(type: HexagonType, id: string, x: number, y: number);
-    setType(type: HexagonType): void;
-    setFactionId(factionId: string): void;
+    factionId: FactionId;
+    constructor(tileType: HexagonTileType, id: string, x: number, y: number);
+    setTileType(tileType: HexagonTileType): void;
+    setFactionId(factionId: FactionId): void;
 }

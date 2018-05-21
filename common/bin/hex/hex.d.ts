@@ -6,6 +6,7 @@ export declare class Axial {
     y: number;
     constructor(x: number, y: number);
     getKey(): string;
+    add(x: number, y: number): Axial;
     /**
      * Return a Cube representation of the axial.
      * @returns {Cube}
@@ -48,6 +49,7 @@ export declare class Hexagon extends Axial {
     constructor(x: number, y: number, cost?: number, blocked?: boolean);
     center: Point;
     points: Point[];
+    pointsSvg: string;
 }
 /**
  * Grid is a grid of one or more Hexagons, created from the center outwards in a circle.
@@ -57,8 +59,13 @@ export declare class Hexagon extends Axial {
  * @property {Array} hexes - The hexes of the grid.
  */
 export declare class Grid<T extends Hexagon = Hexagon> {
+    boundsX: number;
+    boundsY: number;
+    boundsWidth: number;
+    boundsHeight: number;
     hexes: T[];
-    constructor();
+    constructor(boundsX: number, boundsY: number, boundsWidth: number, boundsHeight: number);
+    easyBounds(x: number, y: number): Axial;
     getCircle(a: Point, radius: number): T[];
     /**
      * Get the hexagon at a given axial position.
