@@ -2,28 +2,13 @@
 import {Fragment} from 'react';
 import * as ReactDOM from 'react-dom';
 import {Route} from 'react-router';
+import {Provider} from 'react-redux';
+
 import {Register} from './components/register';
 import {Game} from './components/game';
-import {BrowserRouter, HashRouter} from 'react-router-dom';
-
-import {Provider} from 'react-redux';
-import {createStore, applyMiddleware, compose} from 'redux';
-import reducers from './store/reducers';
+import {HashRouter} from 'react-router-dom';
 import {Login} from './components/login';
-
-const composeEnhancers =
-    typeof window === 'object' &&
-    (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?
-        (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
-        }) : compose;
-
-const enhancer = composeEnhancers(
-    applyMiddleware(),
-    // other store enhancers if any
-);
-
-
-const store = createStore(reducers, enhancer);
+import {store} from './store';
 
 export class Main {
     static run() {

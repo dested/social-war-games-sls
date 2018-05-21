@@ -1,16 +1,18 @@
 import * as React from 'react';
 import {Fragment} from 'react';
 import {connect} from 'react-redux';
-import {GameHexagon, GameLogic, HexagonTileType} from '../../../server-common/src/game';
+import {GameHexagon, GameLogic, HexagonTileType} from '../../../common/src/game';
 import {Point} from 'swg-common/bin/hex/hex';
+import {SwgStore} from '../store/reducers';
 
 interface Props {
     hexagon: GameHexagon;
     game: GameLogic;
+    viableHexIds?: string[];
 }
 
 interface State {}
-export class HexagonTileBorder extends React.Component<Props, State> {
+class ComponentTileBorder extends React.Component<Props, State> {
     public static factionIdToColor(factionId: string, neighborFactionId: string) {
         switch (factionId) {
             case '0':
@@ -53,10 +55,25 @@ export class HexagonTileBorder extends React.Component<Props, State> {
                 break;
         }
     }
-    shouldComponentUpdate() {
+
+    private get isViableHex() {
+        if (!this.props.viableHexIds) return false;
+        let hexId = this.props.hexagon.id;
+        return this.props.viableHexIds.find(a => a === hexId);
+    }
+
+    shouldComponentUpdate(nextProps: Props) {
+        if (nextProps.viableHexIds !== this.props.viableHexIds) return true;
+
+        if (nextProps.viableHexIds && nextProps.viableHexIds.find(a => a === nextProps.hexagon.id)) {
+            return true;
+        }
         return false;
     }
+
     render() {
+        if (this.isViableHex) return [];
+
         const hex = this.props.hexagon;
         const neighbor = this.props.game.grid.getNeighbors(hex);
 
@@ -67,7 +84,10 @@ export class HexagonTileBorder extends React.Component<Props, State> {
             if (!neighbor[i] || neighbor[i].factionId !== hex.factionId) {
                 lines.push({
                     line: [p1, p2],
-                    color: HexagonTileBorder.factionIdToColor(hex.factionId, !neighbor[i] ? '0' : neighbor[i].factionId)
+                    color: ComponentTileBorder.factionIdToColor(
+                        hex.factionId,
+                        !neighbor[i] ? '0' : neighbor[i].factionId
+                    )
                 });
             }
         }
@@ -86,21 +106,45 @@ export class HexagonTileBorder extends React.Component<Props, State> {
     }
 }
 
-export class HexagonDefaultTileBorder extends React.Component<Props, State> {
+export let HexagonTileBorder = connect((state: SwgStore) => ({
+    viableHexIds: state.gameState.viableHexIds
+}))(ComponentTileBorder);
+
+class ComponentDefaultTileBorder extends React.Component<Props, State> {
     private static defaultBorder = 'rgba(127,127,127,0.13)';
-    shouldComponentUpdate() {
+    private get isViableHex() {
+        if (!this.props.viableHexIds) return false;
+        let hexId = this.props.hexagon.id;
+        return this.props.viableHexIds.find(a => a === hexId);
+    }
+    shouldComponentUpdate(nextProps: Props) {
+        if (nextProps.viableHexIds !== this.props.viableHexIds) return true;
+
+        if (nextProps.viableHexIds && nextProps.viableHexIds.find(a => a === nextProps.hexagon.id)) {
+            return true;
+        }
         return false;
     }
     render() {
         const hex = this.props.hexagon;
+        let isViableHex = this.isViableHex;
         return (
             <polygon
+                style={{pointerEvents: 'none'}}
                 key={'default-border'}
-                stroke={HexagonDefaultTileBorder.defaultBorder}
-                strokeWidth={2}
-                fill={HexagonTileBorder.factionIdToColor(hex.factionId, '0').replace(',1)',',.4)')}
+                stroke={ComponentDefaultTileBorder.defaultBorder}
+                strokeWidth={isViableHex ? 4 : 2}
+                fill={
+                    isViableHex
+                        ? 'rgba(128,52,230,.25)'
+                        : ComponentTileBorder.factionIdToColor(hex.factionId, '0').replace(',1)', ',.4)')
+                }
                 points={hex.pointsSvg}
             />
         );
     }
 }
+
+export let HexagonDefaultTileBorder = connect((state: SwgStore) => ({
+    viableHexIds: state.gameState.viableHexIds
+}))(ComponentDefaultTileBorder);

@@ -1,5 +1,6 @@
-import {Grid, Axial, Hexagon} from 'swg-common/bin/hex/hex';
+import {Grid, Axial, Hexagon} from '../hex/hex';
 
+export type EntityAction = 'attack' | 'move' | 'spawn';
 export class GameEntity {
     id: string;
     x: number;
@@ -12,6 +13,7 @@ export class GameEntity {
 export class GameLogic {
     grid: Grid<GameHexagon>;
     entities: GameEntity[];
+    generation: number;
 
     static createGame(): GameLogic {
         const grid = new Grid<GameHexagon>(0, 0, 50, 50);
@@ -72,7 +74,7 @@ export class GameLogic {
         }
 
         for (let i = 1; i <= 3; i++) {
-            const factionId=i.toString() as FactionId;
+            const factionId = i.toString() as FactionId;
             for (let i = 0; i < 30; i++) {
                 const hex = grid.hexes[Math.floor(Math.random() * grid.hexes.length)];
                 if (hex.factionId !== factionId) {
@@ -129,6 +131,7 @@ export class GameLogic {
         }
 
         return {
+            generation: 1,
             grid,
             entities
         };

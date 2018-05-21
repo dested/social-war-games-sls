@@ -7,6 +7,7 @@ import {SwgStore} from '../store/reducers';
 import {Dispatch} from 'redux';
 import {AppAction, AppActions} from '../store/app/actions';
 import {HttpUser} from 'swg-common/bin/models/http/httpUser';
+import {Dispatcher} from '../store/actions';
 
 interface Props extends RouteComponentProps<{}> {
     setJwt: (jwt: string) => void;
@@ -79,8 +80,9 @@ class Component extends React.Component<Props, State> {
 }
 
 export let Login = connect(
-    (state: SwgStore) => ({}),
-    (dispatch: Dispatch<AppAction>) => ({
+    (state: SwgStore) => ({
+    }),
+    (dispatch: Dispatcher) => ({
         setJwt: (jwt: string) => void dispatch(AppActions.setJWT(jwt)),
         setUser: (user: HttpUser) => void dispatch(AppActions.setUser(user))
     })

@@ -1,8 +1,11 @@
 import {JwtGetUserResponse} from 'swg-common/bin/models/http/userController';
+import {EntityAction} from '../../common/src/game';
+import {getState} from './store';
 
 export class DataService {
     // private static voteServer: string = 'https://vote.socialwargames.com/';
     private static userServer: string = 'http://localhost:4568';
+    private static voteServer: string = 'https://vote.socialwargames.com';
 
     static async login(email: string, password: string): Promise<JwtGetUserResponse> {
         let response = await fetch(this.userServer + '/user/login', {
@@ -42,6 +45,26 @@ export class DataService {
         const json = await response.json();
 
         return json;
+    }
+
+    static async vote(vote: {
+        entityId: string;
+        action: EntityAction;
+        generation: number;
+        hexId: string;
+    }): Promise<void> {
+        const state = getState();
+
+        let response = await fetch(this.voteServer + '/vote', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + state.appState.jwt
+            },
+            body: JSON.stringify(vote)
+        });
+        return await response.json();
     }
     /*
     static async getGameMetrics(): Promise<GameMetrics> {

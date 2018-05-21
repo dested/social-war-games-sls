@@ -1,4 +1,5 @@
-import { Grid, Hexagon } from 'swg-common/bin/hex/hex';
+import { Grid, Hexagon } from '../hex/hex';
+export declare type EntityAction = 'attack' | 'move' | 'spawn';
 export declare class GameEntity {
     id: string;
     x: number;

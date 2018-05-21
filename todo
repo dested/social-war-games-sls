@@ -1,0 +1,29 @@
+'/ create dumb node api folder
+'/ plumb nest
+'/ connect to mongo
+'/ add create account
+'/ add validation jwt
+
+'/write server util code
+  
+  '/hex board
+  '/entities
+ '/ actions
+  '/  move
+  '/  attack
+  '/  spawn
+  '/ voting logic validation
+  
+spin up redis server
+add vote api
+add server for round end
+add server for update round state
+
+
+
+copy some website ts
+add react router
+add create and login pages
+draw board
+draw votes
+sell

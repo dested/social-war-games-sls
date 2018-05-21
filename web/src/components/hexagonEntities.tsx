@@ -1,14 +1,18 @@
 import * as React from 'react';
 import {Fragment} from 'react';
 import {connect} from 'react-redux';
-import {GameHexagon, GameLogic, HexagonTileType} from '../../../server-common/src/game';
+import {GameEntity, GameHexagon, GameLogic, HexagonTileType} from '../../../common/src/game';
 import {Point} from 'swg-common/bin/hex/hex';
-import {GameEntity} from '../../../server-common/bin/game';
 import {HexConstants} from '../utils/hexConstants';
+import {Dispatch} from 'redux';
+import {AppAction, AppActions} from '../store/app/actions';
+import {GameAction, GameActions} from '../store/game/actions';
+import {Dispatcher} from '../store/actions';
 
 interface Props {
     entity: GameEntity;
     game: GameLogic;
+    selectEntity: (entity: GameEntity) => void;
 }
 
 interface State {}
@@ -54,7 +58,7 @@ export let EntityAssets: {[key: string]: EntityAsset} = {
     }
 };
 
-export class HexagonEntity extends React.Component<Props, State> {
+export class Component extends React.Component<Props, State> {
     shouldComponentUpdate() {
         return false;
     }
@@ -65,16 +69,39 @@ export class HexagonEntity extends React.Component<Props, State> {
         const asset = EntityAssets[entity.entityType];
         const wRatio = HexConstants.width / HexConstants.defaultWidth;
         const hRatio = HexConstants.height / HexConstants.defaultHeight;
+        let rectX = hex.center.x - HexConstants.width / 3;
+        let rectY = hex.center.y;
+        let rectWidth = HexConstants.width * 0.35;
+        let rectHeight = HexConstants.height * 0.4;
+        let fontSize = rectWidth / 2;
+
         return (
             <Fragment>
                 <image
+                    style={{pointerEvents: 'none'}}
                     xlinkHref={asset.src}
                     width={asset.width * wRatio}
                     height={asset.height * hRatio}
                     x={hex.center.x - asset.centerX * wRatio}
                     y={hex.center.y - asset.centerY * hRatio}
                 />
+                <rect x={rectX} y={rectY} width={rectWidth} height={rectHeight} rx={'5'} ry={'5'} />
+                <text
+                    textAnchor="middle"
+                    alignmentBaseline="middle"
+                    fontSize={fontSize}
+                    width={rectWidth}
+                    x={rectX + rectWidth / 2}
+                    y={rectY + rectHeight / 2 + 1}
+                    fill={'white'}
+                >
+                    {entity.health}
+                </text>
             </Fragment>
         );
     }
 }
+
+export let HexagonEntity = connect(null, (dispatch: Dispatcher) => ({
+    selectEntity: (entity: GameEntity) => void dispatch(GameActions.selectEntity(entity))
+}))(Component);

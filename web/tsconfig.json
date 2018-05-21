@@ -4,6 +4,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "removeComments": false,
+    "skipLibCheck": true,
     "moduleResolution": "node",
     "target": "es2015",
     "lib": [
