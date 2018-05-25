@@ -21,6 +21,7 @@ export class JwtStrategy extends Strategy {
     async validateUser(req: any, payload: JwtModel, done: any): Promise<boolean> {
         req.factionId = payload.factionId;
         req.userId = payload.userId;
+        req.maxVotesPerRound = payload.maxVotesPerRound;
         done(null, payload.factionId);
         return true;
     }

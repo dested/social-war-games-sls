@@ -4,9 +4,9 @@ const path = require('path');
 const ZipPlugin = require('zip-webpack-plugin');
 
 module.exports = {
-    entry: './src/vote.ts',
+    entry: './src/server.ts',
     output: {
-        path: path.join(__dirname, 'dist', 'vote'),
+        path: path.join(__dirname, 'dist'),
         filename: 'index.js',
         libraryTarget: 'commonjs2'
     },
@@ -19,7 +19,7 @@ module.exports = {
     plugins: [
         new webpack.IgnorePlugin(/hiredis/),
         new ZipPlugin({
-            filename: 'vote.zip'
+            filename: 'worker.zip'
         })
     ],
     module: {

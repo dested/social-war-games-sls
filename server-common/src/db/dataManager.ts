@@ -8,8 +8,11 @@ export class DataManager {
     static dbConnection: Db;
 
     static async openDbConnection() {
-        if (!this.dbConnection) {
+        console.log('opening db connection');
+        if (!this.dbConnection || (this.dbConnection.serverConfig as any).isConnected()) {
+            console.log('db connection is closed');
             this.dbConnection = (await MongoClient.connect(Config.dbConnection)).db(Config.dbName);
+            console.log('db connection is open');
         }
     }
 
@@ -27,6 +30,12 @@ export class DocumentManager<T extends MongoDocument> {
     constructor(private collectionName: string) {}
 
     async insertDocument(document: T): Promise<T> {
+        console.log('inserting document');
+        if(!DataManager.dbConnection){
+            console.log('db is closed, reopening');
+            await DataManager.openDbConnection();
+            console.log('db should be open now');
+        }
         const result = await DataManager.dbConnection.collection(this.collectionName).insertOne(document);
         document._id = result.insertedId;
         return document;
@@ -39,6 +48,10 @@ export class DocumentManager<T extends MongoDocument> {
 
     async getOne(query: any): Promise<T> {
         return await DataManager.dbConnection.collection(this.collectionName).findOne(query);
+    }
+
+    async aggregate(query: any): Promise<any[]> {
+        return await DataManager.dbConnection.collection(this.collectionName).aggregate(query).toArray();
     }
 
     async getById(id: string | ObjectID): Promise<T> {

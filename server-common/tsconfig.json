@@ -16,5 +16,6 @@
     "baseUrl": "./src",
     "outDir": "./bin",
     "skipLibCheck": true
-  }
+  },
+  "include": ["./src/**/*.ts"]
 }

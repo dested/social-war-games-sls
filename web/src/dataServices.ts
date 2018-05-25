@@ -5,7 +5,7 @@ import {getState} from './store';
 export class DataService {
     // private static voteServer: string = 'https://vote.socialwargames.com/';
     private static userServer: string = 'http://localhost:4568';
-    private static voteServer: string = 'https://vote.socialwargames.com';
+    private static voteServer: string = 'https://api.socialwargames.com';
 
     static async login(email: string, password: string): Promise<JwtGetUserResponse> {
         let response = await fetch(this.userServer + '/user/login', {

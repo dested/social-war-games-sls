@@ -11,6 +11,7 @@ export declare class GameEntity {
 export declare class GameLogic {
     grid: Grid<GameHexagon>;
     entities: GameEntity[];
+    generation: number;
     static createGame(): GameLogic;
 }
 export declare type TileType = 'Dirt' | 'Grass' | 'Stone' | 'Clay' | 'Water';

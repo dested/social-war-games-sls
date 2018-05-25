@@ -14,6 +14,7 @@ export declare class DocumentManager<T extends MongoDocument> {
     insertDocument(document: T): Promise<T>;
     updateDocument(document: T): Promise<T>;
     getOne(query: any): Promise<T>;
+    aggregate(query: any): Promise<any[]>;
     getById(id: string | ObjectID): Promise<T>;
     getAll(query: any): Promise<T[]>;
     count(query: any): Promise<number>;

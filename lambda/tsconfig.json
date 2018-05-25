@@ -8,6 +8,7 @@
     "module": "commonjs",
     "inlineSourceMap": true,
     "strictNullChecks": false,
+    "noEmit": true,
     "pretty": true,
     "moduleResolution": "node",
     "strictPropertyInitialization": false,
