@@ -1,18 +1,31 @@
 import { Grid, Hexagon } from '../hex/hex';
+import { GameLayout } from '../models/gameLayout';
+import { GameState } from '../models/gameState';
 export declare type EntityAction = 'attack' | 'move' | 'spawn';
+export declare type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
+export declare type FactionId = '0' | '1' | '2' | '3';
 export declare class GameEntity {
     id: string;
     x: number;
     y: number;
     factionId: FactionId;
-    entityType: 'infantry' | 'tank' | 'plane' | 'factory';
+    entityType: EntityType;
     health: number;
 }
 export declare class GameLogic {
     grid: Grid<GameHexagon>;
     entities: GameEntity[];
     generation: number;
+    static buildGame(layout: GameLayout, gameState: GameState): GameLogic;
     static createGame(): GameLogic;
+    static id: number;
+    static nextId(): string;
+    static validateVote(game: GameLogic, vote: {
+        action: EntityAction;
+        hexId: string;
+        factionId: FactionId;
+        entityId: string;
+    }): boolean;
 }
 export declare type TileType = 'Dirt' | 'Grass' | 'Stone' | 'Clay' | 'Water';
 export declare type TileSubType = '1' | '2' | '3' | '4' | '5';
@@ -29,8 +42,8 @@ export declare class HexagonTypes {
     static clay: (subType: TileSubType) => HexagonTileType;
     static water: (subType: TileSubType) => HexagonTileType;
     static randomSubType(): TileSubType;
+    static get(type: TileType, subType: TileSubType): HexagonTileType;
 }
-export declare type FactionId = '0' | '1' | '2' | '3';
 export declare class GameHexagon extends Hexagon {
     tileType: HexagonTileType;
     id: string;

@@ -1,6 +1,6 @@
 {
   "name": "swg-common",
-  "version": "0.0.75",
+  "version": "0.0.80",
   "scripts": {
     "tsc": "npx tsc",
     "pretty": "npx prettier \"*/**/*.ts*\"  --config .prettierrc --write",

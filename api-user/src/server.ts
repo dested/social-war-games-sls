@@ -9,7 +9,7 @@ async function bootstrap() {
     await DataManager.openDbConnection();
     const app = await NestFactory.create(ApplicationModule);
     app.useGlobalFilters(new AnyExceptionFilter());
-    const port = parseInt(process.env.PORT || '4568', 10);
+    const port = parseInt(process.env.PORT || '4569', 10);
     console.log(`Serving started on port ${port}`);
     await app.listen(port);
 }

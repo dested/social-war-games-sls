@@ -1,5 +1,5 @@
 import {HttpUser} from 'swg-common/bin/models/http/httpUser';
-import {EntityAction, GameEntity, GameHexagon, GameLogic} from '../../../../common/src/game';
+import {EntityAction, GameEntity, GameHexagon, GameLogic} from 'swg-common/bin/game';
 import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';

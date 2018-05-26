@@ -1,11 +1,16 @@
 import {JwtGetUserResponse} from 'swg-common/bin/models/http/userController';
-import {EntityAction} from '../../common/src/game';
+import {EntityAction} from 'swg-common/bin/game';
+import {GameLayout} from 'swg-common/bin/models/gameLayout';
+import {GameState} from 'swg-common/bin/models/gameState';
+import {RoundState} from 'swg-common/bin/models/roundState';
+
 import {getState} from './store';
 
 export class DataService {
     // private static voteServer: string = 'https://vote.socialwargames.com/';
-    private static userServer: string = 'http://localhost:4568';
+    private static userServer: string = 'http://localhost:4569';
     private static voteServer: string = 'https://api.socialwargames.com';
+    private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
 
     static async login(email: string, password: string): Promise<JwtGetUserResponse> {
         let response = await fetch(this.userServer + '/user/login', {
@@ -66,94 +71,37 @@ export class DataService {
         });
         return await response.json();
     }
-    /*
-    static async getGameMetrics(): Promise<GameMetrics> {
-        try {
-            let response = await fetch(this.voteServer + 'api/game/metrics', {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                }
-            });
-            if (!response.ok) // or check for response.status
-                throw new Error(response.statusText);
-            let json = await response.json();
 
-            var m = await WorkerService.deflate(json.data);
-            if (!m.metrics)return null;
-            m.metrics.nextGenerationDate = new Date(m.metrics.nextGeneration);
-            return m.metrics;
-        } catch (ex) {
-            console.error('Fetch Error :-S', ex);
-            return null;
-        }
-    }
-
-    static async vote(vote: { entityId: string, action: PossibleActions, userId: string, generation: number, x: number, z: number }): Promise<VoteResponse> {
-        try {
-            let response = await fetch(this.voteServer + 'api/game/vote', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(vote)
-            });
-            let json = await response.json();
-            if (json.meta.errors) {
-                console.error(json.meta.errors);
-                return null;
+    static async getLayout() {
+        let response = await fetch(this.s3Server + '/layout.json', {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
             }
-
-            return json.data;
-        } catch (ex) {
-            console.error(ex);
-            return ex;
-        }
+        });
+        return (await response.json()) as GameLayout;
     }
 
-    static compressor = new Compressor();
-
-    static async getGameState(): Promise<GameState> {
-        try {
-            let response = await fetch(this.voteServer + 'api/game/state', {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                }
-            });
-            if (!response.ok) // or check for response.status
-                throw new Error(response.statusText);
-            let json = await response.json();
-
-            var m = await WorkerService.deflate(json.data);
-
-            return m.state;
-        } catch (ex) {
-            console.error('Fetch Error :-S', ex);
-            return ex;
-        }
-
+    static async getGameState() {
+        let response = await fetch(this.s3Server + '/game-state.json?bust='+new Date(), {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        return (await response.json()) as GameState;
     }
 
-    static async getGenerationResult(generation: number): Promise<GameMetrics> {
-        try {
-            let response = await fetch(this.voteServer + 'api/game/result?generation=' + generation, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                }
-            });
-            if (!response.ok) // or check for response.status
-                throw new Error(response.statusText);
-            let json = await response.json();
-            var m = await WorkerService.deflate(json.data);
-
-            return m.metrics;
-        } catch (ex) {
-            console.error('Fetch Error :-S', ex);
-            return ex;
-        }
-
-    }*/
+    static async getRoundState() {
+        let response = await fetch(this.s3Server + '/round-state.json?bust='+new Date(), {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        return (await response.json()) as RoundState;
+    }
 }

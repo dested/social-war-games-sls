@@ -1,5 +1,5 @@
 import {GameAction, GameActionOptions} from './actions';
-import {EntityAction, GameEntity, GameLogic} from '../../../../common/src/game';
+import {EntityAction, GameEntity, GameLogic} from 'swg-common/bin/game';
 
 const initialState: GameStore = {};
 

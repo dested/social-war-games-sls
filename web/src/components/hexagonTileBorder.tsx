@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {Fragment} from 'react';
 import {connect} from 'react-redux';
-import {GameHexagon, GameLogic, HexagonTileType} from '../../../common/src/game';
+import {GameHexagon, GameLogic, HexagonTileType} from 'swg-common/bin/game';
 import {Point} from 'swg-common/bin/hex/hex';
 import {SwgStore} from '../store/reducers';
 

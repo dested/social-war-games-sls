@@ -17,8 +17,6 @@
   },
   "dependencies": {
     "aws-sdk": "^2.218.1",
-    "swg-common": "file:../common",
-    "swg-server-common": "file:../server-common",
     "esprima": "^4.0.0",
     "jsonwebtoken": "^8.1.0",
     "moment": "^2.22.0",
@@ -28,6 +26,8 @@
     "redis": "^2.7.1",
     "reflect-metadata": "^0.1.12",
     "rxjs": "^5.5.8",
+    "swg-common": "file:../common",
+    "swg-server-common": "file:../server-common",
     "typescript": "^2.8.3",
     "uuid": "^3.2.1"
   },

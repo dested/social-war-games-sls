@@ -1,10 +1,10 @@
 import { DocumentManager } from '../dataManager';
 import { MongoDocument } from './mongoDocument';
-import { EntityAction } from 'swg-common/bin/game';
+import { FactionId, EntityAction } from 'swg-common/bin/game';
 export declare type VoteCountResult = {
     _id: string;
     actions: {
-        action: string;
+        action: EntityAction;
         hexId: string;
         count: string;
     }[];
@@ -17,6 +17,6 @@ export declare class DBVote extends MongoDocument {
     entityId: string;
     action: EntityAction;
     hexId: string;
-    factionId: string;
+    factionId: FactionId;
     static getVoteCount(generation: number): Promise<VoteCountResult[]>;
 }

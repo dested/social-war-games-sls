@@ -45,6 +45,18 @@ export class RedisManager {
         });
     }
 
+    flushAll(): Promise<void> {
+        return new Promise((res, rej) => {
+            this.client.flushall((err, result) => {
+                if (err) {
+                    rej(err);
+                    return;
+                }
+                res();
+            });
+        });
+    }
+
     expire(key: string, duration: number): Promise<void> {
         return new Promise((res, rej) => {
             this.client.expire(this.getKey(key), duration, (err, result) => {

@@ -1,12 +1,17 @@
 import {Grid, Axial, Hexagon} from '../hex/hex';
+import {GameLayout} from '../models/gameLayout';
+import {GameState} from '../models/gameState';
 
 export type EntityAction = 'attack' | 'move' | 'spawn';
+export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
+export type FactionId = '0' | '1' | '2' | '3';
+
 export class GameEntity {
     id: string;
     x: number;
     y: number;
     factionId: FactionId;
-    entityType: 'infantry' | 'tank' | 'plane' | 'factory';
+    entityType: EntityType;
     health: number;
 }
 
@@ -14,6 +19,51 @@ export class GameLogic {
     grid: Grid<GameHexagon>;
     entities: GameEntity[];
     generation: number;
+
+    static buildGame(layout: GameLayout, gameState: GameState): GameLogic {
+        const grid = new Grid<GameHexagon>(0, 0, 50, 50);
+        const factions = gameState.factions.split('');
+
+        for (let i = 0; i < layout.hexes.length; i++) {
+            const hex = layout.hexes[i];
+            const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), hex.id, hex.x, hex.y);
+            gameHexagon.setFactionId(factions[i] as FactionId);
+            grid.hexes.push(gameHexagon);
+        }
+
+        const entities: GameEntity[] = [
+            ...gameState.entities['1'].map(a => ({
+                factionId: '1' as FactionId,
+                id: a.id,
+                health: a.health,
+                x: a.x,
+                y: a.y,
+                entityType: a.entityType
+            })),
+            ...gameState.entities['2'].map(a => ({
+                factionId: '2' as FactionId,
+                id: a.id,
+                health: a.health,
+                x: a.x,
+                y: a.y,
+                entityType: a.entityType
+            })),
+            ...gameState.entities['3'].map(a => ({
+                factionId: '3' as FactionId,
+                id: a.id,
+                health: a.health,
+                x: a.x,
+                y: a.y,
+                entityType: a.entityType
+            }))
+        ];
+
+        return {
+            generation: gameState.generation,
+            grid,
+            entities
+        };
+    }
 
     static createGame(): GameLogic {
         const grid = new Grid<GameHexagon>(0, 0, 50, 50);
@@ -83,7 +133,7 @@ export class GameLogic {
                 }
                 if (entities.find(a => a.x === hex.x && a.y === hex.y)) continue;
                 entities.push({
-                    id: (Math.random() * 5656468).toString(),
+                    id: this.nextId(),
                     factionId: hex.factionId,
                     health: 10,
                     x: hex.x,
@@ -94,7 +144,7 @@ export class GameLogic {
         }
 
         entities.push({
-            id: (Math.random() * 5656468).toString(),
+            id: this.nextId(),
             factionId: '1',
             health: 20,
             x: center1.x,
@@ -103,7 +153,7 @@ export class GameLogic {
         });
 
         entities.push({
-            id: (Math.random() * 5656468).toString(),
+            id: this.nextId(),
             factionId: '2',
             health: 20,
             x: center2.x,
@@ -112,7 +162,7 @@ export class GameLogic {
         });
 
         entities.push({
-            id: (Math.random() * 5656468).toString(),
+            id: this.nextId(),
             factionId: '3',
             health: 20,
             x: center3.x,
@@ -135,6 +185,18 @@ export class GameLogic {
             grid,
             entities
         };
+    }
+
+    static id = 0;
+    static nextId() {
+        return (++this.id).toString();
+    }
+
+    static validateVote(
+        game: GameLogic,
+        vote: {action: EntityAction; hexId: string; factionId: FactionId; entityId: string}
+    ) {
+        return true;
     }
 }
 
@@ -188,9 +250,22 @@ export class HexagonTypes {
         if (Math.random() * 100 < 90) return '1';
         return (Math.floor(Math.random() * 5) + 1).toString() as TileSubType;
     }
-}
 
-export type FactionId = '0' | '1' | '2' | '3';
+    static get(type: TileType, subType: TileSubType) {
+        switch (type) {
+            case 'Dirt':
+                return this.dirt(subType);
+            case 'Clay':
+                return this.clay(subType);
+            case 'Grass':
+                return this.grass(subType);
+            case 'Stone':
+                return this.stone(subType);
+            case 'Water':
+                return this.water(subType);
+        }
+    }
+}
 
 export class GameHexagon extends Hexagon {
     public factionId: FactionId = '0';

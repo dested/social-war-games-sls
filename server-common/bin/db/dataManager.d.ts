@@ -16,6 +16,7 @@ export declare class DocumentManager<T extends MongoDocument> {
     getOne(query: any): Promise<T>;
     aggregate(query: any): Promise<any[]>;
     getById(id: string | ObjectID): Promise<T>;
+    deleteMany(query: any): Promise<void>;
     getAll(query: any): Promise<T[]>;
     count(query: any): Promise<number>;
     ensureIndex(spec: any, options: IndexOptions): Promise<string>;

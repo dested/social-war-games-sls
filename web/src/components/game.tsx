@@ -8,7 +8,7 @@ import {SwgStore} from '../store/reducers';
 import {Dispatch} from 'redux';
 import {AppAction, AppActions} from '../store/app/actions';
 import {RouteComponentProps} from 'react-router';
-import {EntityAction, GameEntity, GameLogic} from '../../../common/src/game';
+import {EntityAction, GameEntity, GameLogic} from 'swg-common/bin/game';
 import {HexagonTile} from './hexagonTile';
 import {HexagonEntity} from './hexagonEntities';
 import {HexagonDefaultTileBorder, HexagonTileBorder} from './hexagonTileBorder';
@@ -17,6 +17,8 @@ import {HexConstants} from '../utils/hexConstants';
 import {DebounceUtils} from '../utils/debounceUtils';
 import {GameAction, GameActions, GameThunks} from '../store/game/actions';
 import {Dispatcher} from '../store/actions';
+import {DataService} from '../dataServices';
+import {RoundState} from 'swg-common/bin/models/roundState';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -30,6 +32,7 @@ interface State {
     viewX: number;
     viewY: number;
     game?: GameLogic;
+    roundState?: RoundState;
     gridDrawing?: Drawing;
 }
 
@@ -42,7 +45,7 @@ export class Component extends React.Component<Props, State> {
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         if (!this.props.user) {
             this.props.history.push('/login');
             return;
@@ -89,10 +92,16 @@ export class Component extends React.Component<Props, State> {
             new Point(0, 0)
         );
 
-        let game = GameLogic.createGame();
+        const layout = await DataService.getLayout();
+        const gameState = await DataService.getGameState();
+        const roundState = await DataService.getRoundState();
+
+        let game = GameLogic.buildGame(layout, gameState);
+
         let gridDrawing = new Drawing(game.grid, options);
         this.setState({
             game,
+            roundState,
             gridDrawing
         });
         this.props.setGame(game);

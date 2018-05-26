@@ -1,6 +1,6 @@
 {
   "name": "swg-server-common",
-  "version": "1.0.19",
+  "version": "1.0.24",
   "description": "",
   "scripts": {
     "tsc": "npx tsc",

@@ -1,9 +1,9 @@
 import {DocumentManager} from '../dataManager';
 import {MongoDocument} from './mongoDocument';
 import {HttpUser} from 'swg-common/bin/models/http/httpUser';
-import {EntityAction} from 'swg-common/bin/game';
+import {FactionId, EntityAction} from 'swg-common/bin/game';
 
-export type VoteCountResult = {_id: string; actions: {action: string; hexId: string; count: string}[]};
+export type VoteCountResult = {_id: string; actions: {action: EntityAction; hexId: string; count: string}[]};
 
 export class DBVote extends MongoDocument {
     static collectionName = 'vote';
@@ -14,7 +14,7 @@ export class DBVote extends MongoDocument {
     entityId: string;
     action: EntityAction;
     hexId: string;
-    factionId: string;
+    factionId: FactionId;
 
     static getVoteCount(generation: number): Promise<VoteCountResult[]> {
         return this.db.aggregate([

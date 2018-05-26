@@ -4,6 +4,7 @@ export declare class RedisManager {
     getKey(key: string): string;
     get<T>(key: string): Promise<T>;
     set<T>(key: string, value: T): Promise<void>;
+    flushAll(): Promise<void>;
     expire(key: string, duration: number): Promise<void>;
     incr(key: string): Promise<{}>;
 }

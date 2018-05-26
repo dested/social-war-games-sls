@@ -6,8 +6,16 @@ import {JwtModel} from 'swg-server-common/bin/http/jwtModel';
 import {DBVote} from 'swg-server-common/bin/db/models/dbVote';
 import {EntityAction} from 'swg-common/bin/game';
 import {RedisManager} from 'swg-server-common/bin/redis/redisManager';
+import {GameState} from 'swg-common/bin/models/gameState';
+import {GameLayout} from 'swg-common/bin/models/gameLayout';
+import {GameLogic} from 'swg-common/bin/game';
+
+let layout: GameLayout;
+let gameState: GameState;
+let game: GameLogic;
 
 export const handler = async (event: Event) => {
+    let startTime = +new Date();
     console.log('auth', event);
     if (!event.headers || !event.headers.Authorization) return response(401);
 
@@ -34,9 +42,19 @@ export const handler = async (event: Event) => {
         }
         await redisManager.incr(`user-${user.userId}-${generation}-votes`);
 
-        await redisManager.get<number>('gameLayout');
+        layout = layout || (await redisManager.get<GameLayout>('layout'));
+        if (!gameState || gameState.generation !== generation) {
+            gameState = await redisManager.get<GameState>('game-state');
+            game = GameLogic.buildGame(layout, gameState);
+        }
 
-        const body = JSON.parse(event.body) as RequestBody;
+        const body = event.body ;
+
+        if (body.generation !== generation) {
+            return response(417, {
+                votesLeft: user.maxVotesPerRound - (totalVotes || 0) + 1
+            });
+        }
 
         const vote = new DBVote();
         vote.action = body.action;
@@ -46,15 +64,22 @@ export const handler = async (event: Event) => {
         vote.userId = user.userId;
         vote.factionId = user.factionId;
 
+        if (!GameLogic.validateVote(game, vote)) {
+            return response(417, {
+                votesLeft: user.maxVotesPerRound - (totalVotes || 0) + 1
+            });
+        }
+
         await DBVote.db.insertDocument(vote);
-        delete vote._id;
-        await DBVote.db.insertDocument(vote);
+        let endTime = +new Date();
+
         return response(200, {
-            votesLeft: user.maxVotesPerRound - (totalVotes || 0) + 1
+            votesLeft: user.maxVotesPerRound - (totalVotes || 0) + 1,
+            duration: endTime - startTime
         });
     } catch (ex) {
         console.log('er', ex);
-        return response(500);
+        return response(500, ex.stack+JSON.stringify(event));
     }
 };
 
@@ -67,7 +92,7 @@ function response(code: number, body: any = null) {
 }
 
 interface Event {
-    body: string;
+    body: RequestBody;
     headers: Headers;
     httpMethod: string;
     path: string;
