@@ -60,6 +60,7 @@ if (process.argv[2] === 'setup') {
             entities: {}
         };
         console.log('built state');
+        await DBVote.db.deleteMany({});
 
         await S3Manager.uploadJson('layout.json', JSON.stringify(gameLayout));
         await S3Manager.uploadJson('game-state.json', JSON.stringify(gameState));
@@ -85,14 +86,20 @@ if (process.argv[2] === 'setup') {
             try {
                 console.log('round end');
                 await redisManager.set('stop', true);
-                const generation = (await redisManager.get<number>('game-generation'))  ;
+                const generation = await redisManager.get<number>('game-generation');
 
                 const layout = await redisManager.get<GameLayout>('layout');
                 let gameState = await redisManager.get<GameState>('game-state');
 
                 const game = GameLogic.buildGame(layout, gameState);
 
-                const voteCounts = await DBVote.getVoteCount(generation);
+                const voteCounts = (await DBVote.getVoteCount(generation)).sort((left, right) =>
+                    left.actions.reduce((t, a) => t + a.count, 0)-right.actions.reduce((t, a) => t + a.count, 0)
+                );
+
+                for (const voteCount of voteCounts) {
+                    voteCount._id;
+                }
 
                 gameState = {
                     factions: game.grid.hexes.map(a => a.factionId).join(''),

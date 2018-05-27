@@ -73,14 +73,7 @@ export class Cube extends Axial {
     }
 }
 
-/**
- * Hexagon
- * @class
- * @param {number} x - Value of the X axis
- * @param {number} y - Value of the Y axis
- * @param {number} [cost=1] - The movement cost to step on the hexagon. For the pathfinding to work optimally, minimum cost should be 1.
- * @param {boolean} [blocked=false] - If movement is enabled on this hexagon.
- */
+
 export class Hexagon extends Axial {
     constructor(x: number, y: number, public cost: number = 1, public blocked: boolean = false) {
         super(x, y);
@@ -91,13 +84,6 @@ export class Hexagon extends Axial {
     pointsSvg: string;
 }
 
-/**
- * Grid is a grid of one or more Hexagons, created from the center outwards in a circle.
- * @class
- * @param {number} radius - The radius of the grid with 0 being just the center piece.
- * @property {number} radius - The radius of the grid with 0 being just the center piece.
- * @property {Array} hexes - The hexes of the grid.
- */
 export class Grid<T extends Hexagon = Hexagon> {
     hexes: T[];
 
@@ -191,12 +177,12 @@ export class Grid<T extends Hexagon = Hexagon> {
         cEnd2.y += 1e-6;
         cEnd2.z -= 2e-6;
 
-        for (var i = 0; i <= N; i++) {
-            var axial = cube_lerp(cStart, cEnd1, 1.0 / N * i)
+        for (let i = 0; i <= N; i++) {
+            const axial = cube_lerp(cStart, cEnd1, 1.0 / N * i)
                 .round()
                 .toAxial();
 
-            var hex = this.getHexAt(axial);
+            const hex = this.getHexAt(axial);
 
             if (!start.compareTo(hex)) {
                 if (hex && !hex.blocked) {
@@ -227,9 +213,9 @@ export class Grid<T extends Hexagon = Hexagon> {
      */
     getRange(start: T, movement: number) {
         const grid = this;
-        const openHeap = new BinaryHeap((node: Grid_Search_Node) => node.F);
-        const closedHexes: {[key: string]: Hexagon} = {};
-        const visitedNodes: {[key: string]: Grid_Search_Node} = {};
+        const openHeap = new BinaryHeap((node: Grid_Search_Node<T>) => node.F);
+        const closedHexes: {[key: string]: T} = {};
+        const visitedNodes: {[key: string]: Grid_Search_Node<T>} = {};
 
         openHeap.push(new Grid_Search_Node(start, null, 0));
 
@@ -284,11 +270,11 @@ export class Grid<T extends Hexagon = Hexagon> {
      */
     findPath(start: T, end: T) {
         const grid = this;
-        const openHeap = new BinaryHeap(node => node.F);
-        const closedHexes: {[key: string]: Grid_Search_Node} = {};
-        const visitedNodes: {[key: string]: Grid_Search_Node} = {};
+        const openHeap = new BinaryHeap<T>(node => node.F);
+        const closedHexes: {[key: string]: Grid_Search_Node<T>} = {};
+        const visitedNodes: {[key: string]: Grid_Search_Node<T>} = {};
 
-        openHeap.push(new Grid_Search_Node(start, null, 0, grid.getDistance(start, end)));
+        openHeap.push(new Grid_Search_Node<T>(start, null, 0, grid.getDistance(start, end)));
 
         while (openHeap.size() > 0) {
             // Get the item with the lowest score (current + heuristic).
@@ -351,13 +337,13 @@ export class Grid<T extends Hexagon = Hexagon> {
  * @param {number} [h=0] - The Heuristic (estimated) cost to get to the final destination.
  * @property {number} F - The sum of G + H
  */
-class Grid_Search_Node {
-    parent: Grid_Search_Node | null;
+class Grid_Search_Node<T> {
+    parent: Grid_Search_Node<T> | null;
     G: number;
     H: number;
     F: number;
 
-    constructor(public hex: Hexagon, parent: Grid_Search_Node | null, g: number, h: number = 0) {
+    constructor(public hex: T, parent: Grid_Search_Node<T> | null, g: number, h: number = 0) {
         this.rescore(parent, g, h);
     }
 
@@ -367,7 +353,7 @@ class Grid_Search_Node {
      * @param {number} g - The movement cost to move from the starting point A to a given hex on the grid, following the path generated to get there.
      * @property {number} [h=0] - The Heuristic (estimated) cost to get to the final destination.
      */
-    rescore(parent: Grid_Search_Node | null, g: number, h: number) {
+    rescore(parent: Grid_Search_Node<T> | null, g: number, h: number) {
         this.parent = parent;
         this.G = g;
         this.H = h || 0;
@@ -407,13 +393,7 @@ export class Drawing {
         });
     }
 
-    /**
-     * Creates 6 points that marks the corners of a hexagon.
-     * @private
-     * @param {Drawing.Point} center - The center point of the hexagon.
-     * @param {Drawing.Options} options - Drawing options to be used.
-     * @returns {Drawing.Point[]}
-     */
+
     static getCorners(center: Point, options: DrawingOptions) {
         const points = [];
 
@@ -423,13 +403,6 @@ export class Drawing {
         return points;
     }
 
-    /**
-     * Find the given corner for a hex.
-     * @param {Drawing.Point} center - The center of the hexagon.
-     * @param {Drawing.Options} options - Drawing options to be used.
-     * @param {number} corner - Which of the 6 corners should be calculated?
-     * @returns {Drawing.Point}
-     */
     static getCorner(center: Point, options: DrawingOptions, corner: number) {
         const offset = options.orientation === Drawing.Orientation.PointyTop ? 90 : 0;
         const angle_deg = 60 * corner + offset;
@@ -437,12 +410,6 @@ export class Drawing {
         return new Point(center.x + options.size * Math.cos(angle_rad), center.y + options.size * Math.sin(angle_rad));
     }
 
-    /**
-     * Find the center point of the axial, given the options provided.
-     * @param {Axial} axial - The axial for which to find the center point.
-     * @param {Drawing.Options} options - Drawing options to be used.
-     * @returns {Drawing.Point}
-     */
     static getCenter(axial: Axial, options: DrawingOptions) {
         let x = 0;
         let y = 0;
@@ -460,11 +427,6 @@ export class Drawing {
         return new Point(x, y);
     }
 
-    /**
-     * Get the hexagon at a specific point.
-     * @param {Drawing.Point} p - The points for which to find a hex.
-     * @returns {Hexagon}
-     */
     getHexAt(p: Point) {
         let x;
         let y;
@@ -486,22 +448,11 @@ export class Drawing {
     }
 }
 
-/**
- * Drawing.Point is a horizontal and vertical representation of a position.
- */
+
 export class Point {
     constructor(public x: number, public y: number) {}
 }
 
-/**
- * A Hexagon is a 6 sided polygon, our hexes don't have to be symmetrical, i.e. ratio of width to height could be 4 to 3
- * @class
- * @param {number} side - How long the flat side should be.
- * @param {Drawing.Static.Orientation} [orientation=Drawing.Static.Orientation.FlatTop] - Which orientation the hex will have.
- * @param {Drawing.Point} [center=new Drawing.Point(0, 0)] - Where is the center of the grid located. This helps by saving you the trouble of keeping track of the offset yourself.
- * @property {number} side - How long the flat side should be.
- * @property {Drawing.Static.Orientation} orientation - Which orientation the hex will have.
- */
 export class DrawingOptions {
     size: number;
     width: number;
@@ -526,12 +477,12 @@ export class DrawingOptions {
 // Binary Heap implementation by bgrins https://github.com/bgrins/javascript-astar
 // Based on implementation by Marijn Haverbeke http://eloquentjavascript.net/1st_edition/appendix2.html
 
-class BinaryHeap {
-    content: Grid_Search_Node[] = [];
+class BinaryHeap<T> {
+    content: Grid_Search_Node<T>[] = [];
 
-    constructor(private scoreFunction: (node: Grid_Search_Node) => number) {}
+    constructor(private scoreFunction: (node: Grid_Search_Node<T>) => number) {}
 
-    push(element: Grid_Search_Node) {
+    push(element: Grid_Search_Node<T>) {
         // Add the new element to the end of the array.
         this.content.push(element);
 
@@ -553,7 +504,7 @@ class BinaryHeap {
         return result;
     }
 
-    remove(node: Grid_Search_Node) {
+    remove(node: Grid_Search_Node<T>) {
         const i = this.content.indexOf(node);
 
         // When it is found, the process seen in 'pop' is repeated
@@ -575,7 +526,7 @@ class BinaryHeap {
         return this.content.length;
     }
 
-    rescoreElement(node: Grid_Search_Node) {
+    rescoreElement(node: Grid_Search_Node<T>) {
         this.sinkDown(this.content.indexOf(node));
     }
 

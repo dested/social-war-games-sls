@@ -26,12 +26,6 @@ export declare class GameLogic {
         factionId: FactionId;
         entityId: string;
     }): boolean;
-    static processVote(game: GameLogic, vote: {
-        action: EntityAction;
-        hexId: string;
-        factionId: FactionId;
-        entityId: string;
-    }): boolean;
 }
 export declare type TileType = 'Dirt' | 'Grass' | 'Stone' | 'Clay' | 'Water';
 export declare type TileSubType = '1' | '2' | '3' | '4' | '5';

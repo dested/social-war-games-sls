@@ -3,7 +3,7 @@ import {MongoDocument} from './mongoDocument';
 import {HttpUser} from 'swg-common/bin/models/http/httpUser';
 import {FactionId, EntityAction} from 'swg-common/bin/game';
 
-export type VoteCountResult = {_id: string; actions: {action: EntityAction; hexId: string; count: string}[]};
+export type VoteCountResult = {_id: string; actions: {action: EntityAction; hexId: string; count: number}[]};
 
 export class DBVote extends MongoDocument {
     static collectionName = 'vote';

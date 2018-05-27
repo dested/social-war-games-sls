@@ -1,8 +1,8 @@
-import {HttpUser} from 'swg-common/bin/models/http/httpUser';
 import {EntityAction, GameEntity, GameHexagon, GameLogic} from 'swg-common/bin/game';
 import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
+import {EntityDetails} from 'swg-common/bin/game';
 
 export enum GameActionOptions {
     SetGame = 'SET_GAME',
@@ -12,12 +12,14 @@ export enum GameActionOptions {
     Vote = 'VOTE',
     Voting = 'VOTING'
 }
+
 export interface SetEntityActionAction {
     type: GameActionOptions.SetEntityAction;
     entity: GameEntity;
     action: EntityAction;
     viableHexIds: string[];
 }
+
 export interface SelectEntityAction {
     type: GameActionOptions.SelectEntity;
     entity: GameEntity;
@@ -60,18 +62,21 @@ export class GameActions {
             entity
         };
     }
+
     static setGame(game: GameLogic): SetGameAction {
         return {
             type: GameActionOptions.SetGame,
             game
         };
     }
+
     static voting(isVoting: boolean): VotingAction {
         return {
             type: GameActionOptions.Voting,
             isVoting
         };
     }
+
     static setEntityAction(entity: GameEntity, action: EntityAction, viableHexIds: string[]): SetEntityActionAction {
         return {
             type: GameActionOptions.SetEntityAction,
@@ -94,8 +99,22 @@ export class GameActions {
 export class GameThunks {
     static sendVote(entityId: string, action: EntityAction, hexId: string) {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
+            const {gameState, appState} = getState();
+            const {game} = gameState;
+
+            if (
+                !GameLogic.validateVote(game, {
+                    entityId,
+                    action,
+                    hexId,
+                    factionId: appState.user.factionId
+                })
+            ) {
+                return;
+            }
+
             dispatch(GameActions.voting(true));
-            const generation = getState().gameState.game.generation;
+            const generation = game.generation;
             await DataService.vote({
                 entityId,
                 action,
@@ -108,48 +127,26 @@ export class GameThunks {
             dispatch(GameActions.selectEntity(null));
         };
     }
+
     static startEntityAction(entity: GameEntity, action: EntityAction) {
         return (dispatch: Dispatcher, getState: () => SwgStore) => {
             const game = getState().gameState.game;
             let radius = 0;
-
+            const entityDetails = EntityDetails[entity.entityType];
+            const entityHex = game.grid.hexes.find(a => a.x === entity.x && a.y === entity.y);
             switch (action) {
                 case 'attack':
-                    switch (entity.entityType) {
-                        case 'infantry':
-                            radius = 3;
-                            break;
-                        case 'tank':
-                            radius = 5;
-                            break;
-                        case 'plane':
-                            radius = 2;
-                            break;
-                    }
+                    radius = entityDetails.attackRadius;
                     break;
                 case 'move':
-                    switch (entity.entityType) {
-                        case 'infantry':
-                            radius = 5;
-                            break;
-                        case 'tank':
-                            radius = 7;
-                            break;
-                        case 'plane':
-                            radius = 12;
-                            break;
-                    }
+                    radius = entityDetails.moveRadius;
                     break;
                 case 'spawn':
-                    switch (entity.entityType) {
-                        case 'factory':
-                            radius = 2;
-                            break;
-                    }
+                    radius = entityDetails.spawnRadius;
                     break;
             }
 
-            let viableHexes = game.grid.getCircle({x: entity.x, y: entity.y}, radius);
+            let viableHexes = game.grid.getRange(entityHex, radius);
 
             switch (action) {
                 case 'attack':

@@ -6,7 +6,7 @@ export declare type VoteCountResult = {
     actions: {
         action: EntityAction;
         hexId: string;
-        count: string;
+        count: number;
     }[];
 };
 export declare class DBVote extends MongoDocument {

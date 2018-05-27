@@ -8,6 +8,7 @@ import {Dispatch} from 'redux';
 import {AppAction, AppActions} from '../store/app/actions';
 import {GameAction, GameActions} from '../store/game/actions';
 import {Dispatcher} from '../store/actions';
+import {SwgStore} from '../store/reducers';
 
 interface Props {
     entity: GameEntity;
@@ -102,6 +103,11 @@ export class Component extends React.Component<Props, State> {
     }
 }
 
-export let HexagonEntity = connect(null, (dispatch: Dispatcher) => ({
-    selectEntity: (entity: GameEntity) => void dispatch(GameActions.selectEntity(entity))
-}))(Component);
+export let HexagonEntity = connect(
+    (state: SwgStore) => ({
+        game: state.gameState.game,
+    }),
+    (dispatch: Dispatcher) => ({
+        selectEntity: (entity: GameEntity) => void dispatch(GameActions.selectEntity(entity))
+    })
+)(Component);

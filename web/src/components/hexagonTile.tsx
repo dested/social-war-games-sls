@@ -149,6 +149,7 @@ class Component extends React.Component<Props, State> {
 export let HexagonTile = connect(
     (state: SwgStore) => ({
         viableHexIds: state.gameState.viableHexIds,
+        game: state.gameState.game,
         selectedEntity: state.gameState.selectedEntity
     }),
     (dispatch: Dispatcher) => ({

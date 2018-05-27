@@ -1,6 +1,7 @@
 import {DocumentManager} from '../dataManager';
 import {MongoDocument} from './mongoDocument';
 import {HttpUser} from 'swg-common/bin/models/http/httpUser';
+import {FactionId} from 'swg-common/bin/game';
 
 export class DBUser extends MongoDocument {
     static collectionName = 'user';
@@ -9,7 +10,7 @@ export class DBUser extends MongoDocument {
     email: string;
     passwordHash: string;
     maxVotesPerRound: number;
-    factionId: string;
+    factionId: FactionId;
 
     static map(e: DBUser): HttpUser {
         return {

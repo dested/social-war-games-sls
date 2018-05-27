@@ -188,6 +188,7 @@ export class GameLogic {
     }
 
     static id = 0;
+
     static nextId() {
         return (++this.id).toString();
     }
@@ -196,6 +197,115 @@ export class GameLogic {
         game: GameLogic,
         vote: {action: EntityAction; hexId: string; factionId: FactionId; entityId: string}
     ) {
+        const entity = game.entities.find(a => a.id === vote.entityId);
+        if (!entity) return false;
+
+        if (entity.factionId !== vote.factionId) return false;
+
+        const fromHex = game.grid.hexes.find(a => a.x === entity.x && a.y === entity.y);
+        if (!fromHex) return false;
+
+        const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
+        if (!toHex) return false;
+
+        const path = game.grid.findPath(fromHex, toHex);
+        if (path.length === 0) return false;
+
+        const entityDetails = EntityDetails[entity.entityType];
+
+        let range = 0;
+        switch (vote.action) {
+            case 'attack':
+                range = entityDetails.attackRadius;
+                break;
+            case 'move':
+                range = entityDetails.moveRadius;
+                break;
+            case 'spawn':
+                range = entityDetails.spawnRadius;
+                break;
+        }
+
+        if (path.length > range) return false;
+
+        const toEntity = game.entities.find(a => a.x === toHex.x && a.y === toHex.y);
+
+        switch (vote.action) {
+            case 'attack':
+                if (!toEntity) return false;
+
+                if (toEntity.factionId === entity.factionId) {
+                    return false;
+                }
+
+                break;
+            case 'move':
+                if (toEntity) return false;
+                break;
+            case 'spawn':
+                if (toEntity) return false;
+                if (entityDetails.spawnRadius === 0) return false;
+                break;
+        }
+
+        return true;
+    }
+
+    static processVote(
+        game: GameLogic,
+        vote: {action: EntityAction; hexId: string; factionId: FactionId; entityId: string}
+    ) {
+        const entity = game.entities.find(a => a.id === vote.entityId);
+        if (!entity) return false;
+
+        if (entity.factionId !== vote.factionId) return false;
+
+        const fromHex = game.grid.hexes.find(a => a.x === entity.x && a.y === entity.y);
+        if (!fromHex) return false;
+
+        const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
+        if (!toHex) return false;
+
+        const path = game.grid.findPath(fromHex, toHex);
+        if (path.length === 0) return false;
+
+        const entityDetails = EntityDetails[entity.entityType];
+
+        let range = 0;
+        switch (vote.action) {
+            case 'attack':
+                range = entityDetails.attackRadius;
+                break;
+            case 'move':
+                range = entityDetails.moveRadius;
+                break;
+            case 'spawn':
+                range = entityDetails.spawnRadius;
+                break;
+        }
+
+        if (path.length > range) return false;
+
+        const toEntity = game.entities.find(a => a.x === toHex.x && a.y === toHex.y);
+
+        switch (vote.action) {
+            case 'attack':
+                if (!toEntity) return false;
+
+                if (toEntity.factionId === entity.factionId) {
+                    return false;
+                }
+
+                break;
+            case 'move':
+                if (toEntity) return false;
+                break;
+            case 'spawn':
+                if (toEntity) return false;
+                if (entityDetails.spawnRadius === 0) return false;
+                break;
+        }
+
         return true;
     }
 }
@@ -214,28 +324,28 @@ export class HexagonTypes {
     static dirt: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Dirt',
         subType,
-        cost: 0,
+        cost: 1,
         blocked: false
     });
 
     static grass: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Grass',
         subType,
-        cost: 1,
-        blocked: false
-    });
-
-    static stone: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
-        type: 'Stone',
-        subType,
-        cost: 3,
+        cost: 2,
         blocked: false
     });
 
     static clay: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Clay',
         subType,
-        cost: 2,
+        cost: 3,
+        blocked: false
+    });
+
+    static stone: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
+        type: 'Stone',
+        subType,
+        cost: 4,
         blocked: false
     });
 
@@ -265,6 +375,60 @@ export class HexagonTypes {
                 return this.water(subType);
         }
     }
+}
+
+export let EntityDetails: {[key in EntityType]: EntityDetail} = {
+    ['factory']: {
+        moveRadius: 0,
+        health: 30,
+        attackRadius: 0,
+        attackPower: 0,
+        ticksToSpawn: 0,
+        healthRegenRate: 0,
+        solid: true,
+        spawnRadius: 4
+    },
+    ['tank']: {
+        moveRadius: 4,
+        health: 8,
+        attackRadius: 8,
+        attackPower: 3,
+        ticksToSpawn: 3,
+        healthRegenRate: 1,
+        solid: false,
+        spawnRadius: 0
+    },
+    ['plane']: {
+        moveRadius: 10,
+        health: 2,
+        attackRadius: 3,
+        attackPower: 3,
+        ticksToSpawn: 4,
+        healthRegenRate: 1,
+        solid: false,
+        spawnRadius: 0
+    },
+    ['infantry']: {
+        moveRadius: 8,
+        health: 4,
+        attackRadius: 3,
+        attackPower: 1,
+        ticksToSpawn: 2,
+        healthRegenRate: 1,
+        solid: false,
+        spawnRadius: 2
+    }
+};
+
+export interface EntityDetail {
+    solid: boolean;
+    moveRadius: number;
+    attackRadius: number;
+    spawnRadius: number;
+    attackPower: number;
+    ticksToSpawn: number;
+    health: number;
+    healthRegenRate: number;
 }
 
 export class GameHexagon extends Hexagon {

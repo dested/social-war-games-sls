@@ -107,6 +107,7 @@ class ComponentTileBorder extends React.Component<Props, State> {
 }
 
 export let HexagonTileBorder = connect((state: SwgStore) => ({
+    game: state.gameState.game,
     viableHexIds: state.gameState.viableHexIds
 }))(ComponentTileBorder);
 
@@ -146,5 +147,6 @@ class ComponentDefaultTileBorder extends React.Component<Props, State> {
 }
 
 export let HexagonDefaultTileBorder = connect((state: SwgStore) => ({
+    game: state.gameState.game,
     viableHexIds: state.gameState.viableHexIds
 }))(ComponentDefaultTileBorder);

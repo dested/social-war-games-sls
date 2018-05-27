@@ -128,22 +128,14 @@ export class Component extends React.Component<Props, State> {
                     hexagon.center.y > view.y &&
                     hexagon.center.y < view.y + view.height
                 ) {
-                    tiles.push(<HexagonTile key={hexagon.id + '-tile'} game={this.state.game} hexagon={hexagon} />);
-                    borders.push(
-                        <HexagonTileBorder key={hexagon.id + '-border'} game={this.state.game} hexagon={hexagon} />
-                    );
+                    tiles.push(<HexagonTile key={hexagon.id + '-tile'} hexagon={hexagon} />);
+                    borders.push(<HexagonTileBorder key={hexagon.id + '-border'} hexagon={hexagon} />);
                     defaultBorders.push(
-                        <HexagonDefaultTileBorder
-                            key={hexagon.id + '-default-border'}
-                            game={this.state.game}
-                            hexagon={hexagon}
-                        />
+                        <HexagonDefaultTileBorder key={hexagon.id + '-default-border'} hexagon={hexagon} />
                     );
                     const entity = this.state.game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
                     if (entity) {
-                        entities.push(
-                            <HexagonEntity key={hexagon.id + '-ent'} game={this.state.game} entity={entity} />
-                        );
+                        entities.push(<HexagonEntity key={hexagon.id + '-ent'} entity={entity} />);
                     }
                 }
             }
