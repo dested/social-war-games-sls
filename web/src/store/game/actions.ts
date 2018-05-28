@@ -1,11 +1,12 @@
-import {EntityAction, GameEntity, GameHexagon, GameLogic} from 'swg-common/bin/game';
+import {EntityAction, GameEntity, GameHexagon, GameLogic} from '@swg-common/game';
 import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
-import {EntityDetails} from 'swg-common/bin/game';
+import {EntityDetails} from '@swg-common/game';
+import {RoundState} from '@swg-common/models/roundState';
 
 export enum GameActionOptions {
-    SetGame = 'SET_GAME',
+    UpdateGame = 'UPDATE_GAME',
     SelectEntity = 'SELECT_ENTITY',
     SetEntityAction = 'SET_ENTITY_ACTION',
     SelectViableHex = 'SELECT_VIABLE_HEX',
@@ -30,9 +31,10 @@ export interface SelectViableHexAction {
     hex: GameHexagon;
 }
 
-export interface SetGameAction {
-    type: GameActionOptions.SetGame;
+export interface UpdateGameAction {
+    type: GameActionOptions.UpdateGame;
     game: GameLogic;
+    roundState: RoundState;
 }
 
 export interface VotingAction {
@@ -53,7 +55,7 @@ export type GameAction =
     | VotingAction
     | SetEntityActionAction
     | SelectViableHexAction
-    | SetGameAction;
+    | UpdateGameAction;
 
 export class GameActions {
     static selectEntity(entity: GameEntity): SelectEntityAction {
@@ -63,12 +65,14 @@ export class GameActions {
         };
     }
 
-    static setGame(game: GameLogic): SetGameAction {
+    static updateGame(game: GameLogic, roundState: RoundState): UpdateGameAction {
         return {
-            type: GameActionOptions.SetGame,
-            game
+            type: GameActionOptions.UpdateGame,
+            game,
+            roundState
         };
     }
+
 
     static voting(isVoting: boolean): VotingAction {
         return {

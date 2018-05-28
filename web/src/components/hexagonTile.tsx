@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {Fragment} from 'react';
 import {connect} from 'react-redux';
-import {GameEntity, GameHexagon, GameLogic, HexagonTileType} from 'swg-common/bin/game';
-import {Point} from 'swg-common/bin/hex/hex';
+import {GameEntity, GameHexagon, GameLogic, HexagonTileType} from '@swg-common/game';
+import {Point} from '@swg-common/hex/hex';
 import {HexConstants} from '../utils/hexConstants';
 import {SwgStore} from '../store/reducers';
 import {Dispatcher} from '../store/actions';

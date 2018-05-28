@@ -1,8 +1,8 @@
-import {JwtGetUserResponse} from 'swg-common/bin/models/http/userController';
-import {EntityAction} from 'swg-common/bin/game';
-import {GameLayout} from 'swg-common/bin/models/gameLayout';
-import {GameState} from 'swg-common/bin/models/gameState';
-import {RoundState} from 'swg-common/bin/models/roundState';
+import {JwtGetUserResponse} from '@swg-common/models/http/userController';
+import {EntityAction} from '@swg-common/game';
+import {GameLayout} from '@swg-common/models/gameLayout';
+import {GameState} from '@swg-common/models/gameState';
+import {RoundState} from '@swg-common/models/roundState';
 
 import {getState} from './store';
 
@@ -84,7 +84,7 @@ export class DataService {
     }
 
     static async getGameState() {
-        let response = await fetch(this.s3Server + '/game-state.json?bust='+new Date(), {
+        let response = await fetch(this.s3Server + '/game-state.json?bust='+(+new Date()), {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
@@ -95,7 +95,7 @@ export class DataService {
     }
 
     static async getRoundState() {
-        let response = await fetch(this.s3Server + '/round-state.json?bust='+new Date(), {
+        let response = await fetch(this.s3Server + '/round-state.json?bust='+(+new Date()), {
             method: 'GET',
             headers: {
                 Accept: 'application/json',

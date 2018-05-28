@@ -1,7 +1,7 @@
 import {Component} from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
-import {HttpUser} from 'swg-common/bin/models/http/httpUser';
-import {Config} from 'swg-server-common/bin/config';
+import {HttpUser} from '@swg-common/models/http/httpUser';
+import {Config} from '@swg-server-common/config';
 
 @Component()
 export class AuthService {

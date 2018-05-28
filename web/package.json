@@ -9,23 +9,23 @@
     "verify": "tsc --noEmit",
     "pre": "npm run tsc & npm run pretty & npm run lint",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --port 8787 --open",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
-    "common": "npm update swg-common"
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
     "glamor": "^2.20.40",
     "glamorous": "^4.10.0",
     "hammerjs": "^2.0.8",
+    "lodash": "4.17.10",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "react-redux": "^5.0.7",
     "redux-thunk": "^2.2.0",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
-    "redux": "^4.0.0",
-    "swg-common": "file:../common"
+    "redux": "^4.0.0"
   },
   "devDependencies": {
+    "@types/lodash": "4.14.109",
     "@types/react": "^16.0.17",
     "@types/react-router": "^4.0.25",
     "@types/react-router-dom": "^4.2.6",

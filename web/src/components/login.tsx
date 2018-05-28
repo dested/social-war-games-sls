@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {SwgStore} from '../store/reducers';
 import {Dispatch} from 'redux';
 import {AppAction, AppActions} from '../store/app/actions';
-import {HttpUser} from 'swg-common/bin/models/http/httpUser';
+import {HttpUser} from '@swg-common/models/http/httpUser';
 import {Dispatcher} from '../store/actions';
 
 interface Props extends RouteComponentProps<{}> {

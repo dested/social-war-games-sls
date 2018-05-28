@@ -1,14 +1,14 @@
-import {DataManager} from 'swg-server-common/bin/db/dataManager';
-import {DBUser} from 'swg-server-common/bin/db/models/dbUser';
+import {DataManager} from '@swg-server-common/db/dataManager';
+import {DBUser} from '@swg-server-common/db/models/dbUser';
 import * as jwt from 'jsonwebtoken';
-import {Config} from 'swg-server-common/bin/config';
-import {JwtModel} from 'swg-server-common/bin/http/jwtModel';
-import {DBVote} from 'swg-server-common/bin/db/models/dbVote';
-import {EntityAction} from 'swg-common/bin/game';
-import {RedisManager} from 'swg-server-common/bin/redis/redisManager';
-import {GameState} from 'swg-common/bin/models/gameState';
-import {GameLayout} from 'swg-common/bin/models/gameLayout';
-import {GameLogic} from 'swg-common/bin/game';
+import {Config} from '@swg-server-common/config';
+import {JwtModel} from '@swg-server-common/http/jwtModel';
+import {DBVote} from '@swg-server-common/db/models/dbVote';
+import {EntityAction} from '@swg-common/game';
+import {RedisManager} from '@swg-server-common/redis/redisManager';
+import {GameState} from '@swg-common/models/gameState';
+import {GameLayout} from '@swg-common/models/gameLayout';
+import {GameLogic} from '@swg-common/game';
 
 let layout: GameLayout;
 let gameState: GameState;

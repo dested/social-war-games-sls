@@ -1,8 +1,8 @@
 import {Component} from '@nestjs/common';
 import * as passport from 'passport';
 import {ExtractJwt, Strategy} from 'passport-jwt';
-import {JwtModel} from 'swg-server-common/bin/http/jwtModel';
-import {Config} from 'swg-server-common/bin/config';
+import {JwtModel} from '@swg-server-common/http/jwtModel';
+import {Config} from '@swg-server-common/config';
 
 @Component()
 export class JwtStrategy extends Strategy {

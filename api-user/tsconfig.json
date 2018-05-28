@@ -8,11 +8,16 @@
     "strictNullChecks": false,
     "inlineSourceMap": true,
     "strict": true,
+    "noEmit": true,
     "noImplicitAny": false,
     "allowJs": true,
     "strictPropertyInitialization": false,
     "outDir": "./bin",
-    "baseUrl": "."
+    "baseUrl": "./src",
+    "paths": {
+      "@swg-server-common/*":["../../server-common/src/*"],
+      "@swg-common/*":["../../common/src/*"]
+    }
   },
   "include": [
     "src/**/*"

@@ -1,6 +1,6 @@
-import {Grid, Axial, Hexagon} from '../hex/hex';
-import {GameLayout} from '../models/gameLayout';
-import {GameState} from '../models/gameState';
+import { Grid, Axial, Hexagon } from '../hex/hex';
+import { GameLayout } from '../models/gameLayout';
+import { GameState } from '../models/gameState';
 
 export type EntityAction = 'attack' | 'move' | 'spawn';
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
@@ -195,12 +195,12 @@ export class GameLogic {
 
     static validateVote(
         game: GameLogic,
-        vote: {action: EntityAction; hexId: string; factionId: FactionId; entityId: string}
+        vote: { action: EntityAction; hexId: string; factionId?: FactionId; entityId: string }
     ) {
         const entity = game.entities.find(a => a.id === vote.entityId);
         if (!entity) return false;
 
-        if (entity.factionId !== vote.factionId) return false;
+        if (vote.factionId !== undefined && entity.factionId !== vote.factionId) return false;
 
         const fromHex = game.grid.hexes.find(a => a.x === entity.x && a.y === entity.y);
         if (!fromHex) return false;
@@ -253,7 +253,7 @@ export class GameLogic {
 
     static processVote(
         game: GameLogic,
-        vote: {action: EntityAction; hexId: string; factionId: FactionId; entityId: string}
+        vote: { action: EntityAction; hexId: string; factionId: FactionId; entityId: string }
     ) {
         const entity = game.entities.find(a => a.id === vote.entityId);
         if (!entity) return false;
@@ -296,9 +296,22 @@ export class GameLogic {
                     return false;
                 }
 
+                const damage = Math.floor((Math.random() * entityDetails.attackPower)) + 1;
+                toEntity.health -= damage;
+                if (toEntity.health <= 0) {
+                    game.entities.splice(game.entities.indexOf(toEntity), 1);
+                }
+
                 break;
             case 'move':
                 if (toEntity) return false;
+
+                for (let index = 0; index < path.length; index++) {
+                    const hex = path[index];
+                    hex.setFactionId(entity.factionId);
+                }
+                entity.x = toHex.x;
+                entity.y = toHex.y;
                 break;
             case 'spawn':
                 if (toEntity) return false;
@@ -377,7 +390,7 @@ export class HexagonTypes {
     }
 }
 
-export let EntityDetails: {[key in EntityType]: EntityDetail} = {
+export let EntityDetails: { [key in EntityType]: EntityDetail } = {
     ['factory']: {
         moveRadius: 0,
         health: 30,

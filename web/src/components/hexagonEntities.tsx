@@ -1,22 +1,25 @@
 import * as React from 'react';
-import {Fragment} from 'react';
-import {connect} from 'react-redux';
-import {GameEntity, GameHexagon, GameLogic, HexagonTileType} from 'swg-common/bin/game';
-import {Point} from 'swg-common/bin/hex/hex';
-import {HexConstants} from '../utils/hexConstants';
-import {Dispatch} from 'redux';
-import {AppAction, AppActions} from '../store/app/actions';
-import {GameAction, GameActions} from '../store/game/actions';
-import {Dispatcher} from '../store/actions';
-import {SwgStore} from '../store/reducers';
+import { Fragment } from 'react';
+import { connect } from 'react-redux';
+import { GameEntity, GameHexagon, GameLogic, HexagonTileType } from '@swg-common/game';
+import { Point } from '@swg-common/hex/hex';
+import { HexConstants } from '../utils/hexConstants';
+import { Dispatch } from 'redux';
+import { AppAction, AppActions } from '../store/app/actions';
+import { GameAction, GameActions } from '../store/game/actions';
+import { Dispatcher } from '../store/actions';
+import { SwgStore } from '../store/reducers';
+import { RoundState } from '@swg-common/models/roundState';
+import * as _ from 'lodash';
 
 interface Props {
     entity: GameEntity;
     game: GameLogic;
+    roundState: RoundState;
     selectEntity: (entity: GameEntity) => void;
 }
 
-interface State {}
+interface State { }
 
 type EntityAsset = {
     src: string;
@@ -26,7 +29,7 @@ type EntityAsset = {
     centerY: number;
 };
 
-export let EntityAssets: {[key: string]: EntityAsset} = {
+export let EntityAssets: { [key: string]: EntityAsset } = {
     infantry: {
         src: `./assets/infantry.png`,
         width: 120,
@@ -71,22 +74,26 @@ export class Component extends React.Component<Props, State> {
         const wRatio = HexConstants.width / HexConstants.defaultWidth;
         const hRatio = HexConstants.height / HexConstants.defaultHeight;
         let rectX = hex.center.x - HexConstants.width / 3;
+        let voteRectX = hex.center.x + HexConstants.width / 3;
         let rectY = hex.center.y;
         let rectWidth = HexConstants.width * 0.35;
         let rectHeight = HexConstants.height * 0.4;
         let fontSize = rectWidth / 2;
 
+        const voteCount =this.props.roundState.entities[entity.id] &&  _.sum(this.props.roundState.entities[entity.id].map(a => a.count))
+
         return (
             <Fragment>
                 <image
-                    style={{pointerEvents: 'none'}}
+                    style={{ pointerEvents: 'none' }}
                     xlinkHref={asset.src}
                     width={asset.width * wRatio}
                     height={asset.height * hRatio}
                     x={hex.center.x - asset.centerX * wRatio}
                     y={hex.center.y - asset.centerY * hRatio}
                 />
-                <rect x={rectX} y={rectY} width={rectWidth} height={rectHeight} rx={'5'} ry={'5'} />
+                <rect x={rectX} y={rectY} width={rectWidth} height={rectHeight}
+                    fill={'black'} rx={'5'} ry={'5'} />
                 <text
                     textAnchor="middle"
                     alignmentBaseline="middle"
@@ -98,6 +105,23 @@ export class Component extends React.Component<Props, State> {
                 >
                     {entity.health}
                 </text>
+                {
+                    voteCount > 0 &&
+                    <>
+                        <rect fill={'grey'} x={voteRectX} y={rectY} width={rectWidth} height={rectHeight} rx={'5'} ry={'5'} />
+                        <text
+                            textAnchor="middle"
+                            alignmentBaseline="middle"
+                            fontSize={fontSize}
+                            width={rectWidth}
+                            x={voteRectX + rectWidth / 2}
+                            y={rectY + rectHeight / 2 + 1}
+                            fill={'white'}
+                        >
+                            {voteCount}
+                        </text>
+                    </>
+                }
             </Fragment>
         );
     }
@@ -106,6 +130,7 @@ export class Component extends React.Component<Props, State> {
 export let HexagonEntity = connect(
     (state: SwgStore) => ({
         game: state.gameState.game,
+        roundState: state.gameState.roundState,
     }),
     (dispatch: Dispatcher) => ({
         selectEntity: (entity: GameEntity) => void dispatch(GameActions.selectEntity(entity))

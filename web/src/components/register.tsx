@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Link, withRouter} from 'react-router-dom';
 import {DataService} from '../dataServices';
 import {RouteComponentProps} from 'react-router';
-import {HttpUser} from 'swg-common/bin/models/http/httpUser';
+import {HttpUser} from '@swg-common/models/http/httpUser';
 import {connect} from 'react-redux';
 import {SwgStore} from '../store/reducers';
 import {Dispatch} from 'redux';

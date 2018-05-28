@@ -10,12 +10,20 @@
     "strictNullChecks": false,
     "declaration": true,
     "pretty": true,
+    "noEmit": true,
     "moduleResolution": "node",
     "strictPropertyInitialization": false,
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
     "outDir": "./bin",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@swg-common/*": [
+        "../../common/src/*"
+      ]
+    }
   },
-  "include": ["./src/**/*.ts"]
+  "include": [
+    "./src/**/*.ts"
+  ]
 }

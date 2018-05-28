@@ -10,6 +10,7 @@
     "strictNullChecks": false,
     "declaration": true,
     "pretty": true,
+    "noEmit": true,
     "moduleResolution": "node",
     "strictPropertyInitialization": false,
     "allowSyntheticDefaultImports": true,

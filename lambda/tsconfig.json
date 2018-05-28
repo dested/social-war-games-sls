@@ -15,6 +15,10 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
     "outDir": "./dist",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@swg-server-common/*":["../../server-common/src/*"],
+      "@swg-common/*":["../../common/src/*"]
+    }
   }
 }

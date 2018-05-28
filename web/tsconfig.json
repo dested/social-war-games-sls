@@ -15,8 +15,11 @@
     ],
     "outDir": "./dist/",
     "inlineSourceMap": true,
-    "baseUrl": "./",
-    "jsx": "react"
+    "baseUrl": "./src",
+    "jsx": "react",
+    "paths": {
+      "@swg-common/*":["../../common/src/*"]
+    }
   },
   "exclude": [
     "node_modules"

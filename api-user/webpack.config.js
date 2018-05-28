@@ -1,14 +1,12 @@
 const webpack = require('webpack');
 const fs = require('fs');
 const path = require('path');
-const ZipPlugin = require('zip-webpack-plugin');
 
 module.exports = {
     entry: './src/server.ts',
     output: {
         path: path.join(__dirname, 'dist'),
         filename: 'index.js',
-        libraryTarget: 'commonjs2'
     },
     target: 'node',
     resolve: {
@@ -19,12 +17,8 @@ module.exports = {
         }
     },
     externals: {},
-    plugins: [
-        new webpack.IgnorePlugin(/hiredis/),
-        new ZipPlugin({
-            filename: 'worker.zip'
-        })
-    ],
+    plugins: [],
+
     module: {
         loaders: [
             // loaders will work with webpack 1 or 2; but will be renamed "rules" in future

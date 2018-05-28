@@ -26,12 +26,12 @@
     "redis": "^2.7.1",
     "reflect-metadata": "^0.1.12",
     "rxjs": "^5.5.8",
-    "swg-common": "file:../common",
-    "swg-server-common": "file:../server-common",
     "typescript": "^2.8.3",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "lodash": "^4.17.10"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.109",
     "@types/bcryptjs": "^2.4.1",
     "@types/esprima": "^4.0.1",
     "@types/jest": "^22.2.3",

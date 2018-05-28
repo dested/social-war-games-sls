@@ -1,14 +1,12 @@
 {
   "name": "swg-server-common",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "",
   "scripts": {
     "tsc": "npx tsc",
     "pretty": "npx prettier \"*/**/*.ts*\"  --config .prettierrc --write",
     "lint": "npx tslint -p tsconfig.json --fix",
-    "pre": "npm run tsc & npm run pretty & npm run lint",
-    "bump": "npm version patch",
-    "common": "npm update swg-common"
+    "pre": "npm run tsc & npm run pretty & npm run lint"
   },
   "dependencies": {
     "aws-sdk": "^2.218.1",
@@ -22,8 +20,6 @@
     "redis": "^2.7.1",
     "reflect-metadata": "^0.1.12",
     "rxjs": "^5.5.8",
-    "swg-common": "file:../common",
-    "typescript": "^2.8.1",
     "uuid": "^3.2.1"
   },
   "devDependencies": {

@@ -7,8 +7,6 @@
     "pretty": "npx prettier \"*/**/*.ts*\"  --config .prettierrc --write",
     "lint": "npx tslint -p tsconfig.json --fix",
     "pre": "npm run tsc & npm run pretty & npm run lint",
-    "bump": "npm version patch",
-    "common": "npm update swg-server-common && npm update swg-common",
     "build-vote": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
@@ -22,8 +20,6 @@
     "redis": "^2.7.1",
     "reflect-metadata": "^0.1.12",
     "rxjs": "^5.5.8",
-    "swg-common": "file:../common",
-    "swg-server-common": "file:../server-common",
     "typescript": "^2.8.1",
     "uuid": "^3.2.1"
   },

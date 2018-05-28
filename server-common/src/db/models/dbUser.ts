@@ -1,7 +1,7 @@
 import {DocumentManager} from '../dataManager';
 import {MongoDocument} from './mongoDocument';
-import {HttpUser} from 'swg-common/bin/models/http/httpUser';
-import {FactionId} from 'swg-common/bin/game';
+import {HttpUser} from '@swg-common/models/http/httpUser';
+import {FactionId} from '@swg-common/game';
 
 export class DBUser extends MongoDocument {
     static collectionName = 'user';

@@ -1,12 +1,13 @@
-import {RedisManager} from 'swg-server-common/bin/redis/redisManager';
-import {DBVote} from 'swg-server-common/bin/db/models/dbVote';
-import {S3Manager} from 'swg-server-common/bin/s3/s3Manager';
-import {DataManager} from 'swg-server-common/bin/db/dataManager';
-import {GameLogic} from 'swg-common/bin/game';
-import {GameLayout} from 'swg-common/bin/models/gameLayout';
-import {GameState, GameStateEntity, GameStateEntityMap} from 'swg-common/bin/models/gameState';
-import {Config} from 'swg-server-common/bin/config';
-import {RoundState} from 'swg-common/bin/models/roundState';
+import { RedisManager } from '@swg-server-common/redis/redisManager';
+import { DBVote } from '@swg-server-common/db/models/dbVote';
+import { S3Manager } from '@swg-server-common/s3/s3Manager';
+import { DataManager } from '@swg-server-common/db/dataManager';
+import { GameLogic } from '@swg-common/game';
+import { GameLayout } from '@swg-common/models/gameLayout';
+import { GameState, GameStateEntity, GameStateEntityMap } from '@swg-common/models/gameState';
+import { Config } from '@swg-server-common/config';
+import { RoundState } from '@swg-common/models/roundState';
+import * as _ from 'lodash';
 
 if (process.argv[2] === 'setup') {
     async function bootstrap() {
@@ -93,12 +94,26 @@ if (process.argv[2] === 'setup') {
 
                 const game = GameLogic.buildGame(layout, gameState);
 
-                const voteCounts = (await DBVote.getVoteCount(generation)).sort((left, right) =>
-                    left.actions.reduce((t, a) => t + a.count, 0)-right.actions.reduce((t, a) => t + a.count, 0)
+                const voteCounts = (await DBVote.getVoteCount(generation)).sort(
+                    (left, right) => _.sumBy(left.actions, a => a.count) - _.sumBy(right.actions, a => a.count)
                 );
 
+
+                const winningVotes=[];
                 for (const voteCount of voteCounts) {
-                    voteCount._id;
+                    const actions = _.orderBy(voteCount.actions, a => a.count, 'desc');
+                    for (let index = 0; index < actions.length; index++) {
+                        const action = actions[index];
+                        const vote = { entityId: voteCount._id, action: action.action, factionId: undefined, hexId: action.hexId };
+                        if (GameLogic.validateVote(game, vote)) {
+                            GameLogic.processVote(game, vote)
+                            winningVotes.push(vote);
+                            break;
+                        }
+
+                    }
+
+
                 }
 
                 gameState = {

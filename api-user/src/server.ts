@@ -1,5 +1,5 @@
 import {NestFactory} from '@nestjs/core';
-import {DataManager} from 'swg-server-common/bin/db/dataManager';
+import {DataManager} from '@swg-server-common/db/dataManager';
 import {ApplicationModule} from './modules/app.module';
 import {AnyExceptionFilter} from './modules/filters/httpExceptionFilter';
 

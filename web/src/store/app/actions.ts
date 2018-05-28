@@ -1,4 +1,4 @@
-import {HttpUser} from 'swg-common/bin/models/http/httpUser';
+import {HttpUser} from '@swg-common/models/http/httpUser';
 
 export enum AppActionOptions {
     SetJWT = 'SET_JWT',

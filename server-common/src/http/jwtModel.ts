@@ -1,4 +1,4 @@
-import {FactionId} from 'swg-common/bin/game';
+import {FactionId} from '@swg-common/game';
 
 export interface JwtModel {
     userId: string;

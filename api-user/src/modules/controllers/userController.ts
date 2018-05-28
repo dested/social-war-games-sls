@@ -1,12 +1,12 @@
 import {Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Req, UseGuards} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import {JwtModel} from 'swg-server-common/bin/http/jwtModel';
+import {JwtModel} from '@swg-server-common/http/jwtModel';
 import {AuthService} from '../auth/auth.service';
 import {AuthGuard} from '../guards/authGuard';
-import {JwtGetUserResponse, LoginRequest, RegisterRequest} from 'swg-common/bin/models/http/userController';
-import {DBUser} from 'swg-server-common/bin/db/models/dbUser';
+import {JwtGetUserResponse, LoginRequest, RegisterRequest} from '@swg-common/models/http/userController';
+import {DBUser} from '@swg-server-common/db/models/dbUser';
 import {FactionUtils} from '../../utils/factionUtils';
-import {StatsResponse} from 'swg-common/bin/models/http/userController';
+import {StatsResponse} from '@swg-common/models/http/userController';
 
 @Controller('user')
 export class UserController {

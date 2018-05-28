@@ -7,8 +7,10 @@ module.exports = {
         filename: './dist/bundle.js'
     },
     resolve: {
-        // Add `.ts` and `.tsx` as a resolvable extension.
-        extensions: ['.ts', '.tsx', '.js'] // note if using webpack 1 you'd also need a '' in the array as well
+        extensions: ['.ts', '.tsx', '.js'],
+        alias: {
+            '@swg-common': path.resolve(__dirname, '../common/src/'),
+        }
     },
     module: {
         loaders: [

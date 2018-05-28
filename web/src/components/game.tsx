@@ -1,14 +1,14 @@
 import * as React from 'react';
 import {Fragment} from 'react';
-import {Grid, Drawing, DrawingOptions, Point} from 'swg-common/bin/hex/hex';
+import {Grid, Drawing, DrawingOptions, Point} from '@swg-common/hex/hex';
 import {withRouter} from 'react-router-dom';
 import {connect} from 'react-redux';
-import {HttpUser} from 'swg-common/bin/models/http/httpUser';
+import {HttpUser} from '@swg-common/models/http/httpUser';
 import {SwgStore} from '../store/reducers';
 import {Dispatch} from 'redux';
 import {AppAction, AppActions} from '../store/app/actions';
 import {RouteComponentProps} from 'react-router';
-import {EntityAction, GameEntity, GameLogic} from 'swg-common/bin/game';
+import {EntityAction, GameEntity, GameLogic} from '@swg-common/game';
 import {HexagonTile} from './hexagonTile';
 import {HexagonEntity} from './hexagonEntities';
 import {HexagonDefaultTileBorder, HexagonTileBorder} from './hexagonTileBorder';
@@ -18,22 +18,21 @@ import {DebounceUtils} from '../utils/debounceUtils';
 import {GameAction, GameActions, GameThunks} from '../store/game/actions';
 import {Dispatcher} from '../store/actions';
 import {DataService} from '../dataServices';
-import {RoundState} from 'swg-common/bin/models/roundState';
+import {RoundState} from '@swg-common/models/roundState';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
     isVoting?: boolean;
     selectedEntity?: GameEntity;
-    setGame: (game: GameLogic) => void;
-    startEntityAction: (entity: GameEntity, action: EntityAction) => void;
+    roundState?: RoundState;
+    game?: GameLogic;
+    updateGame: typeof GameActions.updateGame;
+    startEntityAction: typeof GameThunks.startEntityAction;
 }
 
 interface State {
     viewX: number;
     viewY: number;
-    game?: GameLogic;
-    roundState?: RoundState;
-    gridDrawing?: Drawing;
 }
 
 export class Component extends React.Component<Props, State> {
@@ -64,13 +63,14 @@ export class Component extends React.Component<Props, State> {
             this.setState({
                 viewX: startViewX + (startX - e.center.x),
                 viewY: startViewY + (startY - e.center.y)
-            }); /*
-            DebounceUtils.wait('pan', 16, () => {
-                this.setState({
-                    viewX: startViewX + (startX - e.center.x),
-                    viewY: startViewY + (startY - e.center.y)
-                });
-            });*/
+            });
+            /*
+                       DebounceUtils.wait('pan', 16, () => {
+                           this.setState({
+                               viewX: startViewX + (startX - e.center.x),
+                               viewY: startViewY + (startY - e.center.y)
+                           });
+                       });*/
         });
         manager.on('panstart', e => {
             startX = e.center.x;
@@ -86,11 +86,8 @@ export class Component extends React.Component<Props, State> {
                 viewX: deltaX,
                 viewY: deltaY
             });
-        })*/ const options = new DrawingOptions(
-            HexConstants.height / 2 - 1,
-            Drawing.Orientation.PointyTop,
-            new Point(0, 0)
-        );
+        })*/
+        const options = new DrawingOptions(HexConstants.height / 2 - 1, Drawing.Orientation.PointyTop, new Point(0, 0));
 
         const layout = await DataService.getLayout();
         const gameState = await DataService.getGameState();
@@ -98,13 +95,17 @@ export class Component extends React.Component<Props, State> {
 
         let game = GameLogic.buildGame(layout, gameState);
 
-        let gridDrawing = new Drawing(game.grid, options);
-        this.setState({
-            game,
-            roundState,
-            gridDrawing
-        });
-        this.props.setGame(game);
+        new Drawing(game.grid, options);
+        this.props.updateGame(game, roundState);
+
+        setInterval(async () => {
+            const gameState = await DataService.getGameState();
+            const roundState = await DataService.getRoundState();
+
+            let game = GameLogic.buildGame(layout, gameState);
+            new Drawing(game.grid, options);
+            this.props.updateGame(game, roundState);
+        }, 5 * 1000);
     }
 
     render() {
@@ -120,8 +121,8 @@ export class Component extends React.Component<Props, State> {
             height: window.innerHeight + viewSlop * 2
         };
 
-        if (this.state.game) {
-            for (const hexagon of this.state.game.grid.hexes) {
+        if (this.props.game) {
+            for (const hexagon of this.props.game.grid.hexes) {
                 if (
                     hexagon.center.x > view.x &&
                     hexagon.center.x < view.x + view.width &&
@@ -133,7 +134,7 @@ export class Component extends React.Component<Props, State> {
                     defaultBorders.push(
                         <HexagonDefaultTileBorder key={hexagon.id + '-default-border'} hexagon={hexagon} />
                     );
-                    const entity = this.state.game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
+                    const entity = this.props.game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
                     if (entity) {
                         entities.push(<HexagonEntity key={hexagon.id + '-ent'} entity={entity} />);
                     }
@@ -272,10 +273,13 @@ export let Game = connect(
     (state: SwgStore) => ({
         user: state.appState.user,
         isVoting: state.gameState.isVoting,
+        game: state.gameState.game,
+        roundState: state.gameState.roundState,
         selectedEntity: state.gameState.selectedEntity
     }),
     (dispatch: Dispatcher) => ({
-        setGame: (game: GameLogic) => void dispatch(GameActions.setGame(game)),
+        updateGame: (game: GameLogic, roundState: RoundState) =>
+            void dispatch(GameActions.updateGame(game, roundState)),
         startEntityAction: (entity: GameEntity, action: EntityAction) =>
             void dispatch(GameThunks.startEntityAction(entity, action))
     })
