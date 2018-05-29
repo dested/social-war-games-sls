@@ -1,7 +1,6 @@
 const webpack = require('webpack');
 const fs = require('fs');
 const path = require('path');
-const ZipPlugin = require('zip-webpack-plugin');
 
 module.exports = {
     entry: './src/server.ts',
@@ -21,9 +20,6 @@ module.exports = {
     externals: {},
     plugins: [
         new webpack.IgnorePlugin(/hiredis/),
-        new ZipPlugin({
-            filename: 'worker.zip'
-        })
     ],
     module: {
         loaders: [

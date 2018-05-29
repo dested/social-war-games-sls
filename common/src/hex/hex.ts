@@ -73,7 +73,6 @@ export class Cube extends Axial {
     }
 }
 
-
 export class Hexagon extends Axial {
     constructor(x: number, y: number, public cost: number = 1, public blocked: boolean = false) {
         super(x, y);
@@ -217,7 +216,7 @@ export class Grid<T extends Hexagon = Hexagon> {
         const closedHexes: {[key: string]: T} = {};
         const visitedNodes: {[key: string]: Grid_Search_Node<T>} = {};
 
-        openHeap.push(new Grid_Search_Node(start, null, 0));
+        openHeap.push(new Grid_Search_Node<T>(start, null, 0));
 
         while (openHeap.size() > 0) {
             // Get the item with the lowest score (current + heuristic).
@@ -229,9 +228,9 @@ export class Grid<T extends Hexagon = Hexagon> {
             // Get and iterate the neighbors.
             const neighbors = grid.getNeighbors(current.hex);
 
-            neighbors.forEach(n => {
+            for (const n of neighbors) {
                 // Make sure the neighbor is not blocked and that we haven't already processed it.
-                if (n.blocked || closedHexes[n.getKey()]) return;
+                if (!n || n.blocked || closedHexes[n.getKey()]) continue;
 
                 // Get the total cost of going to this neighbor.
                 const g = current.G + n.cost;
@@ -253,7 +252,7 @@ export class Grid<T extends Hexagon = Hexagon> {
                         openHeap.rescoreElement(visited);
                     }
                 }
-            });
+            }
         }
 
         const arr = [];
@@ -295,9 +294,9 @@ export class Grid<T extends Hexagon = Hexagon> {
 
             // Get and iterate the neighbors.
             const neighbors = grid.getNeighbors(current.hex);
-            neighbors.forEach(n => {
+            for (const n of neighbors) {
                 // Make sure the neighbor is not blocked and that we haven't already processed it.
-                if (n.blocked || closedHexes[n.getKey()]) return;
+                if (n.blocked || closedHexes[n.getKey()]) continue;
 
                 // Get the total cost of going to this neighbor.
                 const g = current.G + n.cost;
@@ -319,7 +318,7 @@ export class Grid<T extends Hexagon = Hexagon> {
                         openHeap.rescoreElement(visited);
                     }
                 }
-            });
+            }
         }
 
         // Failed to find a path
@@ -371,28 +370,21 @@ class Grid_Search_Node<T> {
  * @property {Drawing.Options} options - Options to be used.
  */
 export class Drawing {
-    /**
-     * The rotation of the hexagon when drawn.
-     * @enum {number}
-     */
     static Orientation: {
         FlatTop: 1;
         PointyTop: 2;
     } = {
-        /** The hexagon will have flat tops and bottom, and pointy sides. */
         FlatTop: 1,
-        /** The hexagon will have flat sides, and pointy top and bottom. */
         PointyTop: 2
     };
 
     constructor(public grid: Grid, public options: DrawingOptions) {
-        this.grid.hexes.forEach(hex => {
+        for (const hex of this.grid.hexes) {
             hex.center = Drawing.getCenter(hex, options);
             hex.points = Drawing.getCorners(hex.center, options);
             hex.pointsSvg = hex.points.map(a => `${a.x},${a.y}`).join(' ');
-        });
+        }
     }
-
 
     static getCorners(center: Point, options: DrawingOptions) {
         const points = [];
@@ -447,7 +439,6 @@ export class Drawing {
         return this.grid.getHexAt(a);
     }
 }
-
 
 export class Point {
     constructor(public x: number, public y: number) {}

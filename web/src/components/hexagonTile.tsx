@@ -7,10 +7,12 @@ import {HexConstants} from '../utils/hexConstants';
 import {SwgStore} from '../store/reducers';
 import {Dispatcher} from '../store/actions';
 import {GameActions, GameThunks} from '../store/game/actions';
+import {RoundState} from '@swg-common/models/roundState';
 
 interface Props {
     hexagon: GameHexagon;
     game: GameLogic;
+    roundState: RoundState;
     selectedEntity?: GameEntity;
     viableHexIds: string[];
     selectedViableHex: (hex: GameHexagon) => void;
@@ -96,8 +98,8 @@ class Component extends React.Component<Props, State> {
         }
     }
 
-    shouldComponentUpdate() {
-        return false;
+    shouldComponentUpdate(nextProps: Props) {
+        return !this.props.roundState || this.props.roundState.hash !== nextProps.roundState.hash;
     }
 
     private tapHex = e => {
@@ -150,6 +152,7 @@ export let HexagonTile = connect(
     (state: SwgStore) => ({
         viableHexIds: state.gameState.viableHexIds,
         game: state.gameState.game,
+        roundState: state.gameState.roundState,
         selectedEntity: state.gameState.selectedEntity
     }),
     (dispatch: Dispatcher) => ({

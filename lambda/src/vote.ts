@@ -1,10 +1,8 @@
-import {DataManager} from '@swg-server-common/db/dataManager';
-import {DBUser} from '@swg-server-common/db/models/dbUser';
 import * as jwt from 'jsonwebtoken';
 import {Config} from '@swg-server-common/config';
 import {JwtModel} from '@swg-server-common/http/jwtModel';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
-import {EntityAction} from '@swg-common/game';
+import {EntityAction, VoteResult} from '@swg-common/game';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {GameState} from '@swg-common/models/gameState';
 import {GameLayout} from '@swg-common/models/gameLayout';
@@ -48,7 +46,7 @@ export const handler = async (event: Event) => {
             game = GameLogic.buildGame(layout, gameState);
         }
 
-        const body = event.body ;
+        const body = event.body;
 
         if (body.generation !== generation) {
             return response(417, {
@@ -64,9 +62,11 @@ export const handler = async (event: Event) => {
         vote.userId = user.userId;
         vote.factionId = user.factionId;
 
-        if (!GameLogic.validateVote(game, vote)) {
-            return response(417, {
-                votesLeft: user.maxVotesPerRound - (totalVotes || 0) + 1
+        let voteResult = GameLogic.validateVote(game, vote);
+        if (voteResult !== VoteResult.Success) {
+            return response(409, {
+                votesLeft: user.maxVotesPerRound - (totalVotes || 0) + 1,
+                voteResult
             });
         }
 
@@ -79,7 +79,7 @@ export const handler = async (event: Event) => {
         });
     } catch (ex) {
         console.log('er', ex);
-        return response(500, ex.stack+JSON.stringify(event));
+        return response(500, ex.stack + JSON.stringify(event));
     }
 };
 

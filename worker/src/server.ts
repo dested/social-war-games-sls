@@ -1,12 +1,12 @@
-import { RedisManager } from '@swg-server-common/redis/redisManager';
-import { DBVote } from '@swg-server-common/db/models/dbVote';
-import { S3Manager } from '@swg-server-common/s3/s3Manager';
-import { DataManager } from '@swg-server-common/db/dataManager';
-import { GameLogic } from '@swg-common/game';
-import { GameLayout } from '@swg-common/models/gameLayout';
-import { GameState, GameStateEntity, GameStateEntityMap } from '@swg-common/models/gameState';
-import { Config } from '@swg-server-common/config';
-import { RoundState } from '@swg-common/models/roundState';
+import {RedisManager} from '@swg-server-common/redis/redisManager';
+import {DBVote} from '@swg-server-common/db/models/dbVote';
+import {S3Manager} from '@swg-server-common/s3/s3Manager';
+import {DataManager} from '@swg-server-common/db/dataManager';
+import {GameLogic, VoteResult} from '@swg-common/game';
+import {GameLayout} from '@swg-common/models/gameLayout';
+import {GameState, GameStateEntity, GameStateEntityMap} from '@swg-common/models/gameState';
+import {Config} from '@swg-server-common/config';
+import {RoundState} from '@swg-common/models/roundState';
 import * as _ from 'lodash';
 
 if (process.argv[2] === 'setup') {
@@ -76,6 +76,7 @@ if (process.argv[2] === 'setup') {
         console.log('done');
         process.exit(0);
     }
+
     bootstrap().catch(er => console.error(er));
 } else if (process.argv[2] === 'work') {
     async function bootstrap() {
@@ -98,23 +99,34 @@ if (process.argv[2] === 'setup') {
                     (left, right) => _.sumBy(left.actions, a => a.count) - _.sumBy(right.actions, a => a.count)
                 );
 
-
-                const winningVotes=[];
+                const winningVotes = [];
                 for (const voteCount of voteCounts) {
                     const actions = _.orderBy(voteCount.actions, a => a.count, 'desc');
                     for (let index = 0; index < actions.length; index++) {
                         const action = actions[index];
-                        const vote = { entityId: voteCount._id, action: action.action, factionId: undefined, hexId: action.hexId };
-                        if (GameLogic.validateVote(game, vote)) {
-                            GameLogic.processVote(game, vote)
+                        const vote = {
+                            entityId: voteCount._id,
+                            action: action.action,
+                            factionId: undefined,
+                            hexId: action.hexId
+                        };
+                        let voteResult = GameLogic.validateVote(game, vote);
+                        if (voteResult === VoteResult.Success) {
+                            voteResult = GameLogic.processVote(game, vote);
+                            if (voteResult !== VoteResult.Success) {
+                                console.log('Process vote failed:', voteResult);
+                                continue;
+                            }
                             winningVotes.push(vote);
+                            console.log('executing vote', vote);
                             break;
+                        } else {
+                            console.log('Vote failed:', voteResult);
                         }
-
                     }
-
-
                 }
+
+                console.log('Executed Votes', winningVotes);
 
                 gameState = {
                     factions: game.grid.hexes.map(a => a.factionId).join(''),
@@ -132,7 +144,7 @@ if (process.argv[2] === 'setup') {
                         },
                         {} as GameStateEntityMap
                     ),
-                    generation: game.generation,
+                    generation: game.generation + 1,
                     roundStart: +new Date(),
                     roundEnd: +new Date() + Config.gameDuration
                 };
@@ -186,11 +198,12 @@ if (process.argv[2] === 'setup') {
                 const generation = (await redisManager.get<number>('game-generation')) || 1;
 
                 // todo, aggregate votes and store them for users later
-                await DBVote.db.deleteMany(DBVote.db.query.parse((a, gen) => a.generation < gen - 2, generation));
+                await DBVote.db.deleteMany(DBVote.db.query.parse((a, gen) => a.generation < gen, generation - 2));
             } catch (ex) {
                 console.error(ex);
             }
         }, Config.gameDuration * 2.5);
     }
+
     bootstrap().catch(er => console.error(er));
 }

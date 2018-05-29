@@ -1,6 +1,6 @@
-import { Grid, Axial, Hexagon } from '../hex/hex';
-import { GameLayout } from '../models/gameLayout';
-import { GameState } from '../models/gameState';
+import {Grid, Hexagon} from '../hex/hex';
+import {GameLayout} from '../models/gameLayout';
+import {GameState} from '../models/gameState';
 
 export type EntityAction = 'attack' | 'move' | 'spawn';
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
@@ -13,6 +13,20 @@ export class GameEntity {
     factionId: FactionId;
     entityType: EntityType;
     health: number;
+}
+export enum VoteResult {
+    Success = 'Success',
+    EntityCannotSpawn = 'EntityCannotSpawn',
+    SpawnSpotNotEmpty = 'SpawnSpotNotEmpty',
+    MoveSpotNotEmpty = 'MoveSpotNotEmpty',
+    AttackFactionMismatch = 'AttackFactionMismatch',
+    NoEntityToAttack = 'NoEntityToAttack',
+    PathOutOfRange = 'PathOutOfRange',
+    PathIsZero = 'PathIsZero',
+    ToHexNotFound = 'ToHexNotFound',
+    FromHexNotFound = 'FromHexNotFound',
+    FactionMismatch = 'FactionMismatch',
+    EntityNotFound = 'EntityNotFound'
 }
 
 export class GameLogic {
@@ -195,21 +209,20 @@ export class GameLogic {
 
     static validateVote(
         game: GameLogic,
-        vote: { action: EntityAction; hexId: string; factionId?: FactionId; entityId: string }
-    ) {
+        vote: {action: EntityAction; hexId: string; factionId?: FactionId; entityId: string}
+    ): VoteResult {
         const entity = game.entities.find(a => a.id === vote.entityId);
-        if (!entity) return false;
-
-        if (vote.factionId !== undefined && entity.factionId !== vote.factionId) return false;
+        if (!entity) return VoteResult.EntityNotFound;
+        if (vote.factionId !== undefined && entity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
 
         const fromHex = game.grid.hexes.find(a => a.x === entity.x && a.y === entity.y);
-        if (!fromHex) return false;
+        if (!fromHex) return VoteResult.FromHexNotFound;
 
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
-        if (!toHex) return false;
+        if (!toHex) return VoteResult.ToHexNotFound;
 
         const path = game.grid.findPath(fromHex, toHex);
-        if (path.length === 0) return false;
+        if (path.length === 0) return VoteResult.PathIsZero;
 
         const entityDetails = EntityDetails[entity.entityType];
 
@@ -226,48 +239,48 @@ export class GameLogic {
                 break;
         }
 
-        if (path.length > range) return false;
+        if (path.length > range) return VoteResult.PathOutOfRange;
 
         const toEntity = game.entities.find(a => a.x === toHex.x && a.y === toHex.y);
 
         switch (vote.action) {
             case 'attack':
-                if (!toEntity) return false;
+                if (!toEntity) return VoteResult.NoEntityToAttack;
 
                 if (toEntity.factionId === entity.factionId) {
-                    return false;
+                    return VoteResult.AttackFactionMismatch;
                 }
 
                 break;
             case 'move':
-                if (toEntity) return false;
+                if (toEntity) return VoteResult.MoveSpotNotEmpty;
                 break;
             case 'spawn':
-                if (toEntity) return false;
-                if (entityDetails.spawnRadius === 0) return false;
+                if (toEntity) return VoteResult.SpawnSpotNotEmpty;
+                if (entityDetails.spawnRadius === 0) return VoteResult.EntityCannotSpawn;
                 break;
         }
 
-        return true;
+        return VoteResult.Success;
     }
 
     static processVote(
         game: GameLogic,
-        vote: { action: EntityAction; hexId: string; factionId: FactionId; entityId: string }
-    ) {
+        vote: {action: EntityAction; hexId: string; factionId: FactionId; entityId: string}
+    ): VoteResult {
         const entity = game.entities.find(a => a.id === vote.entityId);
-        if (!entity) return false;
+        if (!entity) return VoteResult.EntityNotFound;
 
-        if (entity.factionId !== vote.factionId) return false;
+        if (vote.factionId !== undefined && entity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
 
         const fromHex = game.grid.hexes.find(a => a.x === entity.x && a.y === entity.y);
-        if (!fromHex) return false;
+        if (!fromHex) return VoteResult.FromHexNotFound;
 
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
-        if (!toHex) return false;
+        if (!toHex) return VoteResult.ToHexNotFound;
 
         const path = game.grid.findPath(fromHex, toHex);
-        if (path.length === 0) return false;
+        if (path.length === 0) return VoteResult.PathIsZero;
 
         const entityDetails = EntityDetails[entity.entityType];
 
@@ -284,19 +297,19 @@ export class GameLogic {
                 break;
         }
 
-        if (path.length > range) return false;
+        if (path.length > range) return VoteResult.PathOutOfRange;
 
         const toEntity = game.entities.find(a => a.x === toHex.x && a.y === toHex.y);
 
         switch (vote.action) {
             case 'attack':
-                if (!toEntity) return false;
+                if (!toEntity) return VoteResult.NoEntityToAttack;
 
                 if (toEntity.factionId === entity.factionId) {
-                    return false;
+                    return VoteResult.AttackFactionMismatch;
                 }
 
-                const damage = Math.floor((Math.random() * entityDetails.attackPower)) + 1;
+                const damage = Math.floor(Math.random() * entityDetails.attackPower) + 1;
                 toEntity.health -= damage;
                 if (toEntity.health <= 0) {
                     game.entities.splice(game.entities.indexOf(toEntity), 1);
@@ -304,7 +317,7 @@ export class GameLogic {
 
                 break;
             case 'move':
-                if (toEntity) return false;
+                if (toEntity) return VoteResult.MoveSpotNotEmpty;
 
                 for (let index = 0; index < path.length; index++) {
                     const hex = path[index];
@@ -314,12 +327,12 @@ export class GameLogic {
                 entity.y = toHex.y;
                 break;
             case 'spawn':
-                if (toEntity) return false;
-                if (entityDetails.spawnRadius === 0) return false;
+                if (toEntity) return VoteResult.SpawnSpotNotEmpty;
+                if (entityDetails.spawnRadius === 0) return VoteResult.EntityCannotSpawn;
                 break;
         }
 
-        return true;
+        return VoteResult.Success;
     }
 }
 
@@ -390,7 +403,7 @@ export class HexagonTypes {
     }
 }
 
-export let EntityDetails: { [key in EntityType]: EntityDetail } = {
+export let EntityDetails: {[key in EntityType]: EntityDetail} = {
     ['factory']: {
         moveRadius: 0,
         health: 30,

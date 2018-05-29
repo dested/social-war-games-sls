@@ -4,10 +4,12 @@ import {connect} from 'react-redux';
 import {GameHexagon, GameLogic, HexagonTileType} from '@swg-common/game';
 import {Point} from '@swg-common/hex/hex';
 import {SwgStore} from '../store/reducers';
+import {RoundState} from '@swg-common/models/roundState';
 
 interface Props {
     hexagon: GameHexagon;
     game: GameLogic;
+    roundState: RoundState;
     viableHexIds?: string[];
 }
 
@@ -68,6 +70,9 @@ class ComponentTileBorder extends React.Component<Props, State> {
         if (nextProps.viableHexIds && nextProps.viableHexIds.find(a => a === nextProps.hexagon.id)) {
             return true;
         }
+        if( !this.props.roundState || this.props.roundState.hash !== nextProps.roundState.hash){
+            return true;
+        }
         return false;
     }
 
@@ -108,6 +113,7 @@ class ComponentTileBorder extends React.Component<Props, State> {
 
 export let HexagonTileBorder = connect((state: SwgStore) => ({
     game: state.gameState.game,
+    roundState: state.gameState.roundState,
     viableHexIds: state.gameState.viableHexIds
 }))(ComponentTileBorder);
 
@@ -124,6 +130,10 @@ class ComponentDefaultTileBorder extends React.Component<Props, State> {
         if (nextProps.viableHexIds && nextProps.viableHexIds.find(a => a === nextProps.hexagon.id)) {
             return true;
         }
+        if( !this.props.roundState || this.props.roundState.hash !== nextProps.roundState.hash){
+            return true;
+        }
+
         return false;
     }
     render() {
@@ -148,5 +158,6 @@ class ComponentDefaultTileBorder extends React.Component<Props, State> {
 
 export let HexagonDefaultTileBorder = connect((state: SwgStore) => ({
     game: state.gameState.game,
+    roundState: state.gameState.roundState,
     viableHexIds: state.gameState.viableHexIds
 }))(ComponentDefaultTileBorder);

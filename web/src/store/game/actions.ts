@@ -1,4 +1,4 @@
-import {EntityAction, GameEntity, GameHexagon, GameLogic} from '@swg-common/game';
+import {EntityAction, GameEntity, GameHexagon, GameLogic, VoteResult} from '@swg-common/game';
 import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
@@ -73,7 +73,6 @@ export class GameActions {
         };
     }
 
-
     static voting(isVoting: boolean): VotingAction {
         return {
             type: GameActionOptions.Voting,
@@ -104,16 +103,15 @@ export class GameThunks {
     static sendVote(entityId: string, action: EntityAction, hexId: string) {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             const {gameState, appState} = getState();
-            const {game} = gameState;
-
-            if (
-                !GameLogic.validateVote(game, {
-                    entityId,
-                    action,
-                    hexId,
-                    factionId: appState.user.factionId
-                })
-            ) {
+            const {game, roundState} = gameState;
+            let voteResult = GameLogic.validateVote(game, {
+                entityId,
+                action,
+                hexId,
+                factionId: appState.user.factionId
+            });
+            if (voteResult !== VoteResult.Success) {
+                console.log('Vote Error', voteResult);
                 return;
             }
 
@@ -127,6 +125,19 @@ export class GameThunks {
             });
 
             dispatch(GameActions.vote(entityId, action, hexId));
+            const newRoundState = {...roundState};
+            newRoundState.hash = newRoundState.hash + '1';
+            if (!newRoundState.entities[entityId]) {
+                newRoundState.entities[entityId] = [];
+            }
+            const vote = newRoundState.entities[entityId].find(a => a.hexId === hexId && a.action === a.action);
+            if (vote) {
+                vote.count++;
+            } else {
+                newRoundState.entities[entityId].push({action, count: 1, hexId});
+            }
+
+            dispatch(GameActions.updateGame(game, newRoundState));
             dispatch(GameActions.voting(false));
             dispatch(GameActions.selectEntity(null));
         };
