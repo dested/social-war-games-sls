@@ -10,7 +10,6 @@ export enum GameActionOptions {
     SelectEntity = 'SELECT_ENTITY',
     SetEntityAction = 'SET_ENTITY_ACTION',
     SelectViableHex = 'SELECT_VIABLE_HEX',
-    Vote = 'VOTE',
     Voting = 'VOTING'
 }
 
@@ -42,16 +41,8 @@ export interface VotingAction {
     isVoting: boolean;
 }
 
-export interface VoteAction {
-    type: GameActionOptions.Vote;
-    entityId: string;
-    hexId: string;
-    action: EntityAction;
-}
-
 export type GameAction =
     | SelectEntityAction
-    | VoteAction
     | VotingAction
     | SetEntityActionAction
     | SelectViableHexAction
@@ -89,42 +80,11 @@ export class GameActions {
         };
     }
 
-    static vote(entityId: string, action: EntityAction, hexId: string): VoteAction {
-        return {
-            type: GameActionOptions.Vote,
-            entityId,
-            action,
-            hexId
-        };
-    }
-}
-
-export class GameThunks {
-    static sendVote(entityId: string, action: EntityAction, hexId: string) {
+    static vote(entityId: string, action: EntityAction, hexId: string) {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
-            const {gameState, appState} = getState();
+            const {gameState} = getState();
             const {game, roundState} = gameState;
-            let voteResult = GameLogic.validateVote(game, {
-                entityId,
-                action,
-                hexId,
-                factionId: appState.user.factionId
-            });
-            if (voteResult !== VoteResult.Success) {
-                console.log('Vote Error', voteResult);
-                return;
-            }
 
-            dispatch(GameActions.voting(true));
-            const generation = game.generation;
-            await DataService.vote({
-                entityId,
-                action,
-                hexId,
-                generation
-            });
-
-            dispatch(GameActions.vote(entityId, action, hexId));
             const newRoundState = {...roundState};
             newRoundState.hash = newRoundState.hash + '1';
             if (!newRoundState.entities[entityId]) {
@@ -138,6 +98,38 @@ export class GameThunks {
             }
 
             dispatch(GameActions.updateGame(game, newRoundState));
+        };
+    }
+}
+
+export class GameThunks {
+    static sendVote(entityId: string, action: EntityAction, hexId: string) {
+        return async (dispatch: Dispatcher, getState: () => SwgStore) => {
+            const {gameState, appState} = getState();
+            const {game} = gameState;
+            let voteResult = GameLogic.validateVote(game, {
+                entityId,
+                action,
+                hexId,
+                factionId: appState.user.factionId
+            });
+            if (voteResult !== VoteResult.Success) {
+                console.log('Vote Error', voteResult);
+                return;
+            }
+
+            dispatch(GameActions.voting(true));
+            await dispatch(GameActions.vote(entityId, action, hexId));
+
+            const generation = game.generation;
+            await DataService.vote({
+                entityId,
+                action,
+                hexId,
+                generation
+            });
+
+
             dispatch(GameActions.voting(false));
             dispatch(GameActions.selectEntity(null));
         };

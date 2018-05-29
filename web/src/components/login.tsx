@@ -4,14 +4,13 @@ import {DataService} from '../dataServices';
 import {RouteComponentProps} from 'react-router';
 import {connect} from 'react-redux';
 import {SwgStore} from '../store/reducers';
-import {Dispatch} from 'redux';
 import {AppAction, AppActions} from '../store/app/actions';
 import {HttpUser} from '@swg-common/models/http/httpUser';
 import {Dispatcher} from '../store/actions';
 
 interface Props extends RouteComponentProps<{}> {
-    setJwt: (jwt: string) => void;
-    setUser: (user: HttpUser) => void;
+    setJwt: typeof AppActions.setJWT;
+    setUser: typeof AppActions.setUser;
 }
 
 interface State {
@@ -32,7 +31,8 @@ class Component extends React.Component<Props, State> {
         e.preventDefault();
         try {
             const response = await DataService.login(this.state.email, this.state.password);
-            console.log(response);
+            localStorage.setItem('jwt', response.jwt);
+            localStorage.setItem('user', JSON.stringify(response.user));
             this.props.setJwt(response.jwt);
             this.props.setUser(response.user);
             this.props.history.push('/');
@@ -79,11 +79,6 @@ class Component extends React.Component<Props, State> {
     }
 }
 
-export let Login = connect(
-    (state: SwgStore) => ({
-    }),
-    (dispatch: Dispatcher) => ({
-        setJwt: (jwt: string) => void dispatch(AppActions.setJWT(jwt)),
-        setUser: (user: HttpUser) => void dispatch(AppActions.setUser(user))
-    })
-)(withRouter(Component));
+export let Login = connect((state: SwgStore) => ({}), {setJwt: AppActions.setJWT, setUser: AppActions.setUser})(
+    withRouter(Component)
+);

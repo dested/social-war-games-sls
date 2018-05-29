@@ -202,7 +202,7 @@ if (process.argv[2] === 'setup') {
             } catch (ex) {
                 console.error(ex);
             }
-        }, Config.gameDuration * 2.5);
+        }, Config.gameDuration * 2);
     }
 
     bootstrap().catch(er => console.error(er));

@@ -1,12 +1,12 @@
 import {Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Req, UseGuards} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import {JwtModel} from '@swg-server-common/http/jwtModel';
 import {AuthService} from '../auth/auth.service';
 import {AuthGuard} from '../guards/authGuard';
 import {JwtGetUserResponse, LoginRequest, RegisterRequest} from '@swg-common/models/http/userController';
 import {DBUser} from '@swg-server-common/db/models/dbUser';
 import {FactionUtils} from '../../utils/factionUtils';
 import {StatsResponse} from '@swg-common/models/http/userController';
+import {HttpUser} from '@swg-common/models/http/httpUser';
 
 @Controller('user')
 export class UserController {
@@ -56,7 +56,7 @@ export class UserController {
 
     @UseGuards(AuthGuard)
     @Get('/stats')
-    async getStats(@Req() req: JwtModel): Promise<StatsResponse> {
+    async getStats(@Req() req: HttpUser): Promise<StatsResponse> {
         return {
             foo: true
         };

@@ -35,7 +35,7 @@ export class GameLogic {
     generation: number;
 
     static buildGame(layout: GameLayout, gameState: GameState): GameLogic {
-        const grid = new Grid<GameHexagon>(0, 0, 50, 50);
+        const grid = new Grid<GameHexagon>(0, 0, 100, 100);
         const factions = gameState.factions.split('');
 
         for (let i = 0; i < layout.hexes.length; i++) {
@@ -80,11 +80,11 @@ export class GameLogic {
     }
 
     static createGame(): GameLogic {
-        const grid = new Grid<GameHexagon>(0, 0, 50, 50);
+        const grid = new Grid<GameHexagon>(0, 0, 100, 100);
         const entities: GameEntity[] = [];
 
-        for (let y = 0; y < 50; y++) {
-            for (let x = -Math.floor(y / 2); x < 50 - Math.floor(y / 2); x++) {
+        for (let y = 0; y < 100; y++) {
+            for (let x = -Math.floor(y / 2); x < 100 - Math.floor(y / 2); x++) {
                 grid.hexes.push(new GameHexagon(HexagonTypes.dirt(HexagonTypes.randomSubType()), `${x}-${y}`, x, y));
             }
         }
@@ -98,18 +98,18 @@ export class GameLogic {
             Math.floor(grid.boundsHeight * (1 / 3))
         );
         const center3 = grid.easyBounds(
-            Math.floor(grid.boundsWidth * (1 / 2)) - 1,
+            Math.floor(grid.boundsWidth * (1 / 2)) ,
             Math.floor(grid.boundsHeight * (2 / 3))
         );
 
-        for (const hex of grid.getCircle(center1, 7)) {
+        for (const hex of grid.getCircle(center1, 15)) {
             hex.setFactionId('1');
         }
-        for (const hex of grid.getCircle(center2, 7)) {
+        for (const hex of grid.getCircle(center2, 15)) {
             hex.setFactionId('2');
         }
 
-        for (const hex of grid.getCircle(center3, 7)) {
+        for (const hex of grid.getCircle(center3, 15)) {
             hex.setFactionId('3');
         }
 

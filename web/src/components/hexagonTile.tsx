@@ -8,6 +8,7 @@ import {SwgStore} from '../store/reducers';
 import {Dispatcher} from '../store/actions';
 import {GameActions, GameThunks} from '../store/game/actions';
 import {RoundState} from '@swg-common/models/roundState';
+import {HexImages} from '../utils/hexImages';
 
 interface Props {
     hexagon: GameHexagon;
@@ -22,82 +23,6 @@ interface Props {
 interface State {}
 
 class Component extends React.Component<Props, State> {
-    private hexTypeToImage(type: HexagonTileType) {
-        switch (type.type) {
-            case 'Dirt':
-                switch (type.subType) {
-                    case '1':
-                        return './assets/tiles/Dirt/dirt_06.png';
-                    case '2':
-                        return './assets/tiles/Dirt/dirt_12.png';
-                    case '3':
-                        return './assets/tiles/Dirt/dirt_14.png';
-                    case '4':
-                        return './assets/tiles/Dirt/dirt_15.png';
-                    case '5':
-                        return './assets/tiles/Dirt/dirt_16.png';
-                }
-                break;
-            case 'Clay':
-                switch (type.subType) {
-                    case '1':
-                        return './assets/tiles/Sand/sand_07.png';
-                    case '2':
-                        return './assets/tiles/Sand/sand_12.png';
-                    case '3':
-                        return './assets/tiles/Sand/sand_14.png';
-                    case '4':
-                        return './assets/tiles/Sand/sand_16.png';
-                    case '5':
-                        return './assets/tiles/Sand/sand_17.png';
-                }
-                break;
-            case 'Grass':
-                switch (type.subType) {
-                    case '1':
-                        return './assets/tiles/Grass/grass_05.png';
-                    case '2':
-                        return './assets/tiles/Grass/grass_10.png';
-                    case '3':
-                        return './assets/tiles/Grass/grass_12.png';
-                    case '4':
-                        return './assets/tiles/Grass/grass_15.png';
-                    case '5':
-                        return './assets/tiles/Grass/grass_16.png';
-                }
-                break;
-            case 'Stone':
-                switch (type.subType) {
-                    case '1':
-                        return './assets/tiles/Stone/stone_07.png';
-                    case '2':
-                        return './assets/tiles/Stone/stone_12.png';
-                    case '3':
-                        return './assets/tiles/Stone/stone_13.png';
-                    case '4':
-                        return './assets/tiles/Stone/stone_16.png';
-                    case '5':
-                        return './assets/tiles/Stone/stone_17.png';
-                }
-                break;
-
-            case 'Water':
-                switch (type.subType) {
-                    case '1':
-                        return './assets/tiles/Water/water_05.png';
-                    case '2':
-                        return './assets/tiles/Water/water_11.png';
-                    case '3':
-                        return './assets/tiles/Water/water_12.png';
-                    case '4':
-                        return './assets/tiles/Water/water_14.png';
-                    case '5':
-                        return './assets/tiles/Water/water_15.png';
-                }
-                break;
-        }
-    }
-
     shouldComponentUpdate(nextProps: Props) {
         return !this.props.roundState || this.props.roundState.hash !== nextProps.roundState.hash;
     }
@@ -138,7 +63,7 @@ class Component extends React.Component<Props, State> {
         return (
             <image
                 onClick={this.tapHex}
-                xlinkHref={this.hexTypeToImage(hex.tileType)}
+                xlinkHref={HexImages.hexTypeToImage(hex.tileType)}
                 width={HexConstants.width}
                 height={HexConstants.height}
                 x={hex.center.x - HexConstants.width / 2}

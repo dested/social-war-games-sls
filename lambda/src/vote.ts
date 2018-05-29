@@ -1,12 +1,12 @@
 import * as jwt from 'jsonwebtoken';
 import {Config} from '@swg-server-common/config';
-import {JwtModel} from '@swg-server-common/http/jwtModel';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {EntityAction, VoteResult} from '@swg-common/game';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {GameState} from '@swg-common/models/gameState';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameLogic} from '@swg-common/game';
+import {HttpUser} from '@swg-common/models/http/httpUser';
 
 let layout: GameLayout;
 let gameState: GameState;
@@ -17,7 +17,7 @@ export const handler = async (event: Event) => {
     console.log('auth', event);
     if (!event.headers || !event.headers.Authorization) return response(401);
 
-    const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as JwtModel;
+    const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
     try {
         const redisManager = await RedisManager.setup();
         console.log('connecting');
@@ -28,17 +28,17 @@ export const handler = async (event: Event) => {
         }
 
         const generation = await redisManager.get<number>('game-generation');
-        const totalVotes = await redisManager.get<number>(`user-${user.userId}-${generation}-votes`);
+        const totalVotes = await redisManager.get<number>(`user-${user.id}-${generation}-votes`);
 
         if (totalVotes === undefined) {
-            await redisManager.set<number>(`user-${user.userId}-${generation}-votes`, 1);
-            await redisManager.expire(`user-${user.userId}-${generation}-votes`, Config.gameDuration * 2);
+            await redisManager.set<number>(`user-${user.id}-${generation}-votes`, 1);
+            await redisManager.expire(`user-${user.id}-${generation}-votes`, Config.gameDuration * 2);
         }
 
         if (totalVotes > user.maxVotesPerRound) {
             return response(423);
         }
-        await redisManager.incr(`user-${user.userId}-${generation}-votes`);
+        await redisManager.incr(`user-${user.id}-${generation}-votes`);
 
         layout = layout || (await redisManager.get<GameLayout>('layout'));
         if (!gameState || gameState.generation !== generation) {
@@ -59,7 +59,7 @@ export const handler = async (event: Event) => {
         vote.entityId = body.entityId;
         vote.generation = body.generation;
         vote.hexId = body.hexId;
-        vote.userId = user.userId;
+        vote.userId = user.id;
         vote.factionId = user.factionId;
 
         let voteResult = GameLogic.validateVote(game, vote);

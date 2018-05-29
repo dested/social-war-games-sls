@@ -9,7 +9,6 @@ export interface AppStore {
 }
 
 export default function appReducer(state: AppStore = initialState, action: AppAction): AppStore {
-    console.log(action,state);
     switch (action.type) {
         case AppActionOptions.SetJWT: {
             return {

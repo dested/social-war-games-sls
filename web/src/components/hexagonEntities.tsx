@@ -64,9 +64,6 @@ export let EntityAssets: {[key: string]: EntityAsset} = {
 
 export class Component extends React.Component<Props, State> {
     shouldComponentUpdate(nextProps: Props) {
-        if (this.props.roundState) {
-            console.log(this.props.roundState.hash, nextProps.roundState.hash);
-        }
         return !this.props.roundState || this.props.roundState.hash !== nextProps.roundState.hash;
     }
 

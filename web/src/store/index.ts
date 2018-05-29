@@ -1,6 +1,7 @@
 import reducers from './reducers';
 import {applyMiddleware, compose, createStore} from 'redux';
 import thunk from 'redux-thunk';
+import {AppActions} from './app/actions';
 
 const composeEnhancers =
     typeof window === 'object' && (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -13,6 +14,13 @@ const enhancer = composeEnhancers(
 );
 
 const store = createStore(reducers, enhancer);
+
+const jwt = localStorage.getItem('jwt');
+const user = localStorage.getItem('user');
+if (jwt && user) {
+    store.dispatch(AppActions.setJWT(jwt));
+    store.dispatch(AppActions.setUser(JSON.parse(user)));
+}
 
 const getState = () => store.getState();
 
