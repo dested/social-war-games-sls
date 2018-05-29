@@ -1,4 +1,4 @@
-import {EntityAction, GameEntity, GameHexagon, GameLogic, VoteResult} from '@swg-common/game';
+import {EntityAction, GameEntity, GameHexagon, GameLogic, HexagonTypes, VoteResult} from '@swg-common/game';
 import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
@@ -7,6 +7,7 @@ import {RoundState} from '@swg-common/models/roundState';
 
 export enum GameActionOptions {
     UpdateGame = 'UPDATE_GAME',
+    SetImagesLoading = 'SET_IMAGES_LOADING',
     SelectEntity = 'SELECT_ENTITY',
     SetEntityAction = 'SET_ENTITY_ACTION',
     SelectViableHex = 'SELECT_VIABLE_HEX',
@@ -23,6 +24,11 @@ export interface SetEntityActionAction {
 export interface SelectEntityAction {
     type: GameActionOptions.SelectEntity;
     entity: GameEntity;
+}
+
+export interface SetImagesLoadingAction {
+    type: GameActionOptions.SetImagesLoading;
+    imagesLoading: number;
 }
 
 export interface SelectViableHexAction {
@@ -44,6 +50,7 @@ export interface VotingAction {
 export type GameAction =
     | SelectEntityAction
     | VotingAction
+    | SetImagesLoadingAction
     | SetEntityActionAction
     | SelectViableHexAction
     | UpdateGameAction;
@@ -79,7 +86,15 @@ export class GameActions {
             viableHexIds
         };
     }
+    static setImagesLoadingAction(imagesLoading: number): SetImagesLoadingAction {
+        return {
+            type: GameActionOptions.SetImagesLoading,
+            imagesLoading
+        };
+    }
+}
 
+export class GameThunks {
     static vote(entityId: string, action: EntityAction, hexId: string) {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             const {gameState} = getState();
@@ -100,9 +115,11 @@ export class GameActions {
             dispatch(GameActions.updateGame(game, newRoundState));
         };
     }
-}
-
-export class GameThunks {
+    static startLoading() {
+        return async (dispatch: Dispatcher, getState: () => SwgStore) => {
+            HexagonTypes.preloadTypes();
+        };
+    }
     static sendVote(entityId: string, action: EntityAction, hexId: string) {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             const {gameState, appState} = getState();
@@ -119,7 +136,7 @@ export class GameThunks {
             }
 
             dispatch(GameActions.voting(true));
-            await dispatch(GameActions.vote(entityId, action, hexId));
+            await dispatch(GameThunks.vote(entityId, action, hexId));
 
             const generation = game.generation;
             await DataService.vote({
@@ -128,7 +145,6 @@ export class GameThunks {
                 hexId,
                 generation
             });
-
 
             dispatch(GameActions.voting(false));
             dispatch(GameActions.selectEntity(null));

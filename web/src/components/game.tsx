@@ -25,8 +25,10 @@ interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
     selectedEntity?: GameEntity;
     game?: GameLogic;
+    imagesLoading?: number;
     roundState?: RoundState;
     updateGame: typeof GameActions.updateGame;
+    startLoading: typeof GameThunks.startLoading;
 }
 
 interface State {
@@ -50,6 +52,8 @@ export class Component extends React.Component<Props, State> {
         }
 
         const manager = new Manager(document.body);
+        this.props.startLoading();
+
         // const swipe = new Swipe();
         manager.add(new Pan({direction: Hammer.DIRECTION_ALL, threshold: 5}));
         // manager.add(swipe);
@@ -97,6 +101,9 @@ export class Component extends React.Component<Props, State> {
                 this.props.updateGame(game, roundState);
             }
         }, 5 * 1000);
+        setInterval(() => {
+            this.forceUpdate();
+        }, 1000);
     }
 
     render() {
@@ -111,7 +118,12 @@ export class Component extends React.Component<Props, State> {
             width: window.innerWidth + viewSlop * 2,
             height: window.innerHeight + viewSlop * 2
         };
-
+        if (this.props.imagesLoading > 0) {
+            return (
+                <div style={{width: '30%', height: '30%', margin: 'auto'}}>Images Left: {this.props.imagesLoading}</div>
+            );
+        }
+        let percent = '100%';
         if (this.props.game) {
             for (const hexagon of this.props.game.grid.hexes) {
                 if (
@@ -131,6 +143,7 @@ export class Component extends React.Component<Props, State> {
                     }
                 }
             }
+            percent = (60 * 1000 - (this.props.game.roundEnd - +new Date())) / (60 * 1000) * 100 + '%';
         }
         return (
             <Fragment>
@@ -147,6 +160,26 @@ export class Component extends React.Component<Props, State> {
                         {entities}
                     </g>
                 </svg>
+                <div
+                    style={{
+                        width: '100%',
+                        position: 'absolute',
+                        left: 0,
+                        bottom: 0,
+                        height: 30,
+                        backgroundColor: 'grey'
+                    }}
+                >
+                    <div
+                        style={{
+                            width: percent,
+                            position: 'absolute',
+                            bottom: 0,
+                            height: 30,
+                            backgroundColor: 'green'
+                        }}
+                    />
+                </div>
                 {this.props.selectedEntity && <GameSidePanel />}
             </Fragment>
         );
@@ -156,11 +189,13 @@ export class Component extends React.Component<Props, State> {
 export let Game = connect(
     (state: SwgStore) => ({
         user: state.appState.user,
+        imagesLoading: state.gameState.imagesLoading,
         game: state.gameState.game,
         roundState: state.gameState.roundState,
         selectedEntity: state.gameState.selectedEntity
     }),
-    (dispatch: Dispatcher) => ({
-        updateGame: (game: GameLogic, roundState: RoundState) => void dispatch(GameActions.updateGame(game, roundState))
-    })
+    {
+        updateGame: GameActions.updateGame,
+        startLoading: GameThunks.startLoading
+    }
 )(withRouter(Component));

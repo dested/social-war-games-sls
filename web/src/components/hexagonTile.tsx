@@ -63,7 +63,7 @@ class Component extends React.Component<Props, State> {
         return (
             <image
                 onClick={this.tapHex}
-                xlinkHref={HexImages.hexTypeToImage(hex.tileType)}
+                xlinkHref={HexImages.hexTypeToImage(hex.tileType.type, hex.tileType.subType)}
                 width={HexConstants.width}
                 height={HexConstants.height}
                 x={hex.center.x - HexConstants.width / 2}

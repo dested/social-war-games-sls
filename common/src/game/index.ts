@@ -1,6 +1,7 @@
 import {Grid, Hexagon} from '../hex/hex';
 import {GameLayout} from '../models/gameLayout';
 import {GameState} from '../models/gameState';
+import {HexImages} from '../../../web/src/utils/hexImages';
 
 export type EntityAction = 'attack' | 'move' | 'spawn';
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
@@ -30,6 +31,8 @@ export enum VoteResult {
 }
 
 export class GameLogic {
+    roundStart: number;
+    roundEnd: number;
     grid: Grid<GameHexagon>;
     entities: GameEntity[];
     generation: number;
@@ -73,6 +76,8 @@ export class GameLogic {
         ];
 
         return {
+            roundStart: gameState.roundStart,
+            roundEnd: gameState.roundEnd,
             generation: gameState.generation,
             grid,
             entities
@@ -98,7 +103,7 @@ export class GameLogic {
             Math.floor(grid.boundsHeight * (1 / 3))
         );
         const center3 = grid.easyBounds(
-            Math.floor(grid.boundsWidth * (1 / 2)) ,
+            Math.floor(grid.boundsWidth * (1 / 2)),
             Math.floor(grid.boundsHeight * (2 / 3))
         );
 
@@ -195,6 +200,8 @@ export class GameLogic {
         }
 
         return {
+            roundStart: 0,
+            roundEnd: 1000 * 60,
             generation: 1,
             grid,
             entities
@@ -344,42 +351,78 @@ export interface HexagonTileType {
     subType: TileSubType;
     cost: number;
     blocked: boolean;
+    image: string;
 }
 
 export class HexagonTypes {
+    static preloadTypes() {
+        return [
+            HexagonTypes.get('Dirt', '1'),
+            HexagonTypes.get('Dirt', '2'),
+            HexagonTypes.get('Dirt', '3'),
+            HexagonTypes.get('Dirt', '4'),
+            HexagonTypes.get('Dirt', '5'),
+            HexagonTypes.get('Clay', '1'),
+            HexagonTypes.get('Clay', '2'),
+            HexagonTypes.get('Clay', '3'),
+            HexagonTypes.get('Clay', '4'),
+            HexagonTypes.get('Clay', '5'),
+            HexagonTypes.get('Stone', '1'),
+            HexagonTypes.get('Stone', '2'),
+            HexagonTypes.get('Stone', '3'),
+            HexagonTypes.get('Stone', '4'),
+            HexagonTypes.get('Stone', '5'),
+            HexagonTypes.get('Water', '1'),
+            HexagonTypes.get('Water', '2'),
+            HexagonTypes.get('Water', '3'),
+            HexagonTypes.get('Water', '4'),
+            HexagonTypes.get('Water', '5'),
+            HexagonTypes.get('Grass', '1'),
+            HexagonTypes.get('Grass', '2'),
+            HexagonTypes.get('Grass', '3'),
+            HexagonTypes.get('Grass', '4'),
+            HexagonTypes.get('Grass', '5')
+        ];
+    }
+
     static dirt: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Dirt',
         subType,
         cost: 1,
-        blocked: false
+        blocked: false,
+        image: HexImages.hexTypeToImage('Dirt', subType)
     });
 
     static grass: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Grass',
         subType,
         cost: 2,
-        blocked: false
+        blocked: false,
+        image: HexImages.hexTypeToImage('Grass', subType)
     });
 
     static clay: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Clay',
         subType,
         cost: 3,
-        blocked: false
+        blocked: false,
+        image: HexImages.hexTypeToImage('Clay', subType)
     });
 
     static stone: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Stone',
         subType,
         cost: 4,
-        blocked: false
+        blocked: false,
+        image: HexImages.hexTypeToImage('Stone', subType)
     });
 
     static water: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Water',
         subType,
         cost: 0,
-        blocked: true
+        blocked: true,
+        image: HexImages.hexTypeToImage('Water', subType)
     });
 
     static randomSubType(): TileSubType {
@@ -387,18 +430,23 @@ export class HexagonTypes {
         return (Math.floor(Math.random() * 5) + 1).toString() as TileSubType;
     }
 
+    private static cache: {[key: string]: HexagonTileType} = {};
+
     static get(type: TileType, subType: TileSubType) {
+        if (this.cache[type + subType]) {
+            return this.cache[type + subType];
+        }
         switch (type) {
             case 'Dirt':
-                return this.dirt(subType);
+                return (this.cache[type + subType] = this.dirt(subType));
             case 'Clay':
-                return this.clay(subType);
+                return (this.cache[type + subType] = this.clay(subType));
             case 'Grass':
-                return this.grass(subType);
+                return (this.cache[type + subType] = this.grass(subType));
             case 'Stone':
-                return this.stone(subType);
+                return (this.cache[type + subType] = this.stone(subType));
             case 'Water':
-                return this.water(subType);
+                return (this.cache[type + subType] = this.water(subType));
         }
     }
 }

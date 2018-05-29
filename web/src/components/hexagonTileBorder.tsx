@@ -70,7 +70,7 @@ class ComponentTileBorder extends React.Component<Props, State> {
         if (nextProps.viableHexIds && nextProps.viableHexIds.find(a => a === nextProps.hexagon.id)) {
             return true;
         }
-        if( !this.props.roundState || this.props.roundState.hash !== nextProps.roundState.hash){
+        if (!this.props.roundState || this.props.roundState.hash !== nextProps.roundState.hash) {
             return true;
         }
         return false;
@@ -130,7 +130,7 @@ class ComponentDefaultTileBorder extends React.Component<Props, State> {
         if (nextProps.viableHexIds && nextProps.viableHexIds.find(a => a === nextProps.hexagon.id)) {
             return true;
         }
-        if( !this.props.roundState || this.props.roundState.hash !== nextProps.roundState.hash){
+        if (!this.props.roundState || this.props.roundState.hash !== nextProps.roundState.hash) {
             return true;
         }
 
@@ -138,7 +138,8 @@ class ComponentDefaultTileBorder extends React.Component<Props, State> {
     }
     render() {
         const hex = this.props.hexagon;
-        let isViableHex = this.isViableHex;
+        const isViableHex = this.isViableHex;
+        const hasEntity = this.props.game.entities.find(a => a.x === hex.x && a.y === hex.y);
         return (
             <polygon
                 style={{pointerEvents: 'none'}}
@@ -148,7 +149,9 @@ class ComponentDefaultTileBorder extends React.Component<Props, State> {
                 fill={
                     isViableHex
                         ? 'rgba(128,52,230,.25)'
-                        : ComponentTileBorder.factionIdToColor(hex.factionId, '0').replace(',1)', ',.4)')
+                        : hasEntity
+                            ? ComponentTileBorder.factionIdToColor(hex.factionId, '0').replace(',1)', ',.8)')
+                            : ComponentTileBorder.factionIdToColor(hex.factionId, '0').replace(',1)', ',.4)')
                 }
                 points={hex.pointsSvg}
             />

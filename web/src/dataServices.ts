@@ -1,10 +1,11 @@
+
 import {JwtGetUserResponse} from '@swg-common/models/http/userController';
 import {EntityAction} from '@swg-common/game';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {RoundState} from '@swg-common/models/roundState';
 
-import {getState} from './store';
+import {getStore} from './store';
 
 export class DataService {
     // private static voteServer: string = 'https://vote.socialwargames.com/';
@@ -58,7 +59,7 @@ export class DataService {
         generation: number;
         hexId: string;
     }): Promise<void> {
-        const state = getState();
+        const state = getStore().getState();
 
         let response = await fetch(this.voteServer + '/vote', {
             method: 'POST',

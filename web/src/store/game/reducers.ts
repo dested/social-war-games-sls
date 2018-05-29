@@ -1,6 +1,6 @@
-import { GameAction, GameActionOptions } from './actions';
-import { EntityAction, GameEntity, GameLogic } from '@swg-common/game';
-import { RoundState } from '@swg-common/models/roundState';
+import {GameAction, GameActionOptions} from './actions';
+import {EntityAction, GameEntity, GameLogic} from '@swg-common/game';
+import {RoundState} from '@swg-common/models/roundState';
 
 const initialState: GameStore = {};
 
@@ -10,6 +10,7 @@ export interface GameStore {
     selectedEntity?: GameEntity;
     selectedEntityAction?: EntityAction;
     viableHexIds?: string[];
+    imagesLoading?: number;
     isVoting?: boolean;
 }
 
@@ -27,7 +28,13 @@ export default function gameReducer(state: GameStore = initialState, action: Gam
             return {
                 ...state,
                 game: action.game,
-                roundState: action.roundState,
+                roundState: action.roundState
+            };
+        }
+        case GameActionOptions.SetImagesLoading: {
+            return {
+                ...state,
+                imagesLoading: action.imagesLoading
             };
         }
         case GameActionOptions.Voting: {

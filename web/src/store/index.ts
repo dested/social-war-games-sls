@@ -22,6 +22,6 @@ if (jwt && user) {
     store.dispatch(AppActions.setUser(JSON.parse(user)));
 }
 
-const getState = () => store.getState();
+const getStore = () => store;
 
-export {store, getState};
+export {store, getStore};
