@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "moduleResolution": "node",
     "target": "es2015",
-    "noEmit": true,
+    "noEmit": false,
     "lib": [
       "dom",
       "es2017",
