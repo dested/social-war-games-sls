@@ -351,7 +351,7 @@ export interface HexagonTileType {
     subType: TileSubType;
     cost: number;
     blocked: boolean;
-    image: string;
+    image: HTMLImageElement;
 }
 
 export class HexagonTypes {

@@ -20,6 +20,8 @@ import {Dispatcher} from '../store/actions';
 import {DataService} from '../dataServices';
 import {RoundState} from '@swg-common/models/roundState';
 import {GameSidePanel} from './gameSidePanel';
+import {render} from '../drawing/renderer';
+import {foo} from '../drawing/element';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -37,6 +39,7 @@ interface State {
 }
 
 export class Component extends React.Component<Props, State> {
+    private element: any;
     constructor(props: Props, context: any) {
         super(props, context);
         this.state = {
@@ -124,7 +127,12 @@ export class Component extends React.Component<Props, State> {
             );
         }
         let percent = '100%';
+        let canvas;
         if (this.props.game) {
+            canvas = render(foo(this.props.game, view));
+            if (!canvas.parentNode) {
+                this.element.appendChild(canvas);
+            }
             for (const hexagon of this.props.game.grid.hexes) {
                 if (
                     hexagon.center.x > view.x &&
@@ -132,22 +140,23 @@ export class Component extends React.Component<Props, State> {
                     hexagon.center.y > view.y &&
                     hexagon.center.y < view.y + view.height
                 ) {
-                    tiles.push(<HexagonTile key={hexagon.id + '-tile'} hexagon={hexagon} />);
-                    borders.push(<HexagonTileBorder key={hexagon.id + '-border'} hexagon={hexagon} />);
+                    /*   tiles.push(<HexagonTile key={hexagon.id + '-tile'} hexagon={hexagon}/>);
+                    borders.push(<HexagonTileBorder key={hexagon.id + '-border'} hexagon={hexagon}/>);
                     defaultBorders.push(
-                        <HexagonDefaultTileBorder key={hexagon.id + '-default-border'} hexagon={hexagon} />
+                        <HexagonDefaultTileBorder key={hexagon.id + '-default-border'} hexagon={hexagon}/>
                     );
                     const entity = this.props.game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
                     if (entity) {
-                        entities.push(<HexagonEntity key={hexagon.id + '-ent'} entity={entity} />);
-                    }
+                        entities.push(<HexagonEntity key={hexagon.id + '-ent'} entity={entity}/>);
+                    }*/
                 }
             }
             percent = (60 * 1000 - (this.props.game.roundEnd - +new Date())) / (60 * 1000) * 100 + '%';
         }
         return (
             <Fragment>
-                <svg style={{width: '100%', height: '100%'}}>
+                <div ref={e => (this.element = e)} />
+                {/*<svg style={{width: '100%', height: '100%'}}>
                     <g
                         id={'game-board'}
                         style={{
@@ -159,7 +168,7 @@ export class Component extends React.Component<Props, State> {
                         {borders}
                         {entities}
                     </g>
-                </svg>
+                </svg>*/}
                 <div
                     style={{
                         width: '100%',
