@@ -3,11 +3,13 @@ import {SwgStore} from '../store/reducers';
 import {Dispatcher, GameActions, GameThunks} from '../store/actions';
 import {Manager, Pan} from 'hammerjs';
 import {HexConstants} from '../utils/hexConstants';
-import {HexImages} from '../utils/hexImages';
-import {Drawing, Point} from '@swg-common/hex/hex';
 import * as _ from 'lodash';
 import {ImageUtils} from '../utils/imageUtils';
 import {GameEntity, GameHexagon} from '@swg-common/game';
+import {AnimationUtils} from '../utils/animationUtils';
+import {HexColors} from '../utils/hexColors';
+import {Drawing, DrawingOptions} from './hexDrawing';
+import {HexImages} from '../utils/hexImages';
 
 type EntityAsset = {
     image: HTMLImageElement;
@@ -61,6 +63,7 @@ export class GameRenderer {
         y: number;
         width: number;
         height: number;
+        scale: number;
     };
     private viewSlop = 100;
 
@@ -77,6 +80,16 @@ export class GameRenderer {
 
         const viableHexIds = state.gameState.viableHexIds || [];
 
+        const startX = this.view.x;
+        const endX =
+            this.view.x +
+            (hexagon.center.x - (this.view.x + this.view.width * 0.7 / 2));
+
+        const startY = this.view.y;
+        const endY =
+            this.view.y +
+            (hexagon.center.y - (this.view.y + this.view.height / 2));
+        let moveTo = false;
         if (viableHexIds && viableHexIds.find(a => a === hexagon.id)) {
             this.selectedViableHex(hexagon);
         } else {
@@ -85,11 +98,44 @@ export class GameRenderer {
             );
             if (tappedEntity) {
                 this.selectEntity(tappedEntity);
+                moveTo = true;
             } else {
                 if (selectedEntity) {
                     this.selectEntity(null);
                 }
             }
+        }
+
+        if (moveTo) {
+            AnimationUtils.start({
+                start: 0,
+                finish: 1,
+                duration: 400,
+                easing: AnimationUtils.easings.easeInCubic,
+                callback: c => {
+                    this.view.x = AnimationUtils.lerp(startX, endX, c);
+                    this.view.y = AnimationUtils.lerp(startY, endY, c);
+                }
+            });
+            AnimationUtils.start({
+                start: this.view.scale,
+                finish: 2,
+                duration: 400,
+                easing: AnimationUtils.easings.easeInCubic,
+                callback: c => {
+                    this.view.scale = c;
+                }
+            });
+        } else {
+            AnimationUtils.start({
+                start: this.view.scale,
+                finish: 1,
+                duration: 400,
+                easing: AnimationUtils.easings.easeInCubic,
+                callback: c => {
+                    this.view.scale = c;
+                }
+            });
         }
     }
 
@@ -112,7 +158,8 @@ export class GameRenderer {
             x: 0,
             y: 0,
             width: window.innerWidth,
-            height: window.innerHeight
+            height: window.innerHeight,
+            scale: 1
         };
 
         manager.on('panmove', e => {
@@ -139,7 +186,7 @@ export class GameRenderer {
                     y: this.view.y + e.center.y
                 },
                 game.grid,
-                game.options
+                DrawingOptions.default
             );
             if (hex) {
                 this.tapHex(hex);
@@ -151,57 +198,14 @@ export class GameRenderer {
     private startRender() {
         requestAnimationFrame(() => {
             let store = getStore();
-            this.render(store.getState(), store.dispatch);
+            try{
+                this.render(store.getState(), store.dispatch);
+            }catch(ex){
+                console.error(ex);
+            }
             this.startRender();
         });
     }
-
-    public static factionIdToColor(
-        factionId: string,
-        neighborFactionId: string
-    ) {
-        switch (factionId) {
-            case '0':
-                return 'transparent';
-            case '1':
-                switch (neighborFactionId) {
-                    case '0':
-                        return 'rgba(255,0,0,1)';
-                    case '1':
-                        return 'rgba(2550,0,0,1)';
-                    case '2':
-                        return 'rgba(127,127,0,1)';
-                    case '3':
-                        return 'rgba(127,0,127,1)';
-                }
-                break;
-            case '2':
-                switch (neighborFactionId) {
-                    case '0':
-                        return 'rgba(0,255,0,1)';
-                    case '1':
-                        return 'rgba(127,127,0,1)';
-                    case '2':
-                        return 'rgba(0,255,0,1)';
-                    case '3':
-                        return 'rgba(0,127,127,1)';
-                }
-                break;
-            case '3':
-                switch (neighborFactionId) {
-                    case '0':
-                        return 'rgba(0,0,255,1)';
-                    case '1':
-                        return 'rgba(127,0,127,1)';
-                    case '2':
-                        return 'rgba(0,127,127,1)';
-                    case '3':
-                        return 'rgba(0,0,255,1)';
-                }
-                break;
-        }
-    }
-    private static defaultBorder = 'rgba(127,127,127,0.13)';
 
     private render(state: SwgStore, dispatch: Dispatcher) {
         const {canvas, context} = this;
@@ -211,6 +215,20 @@ export class GameRenderer {
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.save();
         context.translate(-this.view.x, -this.view.y);
+        /*
+
+        context.translate(-this.view.width * 0.7 / 2, -this.view.height / 2);
+        context.scale(this.view.scale, this.view.scale);
+        context.translate(this.view.width * 0.7 / 2, this.view.height / 2);
+
+        const scalechange = this.view.scale - 1;
+        const offsetX = -(
+            (this.view.x + this.view.width * 0.7 / 2) *
+            scalechange
+        );
+        const offsetY = -((this.view.y + this.view.height / 2) * scalechange);
+        context.translate(offsetX, offsetY);
+*/
 
         const vx = this.view.x - this.viewSlop;
         const vy = this.view.y - this.viewSlop;
@@ -228,7 +246,10 @@ export class GameRenderer {
 
         for (const hexagon of hexes) {
             context.drawImage(
-                hexagon.tileType.image,
+                HexImages.hexTypeToImage(
+                    hexagon.tileType.type,
+                    hexagon.tileType.subType
+                ),
                 hexagon.center.x - HexConstants.width / 2,
                 hexagon.center.y - HexConstants.height / 2,
                 HexConstants.width,
@@ -243,15 +264,15 @@ export class GameRenderer {
                 a => a.x === hexagon.x && a.y === hexagon.y
             );
             context.lineWidth = isViableHex ? 4 : 2;
-            context.strokeStyle = GameRenderer.defaultBorder;
+            context.strokeStyle = HexColors.defaultBorder;
             context.fillStyle = isViableHex
                 ? 'rgba(128,52,230,.25)'
                 : hasEntity
-                    ? GameRenderer.factionIdToColor(
+                    ? HexColors.factionIdToColor(
                           hexagon.factionId,
                           '0'
                       ).replace(',1)', ',.8)')
-                    : GameRenderer.factionIdToColor(
+                    : HexColors.factionIdToColor(
                           hexagon.factionId,
                           '0'
                       ).replace(',1)', ',.4)');
@@ -287,11 +308,11 @@ export class GameRenderer {
             const wRatio = HexConstants.width / HexConstants.defaultWidth;
             const hRatio = HexConstants.height / HexConstants.defaultHeight;
             let rectX = hex.center.x - HexConstants.width / 2;
-            let voteRectX = hex.center.x + HexConstants.width / 2;
+            let voteRectX = hex.center.x + HexConstants.width / 6;
             let rectY = hex.center.y;
             let rectWidth = HexConstants.width * 0.35;
             let rectHeight = HexConstants.height * 0.4;
-            let fontSize = rectWidth / 2;
+            let fontSize = Math.round(rectWidth / 1.7);
             const voteCount =
                 roundState.entities[entity.id] &&
                 _.sum(roundState.entities[entity.id].map(a => a.count));
@@ -311,12 +332,12 @@ export class GameRenderer {
                 5,
                 'rgba(0,0,0,.6)'
             );
-            context.font = `${fontSize}px`;
+            context.font = `${fontSize}px Arial`;
             context.fillStyle = 'white';
             context.fillText(
                 entity.health.toString(),
                 rectX + rectWidth / 2 - 1,
-                rectY + rectHeight / 2 + 5,
+                rectY + rectHeight / 1.4,
                 rectWidth
             );
             if (voteCount > 0) {
@@ -326,14 +347,14 @@ export class GameRenderer {
                     rectWidth,
                     rectHeight,
                     5,
-                    'grey'
+                    'rgba(240,240,240,.6)'
                 );
-                context.font = `${fontSize}px`;
-                context.fillStyle = 'white';
+                context.font = `${fontSize}px Arial`;
+                context.fillStyle = 'black';
                 context.fillText(
                     voteCount.toString(),
                     voteRectX + rectWidth / 2 - 1,
-                    rectY + rectHeight / 2 + 5,
+                    rectY + rectHeight / 1.4,
                     rectWidth
                 );
             }

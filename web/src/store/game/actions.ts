@@ -1,10 +1,18 @@
-import {EntityAction, GameEntity, GameHexagon, GameLogic, HexagonTypes, VoteResult} from '@swg-common/game';
+import {
+    EntityAction,
+    GameEntity,
+    GameHexagon,
+    GameLogic,
+    HexagonTypes,
+    VoteResult
+} from '@swg-common/game';
 import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
 import {EntityDetails} from '@swg-common/game';
 import {RoundState} from '@swg-common/models/roundState';
 import {loadEntities} from '../../drawing/gameRenderer';
+import {HexImages} from '../../utils/hexImages';
 
 export enum GameActionOptions {
     UpdateGame = 'UPDATE_GAME',
@@ -64,7 +72,10 @@ export class GameActions {
         };
     }
 
-    static updateGame(game: GameLogic, roundState: RoundState): UpdateGameAction {
+    static updateGame(
+        game: GameLogic,
+        roundState: RoundState
+    ): UpdateGameAction {
         return {
             type: GameActionOptions.UpdateGame,
             game,
@@ -79,7 +90,11 @@ export class GameActions {
         };
     }
 
-    static setEntityAction(entity: GameEntity, action: EntityAction, viableHexIds: string[]): SetEntityActionAction {
+    static setEntityAction(
+        entity: GameEntity,
+        action: EntityAction,
+        viableHexIds: string[]
+    ): SetEntityActionAction {
         return {
             type: GameActionOptions.SetEntityAction,
             entity,
@@ -87,7 +102,9 @@ export class GameActions {
             viableHexIds
         };
     }
-    static setImagesLoadingAction(imagesLoading: number): SetImagesLoadingAction {
+    static setImagesLoadingAction(
+        imagesLoading: number
+    ): SetImagesLoadingAction {
         return {
             type: GameActionOptions.SetImagesLoading,
             imagesLoading
@@ -106,11 +123,17 @@ export class GameThunks {
             if (!newRoundState.entities[entityId]) {
                 newRoundState.entities[entityId] = [];
             }
-            const vote = newRoundState.entities[entityId].find(a => a.hexId === hexId && a.action === a.action);
+            const vote = newRoundState.entities[entityId].find(
+                a => a.hexId === hexId && a.action === a.action
+            );
             if (vote) {
                 vote.count++;
             } else {
-                newRoundState.entities[entityId].push({action, count: 1, hexId});
+                newRoundState.entities[entityId].push({
+                    action,
+                    count: 1,
+                    hexId
+                });
             }
 
             dispatch(GameActions.updateGame(game, newRoundState));
@@ -119,7 +142,9 @@ export class GameThunks {
     static startLoading() {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             loadEntities();
-            HexagonTypes.preloadTypes();
+            HexagonTypes.preloadTypes().map(a =>
+                HexImages.hexTypeToImage(a.type, a.subType)
+            );
         };
     }
     static sendVote(entityId: string, action: EntityAction, hexId: string) {
@@ -158,7 +183,9 @@ export class GameThunks {
             const game = getState().gameState.game;
             let radius = 0;
             const entityDetails = EntityDetails[entity.entityType];
-            const entityHex = game.grid.hexes.find(a => a.x === entity.x && a.y === entity.y);
+            const entityHex = game.grid.hexes.find(
+                a => a.x === entity.x && a.y === entity.y
+            );
             switch (action) {
                 case 'attack':
                     radius = entityDetails.attackRadius;
@@ -176,25 +203,48 @@ export class GameThunks {
             switch (action) {
                 case 'attack':
                     viableHexes = viableHexes.filter(a =>
-                        game.entities.find(e => e.factionId !== entity.factionId && e.x === a.x && e.y === a.y)
+                        game.entities.find(
+                            e =>
+                                e.factionId !== entity.factionId &&
+                                e.x === a.x &&
+                                e.y === a.y
+                        )
                     );
                     break;
                 case 'move':
-                    viableHexes = viableHexes.filter(a => !game.entities.find(e => e.x === a.x && e.y === a.y));
+                    viableHexes = viableHexes.filter(
+                        a =>
+                            !game.entities.find(e => e.x === a.x && e.y === a.y)
+                    );
                     break;
                 case 'spawn':
-                    viableHexes = viableHexes.filter(a => !game.entities.find(e => e.x === a.x && e.y === a.y));
+                    viableHexes = viableHexes.filter(
+                        a =>
+                            !game.entities.find(e => e.x === a.x && e.y === a.y)
+                    );
                     break;
             }
 
-            dispatch(GameActions.setEntityAction(entity, action, viableHexes.map(a => a.id)));
+            dispatch(
+                GameActions.setEntityAction(
+                    entity,
+                    action,
+                    viableHexes.map(a => a.id)
+                )
+            );
         };
     }
 
     static selectViableHex(hex: GameHexagon) {
         return (dispatch: Dispatcher, getState: () => SwgStore) => {
             const gameState = getState().gameState;
-            dispatch(this.sendVote(gameState.selectedEntity.id, gameState.selectedEntityAction, hex.id));
+            dispatch(
+                this.sendVote(
+                    gameState.selectedEntity.id,
+                    gameState.selectedEntityAction,
+                    hex.id
+                )
+            );
             dispatch(GameActions.selectEntity(null));
         };
     }

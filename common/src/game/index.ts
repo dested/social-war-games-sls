@@ -1,9 +1,6 @@
-import {Drawing, DrawingOptions, Grid, Hexagon, Point} from '../hex/hex';
+import {Grid, Hexagon, Point} from '../hex/hex';
 import {GameLayout} from '../models/gameLayout';
 import {GameState} from '../models/gameState';
-import {HexImages} from '../../../web/src/utils/hexImages';
-import {GameRenderer} from '../../../web/src/drawing/gameRenderer';
-import {HexConstants} from '../../../web/src/utils/hexConstants';
 
 export type EntityAction = 'attack' | 'move' | 'spawn';
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
@@ -38,12 +35,10 @@ export class GameLogic {
     grid: Grid<GameHexagon>;
     entities: GameEntity[];
     generation: number;
-    options: DrawingOptions;
 
-    static buildGame(layout: GameLayout, gameState: GameState): GameLogic {
-        const grid = new Grid<GameHexagon>(0, 0, 100, 100);
+    static buildGame(grid: Grid<GameHexagon>, layout: GameLayout, gameState: GameState): GameLogic {
         const factions = gameState.factions.split('');
-
+        grid.hexes = [];
         for (let i = 0; i < layout.hexes.length; i++) {
             const hex = layout.hexes[i];
             const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), hex.id, hex.x, hex.y);
@@ -83,8 +78,7 @@ export class GameLogic {
             roundEnd: gameState.roundEnd,
             generation: gameState.generation,
             grid,
-            entities,
-            options: new DrawingOptions(HexConstants.height / 2 - 1, Drawing.Orientation.PointyTop, new Point(0, 0))
+            entities
         };
     }
 
@@ -208,8 +202,7 @@ export class GameLogic {
             roundEnd: 1000 * 60,
             generation: 1,
             grid,
-            entities,
-            options: new DrawingOptions(HexConstants.height / 2 - 1, Drawing.Orientation.PointyTop, new Point(0, 0))
+            entities
         };
     }
 
@@ -356,7 +349,6 @@ export interface HexagonTileType {
     subType: TileSubType;
     cost: number;
     blocked: boolean;
-    image: HTMLImageElement;
 }
 
 export class HexagonTypes {
@@ -394,40 +386,35 @@ export class HexagonTypes {
         type: 'Dirt',
         subType,
         cost: 1,
-        blocked: false,
-        image: HexImages.hexTypeToImage('Dirt', subType)
+        blocked: false
     });
 
     static grass: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Grass',
         subType,
         cost: 2,
-        blocked: false,
-        image: HexImages.hexTypeToImage('Grass', subType)
+        blocked: false
     });
 
     static clay: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Clay',
         subType,
         cost: 3,
-        blocked: false,
-        image: HexImages.hexTypeToImage('Clay', subType)
+        blocked: false
     });
 
     static stone: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Stone',
         subType,
         cost: 4,
-        blocked: false,
-        image: HexImages.hexTypeToImage('Stone', subType)
+        blocked: false
     });
 
     static water: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Water',
         subType,
         cost: 0,
-        blocked: true,
-        image: HexImages.hexTypeToImage('Water', subType)
+        blocked: true
     });
 
     static randomSubType(): TileSubType {
@@ -437,7 +424,7 @@ export class HexagonTypes {
 
     private static cache: {[key: string]: HexagonTileType} = {};
 
-    static get(type: TileType, subType: TileSubType) {
+    static get(type: TileType, subType: TileSubType):HexagonTileType {
         if (this.cache[type + subType]) {
             return this.cache[type + subType];
         }
@@ -511,7 +498,7 @@ export interface EntityDetail {
 }
 
 export class GameHexagon extends Hexagon {
-    public factionId: FactionId = '0';
+    factionId: FactionId = '0';
 
     center: Point;
     points: Point[];
@@ -531,23 +518,4 @@ export class GameHexagon extends Hexagon {
         this.factionId = factionId;
     }
     lines: {line: [Point, Point]; color: string}[] = [];
-
-    updateHex(grid: Grid<GameHexagon>, options: DrawingOptions) {
-        this.center = Drawing.getCenter(this, options);
-        this.points = Drawing.getCorners(this.center, options);
-        this.pointsSvg = new Path2D('M' + this.points.map(a => `${a.x},${a.y}`).join(' ') + 'Z');
-
-        const neighbor = grid.getNeighbors(this);
-        this.lines = [];
-        for (let i = 0; i < this.points.length; i++) {
-            const p1 = this.points[i];
-            const p2 = this.points[(i + 1) % 6];
-            if (!neighbor[i] || neighbor[i].factionId !== this.factionId) {
-                this.lines.push({
-                    line: [p1, p2],
-                    color: GameRenderer.factionIdToColor(this.factionId, !neighbor[i] ? '0' : neighbor[i].factionId)
-                });
-            }
-        }
-    }
 }

@@ -9,7 +9,11 @@ import {GameActions} from '../store/game/actions';
 import {ImageUtils} from './imageUtils';
 
 export class HexImages {
+    static imageCache: {[key: string]: HTMLImageElement} = {};
     public static hexTypeToImage(type: TileType, subType: TileSubType) {
+        const key = `${type} ${subType}`;
+        if (this.imageCache[key]) return this.imageCache[key];
+
         let url: string;
         switch (type) {
             case 'Dirt':
@@ -110,6 +114,7 @@ export class HexImages {
                 break;
         }
         const image = ImageUtils.preloadImage(url);
+        this.imageCache[key] = image;
         return image;
     }
 }

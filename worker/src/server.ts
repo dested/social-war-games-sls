@@ -2,12 +2,13 @@ import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {DataManager} from '@swg-server-common/db/dataManager';
-import {GameLogic, VoteResult} from '@swg-common/game';
+import {GameHexagon, GameLogic, VoteResult} from '@swg-common/game';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState, GameStateEntity, GameStateEntityMap} from '@swg-common/models/gameState';
 import {Config} from '@swg-server-common/config';
 import {RoundState} from '@swg-common/models/roundState';
 import * as _ from 'lodash';
+import {Grid} from '@swg-common/hex/hex';
 
 if (process.argv[2] === 'setup') {
     async function bootstrap() {
@@ -57,6 +58,7 @@ if (process.argv[2] === 'setup') {
 
         const roundState: RoundState = {
             hash: '0',
+            generation: gameState.generation,
             nextUpdate: +new Date() + 10 * 1000,
             entities: {}
         };
@@ -79,11 +81,14 @@ if (process.argv[2] === 'setup') {
 
     bootstrap().catch(er => console.error(er));
 } else if (process.argv[2] === 'work') {
+    const roundUpdateDuration = 10 * 1000;
     async function bootstrap() {
         console.log('booting');
         const redisManager = await RedisManager.setup();
         await DataManager.openDbConnection();
         console.log('connected to redis');
+        const grid = new Grid<GameHexagon>(0, 0, 100, 100);
+
         setInterval(async () => {
             try {
                 console.log('round end');
@@ -93,7 +98,7 @@ if (process.argv[2] === 'setup') {
                 const layout = await redisManager.get<GameLayout>('layout');
                 let gameState = await redisManager.get<GameState>('game-state');
 
-                const game = GameLogic.buildGame(layout, gameState);
+                const game = GameLogic.buildGame(grid, layout, gameState);
 
                 const voteCounts = (await DBVote.getVoteCount(generation)).sort(
                     (left, right) => _.sumBy(left.actions, a => a.count) - _.sumBy(right.actions, a => a.count)
@@ -151,7 +156,8 @@ if (process.argv[2] === 'setup') {
 
                 const roundState: RoundState = {
                     hash: (Math.random() * 1000000).toString(),
-                    nextUpdate: +new Date() + 10 * 1000,
+                    nextUpdate: +new Date() + roundUpdateDuration,
+                    generation: gameState.generation,
                     entities: {}
                 };
 
@@ -167,15 +173,21 @@ if (process.argv[2] === 'setup') {
             }
         }, Config.gameDuration);
 
+        let update = 0;
         setInterval(async () => {
+            update++;
+            if (update % (Config.gameDuration / roundUpdateDuration) === 0) {
+                return;
+            }
             try {
                 console.log('update round state');
                 const generation = (await redisManager.get<number>('game-generation')) || 1;
                 const voteCounts = await DBVote.getVoteCount(generation);
 
                 const roundState: RoundState = {
+                    generation,
                     hash: (Math.random() * 1000000).toString(),
-                    nextUpdate: +new Date() + 10 * 1000,
+                    nextUpdate: +new Date() + roundUpdateDuration,
                     entities: voteCounts.reduce((entities, vote) => {
                         entities[vote._id] = vote.actions.map(a => ({
                             hexId: a.hexId,
@@ -190,7 +202,7 @@ if (process.argv[2] === 'setup') {
             } catch (ex) {
                 console.error(ex);
             }
-        }, 1000 * 10);
+        }, roundUpdateDuration);
 
         setInterval(async () => {
             try {

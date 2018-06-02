@@ -1,6 +1,7 @@
 // https://github.com/bodinaren/BHex.js
 
 import {GameHexagon} from '../game';
+import {HexConstants} from '../../../web/src/utils/hexConstants';
 
 /**
  * Axial is a axial position of a Hexagon within a grid.
@@ -79,7 +80,6 @@ export class Hexagon extends Axial {
     constructor(x: number, y: number, public cost: number = 1, public blocked: boolean = false) {
         super(x, y);
     }
-
 }
 
 export class Grid<T extends Hexagon = Hexagon> {
@@ -122,12 +122,10 @@ export class Grid<T extends Hexagon = Hexagon> {
         return this.hexes.find(h => h.compareTo(a));
     }
 
-    /**
-     * Get the neighboring hexagons at a given axial position.
-     * @param {Axial} a - The axial position to get neighbors for.
-     * @returns {Hexagon[]} Array of neighboring hexagons.
-     */
+    neighborCache: {[key: string]: T[]} = {};
     getNeighbors(a: Point): T[] {
+        let key = `${a.x} ${a.y}`;
+        if (this.neighborCache[key]) return this.neighborCache[key];
         const directions = [
             new Axial(a.x - 1, a.y + 1),
             new Axial(a.x - 1, a.y),
@@ -136,7 +134,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             new Axial(a.x + 1, a.y),
             new Axial(a.x, a.y + 1)
         ];
-        return directions.map(d => this.getHexAt(d));
+        return (this.neighborCache[key] = directions.map(d => this.getHexAt(d)));
     }
 
     /**
@@ -359,108 +357,11 @@ class Grid_Search_Node<T> {
     }
 }
 
-/**
- * Drawing is used for all you need to draw the hexagon grid and finding hexagons within the grid.
- * In using this constructor, the corners of all the hexes will be generated.
- * @class
- * @param {Grid} grid - The grid of hexagons to be used.
- * @param {Drawing.Options} options - Options to be used.
- * @property {Grid} grid - The grid of hexagons to be used.
- * @property {Drawing.Options} options - Options to be used.
- */
-export class Drawing {
-    static Orientation: {
-        FlatTop: 1;
-        PointyTop: 2;
-    } = {
-        FlatTop: 1,
-        PointyTop: 2
-    };
-
-    static update(grid: Grid<GameHexagon>, options: DrawingOptions) {
-        for (const hex of grid.hexes) {
-            hex.updateHex(grid, options);
-        }
-    }
-
-    static getCorners(center: Point, options: DrawingOptions) {
-        const points = [];
-
-        for (let i = 0; i < 6; i++) {
-            points.push(Drawing.getCorner(center, options, i));
-        }
-        return points;
-    }
-
-    static getCorner(center: Point, options: DrawingOptions, corner: number) {
-        const offset = options.orientation === Drawing.Orientation.PointyTop ? 90 : 0;
-        const angle_deg = 60 * corner + offset;
-        const angle_rad = Math.PI / 180 * angle_deg;
-        return new Point(center.x + options.size * Math.cos(angle_rad), center.y + options.size * Math.sin(angle_rad));
-    }
-
-    static getCenter(axial: Axial, options: DrawingOptions) {
-        let x = 0;
-        let y = 0;
-        const c = axial.toCube();
-
-        if (options.orientation === Drawing.Orientation.FlatTop) {
-            x = c.x * options.width * 3 / 4;
-            y = (c.z + c.x / 2) * options.height;
-        } else {
-            x = (c.x + c.z / 2) * options.width;
-            y = c.z * options.height * 3 / 4;
-        }
-        x += options.center.x;
-        y += options.center.y;
-        return new Point(x, y);
-    }
-
-    static getHexAt<T extends Hexagon = Hexagon>(p: Point, grid: Grid<T>, options: DrawingOptions) {
-        let x;
-        let y;
-
-        if (options.orientation === Drawing.Orientation.FlatTop) {
-            x = p.x * 2 / 3 / options.size;
-            y = (-p.x / 3 + Math.sqrt(3) / 3 * p.y) / options.size;
-        } else {
-            x = (p.x * Math.sqrt(3) / 3 - p.y / 3) / options.size;
-            y = p.y * 2 / 3 / options.size;
-        }
-
-        const a = new Axial(x, y)
-            .toCube()
-            .round()
-            .toAxial();
-
-        return grid.getHexAt(a);
-    }
-}
 
 export class Point {
     constructor(public x: number, public y: number) {}
 }
 
-export class DrawingOptions {
-    size: number;
-    width: number;
-    height: number;
-
-    constructor(
-        side: number,
-        public orientation: 1 | 2 = Drawing.Orientation.FlatTop,
-        public center: Point = new Point(0, 0)
-    ) {
-        this.size = side;
-        if (this.orientation === Drawing.Orientation.FlatTop) {
-            this.width = side * 2;
-            this.height = Math.sqrt(3) / 2 * this.width;
-        } else {
-            this.height = side * 2;
-            this.width = Math.sqrt(3) / 2 * this.height;
-        }
-    }
-}
 
 // Binary Heap implementation by bgrins https://github.com/bgrins/javascript-astar
 // Based on implementation by Marijn Haverbeke http://eloquentjavascript.net/1st_edition/appendix2.html

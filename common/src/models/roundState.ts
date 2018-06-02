@@ -3,6 +3,7 @@ import {EntityAction} from '../game';
 export type RoundState = {
     hash: string;
     nextUpdate:number;
+    generation:number;
     entities: {[id: string]: RoundStateEntityVote[]};
 };
 export type RoundStateEntityVote = {
