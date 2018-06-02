@@ -1,7 +1,9 @@
-import {Grid, Hexagon} from '../hex/hex';
+import {Drawing, DrawingOptions, Grid, Hexagon, Point} from '../hex/hex';
 import {GameLayout} from '../models/gameLayout';
 import {GameState} from '../models/gameState';
 import {HexImages} from '../../../web/src/utils/hexImages';
+import {GameRenderer} from '../../../web/src/drawing/gameRenderer';
+import {HexConstants} from '../../../web/src/utils/hexConstants';
 
 export type EntityAction = 'attack' | 'move' | 'spawn';
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
@@ -36,6 +38,7 @@ export class GameLogic {
     grid: Grid<GameHexagon>;
     entities: GameEntity[];
     generation: number;
+    options: DrawingOptions;
 
     static buildGame(layout: GameLayout, gameState: GameState): GameLogic {
         const grid = new Grid<GameHexagon>(0, 0, 100, 100);
@@ -80,7 +83,8 @@ export class GameLogic {
             roundEnd: gameState.roundEnd,
             generation: gameState.generation,
             grid,
-            entities
+            entities,
+            options: new DrawingOptions(HexConstants.height / 2 - 1, Drawing.Orientation.PointyTop, new Point(0, 0))
         };
     }
 
@@ -204,7 +208,8 @@ export class GameLogic {
             roundEnd: 1000 * 60,
             generation: 1,
             grid,
-            entities
+            entities,
+            options: new DrawingOptions(HexConstants.height / 2 - 1, Drawing.Orientation.PointyTop, new Point(0, 0))
         };
     }
 
@@ -351,7 +356,7 @@ export interface HexagonTileType {
     subType: TileSubType;
     cost: number;
     blocked: boolean;
-    image: string;
+    image: HTMLImageElement;
 }
 
 export class HexagonTypes {
@@ -508,6 +513,10 @@ export interface EntityDetail {
 export class GameHexagon extends Hexagon {
     public factionId: FactionId = '0';
 
+    center: Point;
+    points: Point[];
+    pointsSvg: Path2D;
+
     constructor(public tileType: HexagonTileType, public id: string, x: number, y: number) {
         super(x, y, tileType.cost, tileType.blocked);
     }
@@ -520,5 +529,25 @@ export class GameHexagon extends Hexagon {
 
     setFactionId(factionId: FactionId) {
         this.factionId = factionId;
+    }
+    lines: {line: [Point, Point]; color: string}[] = [];
+
+    updateHex(grid: Grid<GameHexagon>, options: DrawingOptions) {
+        this.center = Drawing.getCenter(this, options);
+        this.points = Drawing.getCorners(this.center, options);
+        this.pointsSvg = new Path2D('M' + this.points.map(a => `${a.x},${a.y}`).join(' ') + 'Z');
+
+        const neighbor = grid.getNeighbors(this);
+        this.lines = [];
+        for (let i = 0; i < this.points.length; i++) {
+            const p1 = this.points[i];
+            const p2 = this.points[(i + 1) % 6];
+            if (!neighbor[i] || neighbor[i].factionId !== this.factionId) {
+                this.lines.push({
+                    line: [p1, p2],
+                    color: GameRenderer.factionIdToColor(this.factionId, !neighbor[i] ? '0' : neighbor[i].factionId)
+                });
+            }
+        }
     }
 }

@@ -1,5 +1,7 @@
 // https://github.com/bodinaren/BHex.js
 
+import {GameHexagon} from '../game';
+
 /**
  * Axial is a axial position of a Hexagon within a grid.
  */
@@ -78,9 +80,6 @@ export class Hexagon extends Axial {
         super(x, y);
     }
 
-    center: Point;
-    points: Point[];
-    pointsSvg: string;
 }
 
 export class Grid<T extends Hexagon = Hexagon> {
@@ -378,11 +377,9 @@ export class Drawing {
         PointyTop: 2
     };
 
-    constructor(public grid: Grid, public options: DrawingOptions) {
-        for (const hex of this.grid.hexes) {
-            hex.center = Drawing.getCenter(hex, options);
-            hex.points = Drawing.getCorners(hex.center, options);
-            hex.pointsSvg = hex.points.map(a => `${a.x},${a.y}`).join(' ');
+    static update(grid: Grid<GameHexagon>, options: DrawingOptions) {
+        for (const hex of grid.hexes) {
+            hex.updateHex(grid, options);
         }
     }
 
@@ -419,16 +416,16 @@ export class Drawing {
         return new Point(x, y);
     }
 
-    getHexAt(p: Point) {
+    static getHexAt<T extends Hexagon = Hexagon>(p: Point, grid: Grid<T>, options: DrawingOptions) {
         let x;
         let y;
 
-        if (this.options.orientation === Drawing.Orientation.FlatTop) {
-            x = p.x * 2 / 3 / this.options.size;
-            y = (-p.x / 3 + Math.sqrt(3) / 3 * p.y) / this.options.size;
+        if (options.orientation === Drawing.Orientation.FlatTop) {
+            x = p.x * 2 / 3 / options.size;
+            y = (-p.x / 3 + Math.sqrt(3) / 3 * p.y) / options.size;
         } else {
-            x = (p.x * Math.sqrt(3) / 3 - p.y / 3) / this.options.size;
-            y = p.y * 2 / 3 / this.options.size;
+            x = (p.x * Math.sqrt(3) / 3 - p.y / 3) / options.size;
+            y = p.y * 2 / 3 / options.size;
         }
 
         const a = new Axial(x, y)
@@ -436,7 +433,7 @@ export class Drawing {
             .round()
             .toAxial();
 
-        return this.grid.getHexAt(a);
+        return grid.getHexAt(a);
     }
 }
 
