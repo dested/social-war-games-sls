@@ -1,6 +1,12 @@
-import {HexagonTileType, HexagonTypes, TileSubType, TileType} from '@swg-common/game';
+import {
+    HexagonTileType,
+    HexagonTypes,
+    TileSubType,
+    TileType
+} from '@swg-common/game';
 import {getStore} from '../store';
 import {GameActions} from '../store/game/actions';
+import {ImageUtils} from './imageUtils';
 
 export class HexImages {
     public static hexTypeToImage(type: TileType, subType: TileSubType) {
@@ -103,12 +109,7 @@ export class HexImages {
                 }
                 break;
         }
-        const image = new Image();
-        image.src = url;
-        getStore().dispatch(GameActions.setImagesLoadingAction(getStore().getState().gameState.imagesLoading + 1));
-        image.onload = () => {
-            getStore().dispatch(GameActions.setImagesLoadingAction(getStore().getState().gameState.imagesLoading - 1));
-        };
+        const image = ImageUtils.preloadImage(url);
         return image;
     }
 }

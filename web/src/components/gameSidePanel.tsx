@@ -1,23 +1,12 @@
 import * as React from 'react';
-import {Fragment} from 'react';
-import {Grid, Drawing, DrawingOptions, Point} from '@swg-common/hex/hex';
 import {withRouter} from 'react-router-dom';
 import {connect} from 'react-redux';
 import {HttpUser} from '@swg-common/models/http/httpUser';
 import {SwgStore} from '../store/reducers';
-import {Dispatch} from 'redux';
-import {AppAction, AppActions} from '../store/app/actions';
 import {RouteComponentProps} from 'react-router';
 import {EntityAction, GameEntity, GameLogic} from '@swg-common/game';
-import {HexagonTile} from './hexagonTile';
-import {HexagonEntity} from './hexagonEntities';
-import {HexagonDefaultTileBorder, HexagonTileBorder} from './hexagonTileBorder';
-import {Manager, Swipe, Pan} from 'hammerjs';
-import {HexConstants} from '../utils/hexConstants';
-import {DebounceUtils} from '../utils/debounceUtils';
-import {GameAction, GameActions, GameThunks} from '../store/game/actions';
+import {GameThunks} from '../store/game/actions';
 import {Dispatcher} from '../store/actions';
-import {DataService} from '../dataServices';
 import {RoundState} from '@swg-common/models/roundState';
 
 interface Props extends RouteComponentProps<{}> {

@@ -4,6 +4,7 @@ import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
 import {EntityDetails} from '@swg-common/game';
 import {RoundState} from '@swg-common/models/roundState';
+import {loadEntities} from '../../drawing/gameRenderer';
 
 export enum GameActionOptions {
     UpdateGame = 'UPDATE_GAME',
@@ -117,6 +118,7 @@ export class GameThunks {
     }
     static startLoading() {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
+            loadEntities();
             HexagonTypes.preloadTypes();
         };
     }
