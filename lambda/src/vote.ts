@@ -1,7 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import {Config} from '@swg-server-common/config';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
-import {EntityAction, GameHexagon, VoteResult} from '@swg-common/game';
+import {EntityAction, GameHexagon, GameModel, VoteResult} from '@swg-common/game';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {GameState} from '@swg-common/models/gameState';
 import {GameLayout} from '@swg-common/models/gameLayout';
@@ -11,7 +11,7 @@ import {Grid} from '@swg-common/hex/hex';
 
 let layout: GameLayout;
 let gameState: GameState;
-let game: GameLogic;
+let game: GameModel;
 const grid = new Grid<GameHexagon>(0, 0, 100, 100);
 
 export const handler = async (event: Event) => {

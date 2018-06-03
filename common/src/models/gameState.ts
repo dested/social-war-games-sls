@@ -4,6 +4,7 @@ export type GameState = {
     factions: string;
     entities: GameStateEntityMap;
     generation: number;
+    roundDuration: number;
     roundStart: number;
     roundEnd: number;
 };

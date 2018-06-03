@@ -89,6 +89,7 @@ export class GameRenderer {
         const endY =
             this.view.y +
             (hexagon.center.y - (this.view.y + this.view.height / 2));
+
         let moveTo = false;
         if (viableHexIds && viableHexIds.find(a => a === hexagon.id)) {
             this.selectedViableHex(hexagon);
@@ -110,7 +111,7 @@ export class GameRenderer {
             AnimationUtils.start({
                 start: 0,
                 finish: 1,
-                duration: 400,
+                duration: 250,
                 easing: AnimationUtils.easings.easeInCubic,
                 callback: c => {
                     this.view.x = AnimationUtils.lerp(startX, endX, c);
@@ -120,7 +121,7 @@ export class GameRenderer {
             AnimationUtils.start({
                 start: this.view.scale,
                 finish: 2,
-                duration: 400,
+                duration: 250,
                 easing: AnimationUtils.easings.easeInCubic,
                 callback: c => {
                     this.view.scale = c;
@@ -130,7 +131,7 @@ export class GameRenderer {
             AnimationUtils.start({
                 start: this.view.scale,
                 finish: 1,
-                duration: 400,
+                duration: 250,
                 easing: AnimationUtils.easings.easeInCubic,
                 callback: c => {
                     this.view.scale = c;
@@ -198,9 +199,9 @@ export class GameRenderer {
     private startRender() {
         requestAnimationFrame(() => {
             let store = getStore();
-            try{
+            try {
                 this.render(store.getState(), store.dispatch);
-            }catch(ex){
+            } catch (ex) {
                 console.error(ex);
             }
             this.startRender();
@@ -265,17 +266,20 @@ export class GameRenderer {
             );
             context.lineWidth = isViableHex ? 4 : 2;
             context.strokeStyle = HexColors.defaultBorder;
-            context.fillStyle = isViableHex
-                ? 'rgba(128,52,230,.25)'
-                : hasEntity
-                    ? HexColors.factionIdToColor(
-                          hexagon.factionId,
-                          '0'
-                      ).replace(',1)', ',.8)')
-                    : HexColors.factionIdToColor(
-                          hexagon.factionId,
-                          '0'
-                      ).replace(',1)', ',.4)');
+            context.fillStyle =
+                hexagon.factionId === '9'
+                    ? 'rgba(0,0,0,.6)'
+                    : isViableHex
+                        ? 'rgba(128,52,230,.25)'
+                        : hasEntity
+                            ? HexColors.factionIdToColor(
+                                  hexagon.factionId,
+                                  '0'
+                              ).replace(',1)', ',.8)')
+                            : HexColors.factionIdToColor(
+                                  hexagon.factionId,
+                                  '0'
+                              ).replace(',1)', ',.4)');
             context.fill(hexagon.pointsSvg);
             context.stroke(hexagon.pointsSvg);
 
@@ -302,7 +306,7 @@ export class GameRenderer {
         context.textBaseline = 'bottom';
 
         for (let i = 0; i < game.entities.length; i++) {
-            const entity = game.entities[i];
+            const entity = game.entities.getIndex(i);
             const hex = grid.getHexAt(entity);
             const asset = EntityAssets[entity.entityType];
             const wRatio = HexConstants.width / HexConstants.defaultWidth;
@@ -362,8 +366,7 @@ export class GameRenderer {
 
         context.restore();
 
-        const percent =
-            (60 * 1000 - (game.roundEnd - +new Date())) / (60 * 1000);
+        const percent =(game.roundDuration - (game.roundEnd - +new Date())) / (game.roundDuration);
         context.fillStyle = 'grey';
         context.fillRect(0, canvas.height - 40, canvas.width, 40);
         context.fillStyle = 'green';

@@ -1,10 +1,12 @@
-import {Grid, Hexagon, Point} from '../hex/hex';
+import {Grid, Hexagon, Point, PointHashKey} from '../hex/hex';
 import {GameLayout} from '../models/gameLayout';
 import {GameState} from '../models/gameState';
+import {HashArray} from '../utils/hashArray';
+import {Config} from '../../../server-common/src/config';
 
 export type EntityAction = 'attack' | 'move' | 'spawn';
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
-export type FactionId = '0' | '1' | '2' | '3';
+export type FactionId = '0' | '1' | '2' | '3' | '9';
 
 export class GameEntity {
     id: string;
@@ -29,16 +31,20 @@ export enum VoteResult {
     EntityNotFound = 'EntityNotFound'
 }
 
-export class GameLogic {
+export interface GameModel {
     roundStart: number;
     roundEnd: number;
+    roundDuration: number;
     grid: Grid<GameHexagon>;
-    entities: GameEntity[];
+    entities: HashArray<GameEntity, Point>;
     generation: number;
+}
 
-    static buildGame(grid: Grid<GameHexagon>, layout: GameLayout, gameState: GameState): GameLogic {
+export class GameLogic {
+    static buildGame(grid: Grid<GameHexagon>, layout: GameLayout, gameState: GameState): GameModel {
         const factions = gameState.factions.split('');
-        grid.hexes = [];
+        grid.bustCache();
+        grid.hexes = new HashArray<GameHexagon, Point>(PointHashKey);
         for (let i = 0; i < layout.hexes.length; i++) {
             const hex = layout.hexes[i];
             const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), hex.id, hex.x, hex.y);
@@ -74,15 +80,16 @@ export class GameLogic {
         ];
 
         return {
+            roundDuration: gameState.roundDuration,
             roundStart: gameState.roundStart,
             roundEnd: gameState.roundEnd,
             generation: gameState.generation,
             grid,
-            entities
+            entities: HashArray.create(entities, PointHashKey)
         };
     }
 
-    static createGame(): GameLogic {
+    static createGame(): GameModel {
         const grid = new Grid<GameHexagon>(0, 0, 100, 100);
         const entities: GameEntity[] = [];
 
@@ -130,7 +137,7 @@ export class GameLogic {
         }*/
 
         for (let i = 0; i < 120; i++) {
-            const center = grid.hexes[Math.floor(Math.random() * grid.hexes.length)];
+            const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
             const type =
                 Math.random() * 100 < 60
                     ? HexagonTypes.grass
@@ -143,7 +150,7 @@ export class GameLogic {
         for (let i = 1; i <= 3; i++) {
             const factionId = i.toString() as FactionId;
             for (let i = 0; i < 30; i++) {
-                const hex = grid.hexes[Math.floor(Math.random() * grid.hexes.length)];
+                const hex = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
                 if (hex.factionId !== factionId) {
                     i--;
                     continue;
@@ -198,11 +205,12 @@ export class GameLogic {
         }
 
         return {
-            roundStart: 0,
-            roundEnd: 1000 * 60,
+            roundDuration: Config.gameDuration,
+            roundStart: +new Date(),
+            roundEnd: +new Date() + Config.gameDuration,
             generation: 1,
             grid,
-            entities
+            entities: HashArray.create(entities, PointHashKey)
         };
     }
 
@@ -213,14 +221,14 @@ export class GameLogic {
     }
 
     static validateVote(
-        game: GameLogic,
+        game: GameModel,
         vote: {action: EntityAction; hexId: string; factionId?: FactionId; entityId: string}
     ): VoteResult {
         const entity = game.entities.find(a => a.id === vote.entityId);
         if (!entity) return VoteResult.EntityNotFound;
         if (vote.factionId !== undefined && entity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
 
-        const fromHex = game.grid.hexes.find(a => a.x === entity.x && a.y === entity.y);
+        const fromHex = game.grid.hexes.get(entity);
         if (!fromHex) return VoteResult.FromHexNotFound;
 
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
@@ -270,7 +278,7 @@ export class GameLogic {
     }
 
     static processVote(
-        game: GameLogic,
+        game: GameModel,
         vote: {action: EntityAction; hexId: string; factionId: FactionId; entityId: string}
     ): VoteResult {
         const entity = game.entities.find(a => a.id === vote.entityId);
@@ -278,7 +286,7 @@ export class GameLogic {
 
         if (vote.factionId !== undefined && entity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
 
-        const fromHex = game.grid.hexes.find(a => a.x === entity.x && a.y === entity.y);
+        const fromHex = game.grid.hexes.get(entity);
         if (!fromHex) return VoteResult.FromHexNotFound;
 
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
@@ -317,16 +325,15 @@ export class GameLogic {
                 const damage = Math.floor(Math.random() * entityDetails.attackPower) + 1;
                 toEntity.health -= damage;
                 if (toEntity.health <= 0) {
-                    game.entities.splice(game.entities.indexOf(toEntity), 1);
+                    game.entities.removeItem(toEntity);
                 }
 
                 break;
             case 'move':
                 if (toEntity) return VoteResult.MoveSpotNotEmpty;
-
+                console.log('path length', path.length);
                 for (let index = 0; index < path.length; index++) {
-                    const hex = path[index];
-                    hex.setFactionId(entity.factionId);
+                    path[index].setFactionId(entity.factionId);
                 }
                 entity.x = toHex.x;
                 entity.y = toHex.y;
@@ -424,7 +431,7 @@ export class HexagonTypes {
 
     private static cache: {[key: string]: HexagonTileType} = {};
 
-    static get(type: TileType, subType: TileSubType):HexagonTileType {
+    static get(type: TileType, subType: TileSubType): HexagonTileType {
         if (this.cache[type + subType]) {
             return this.cache[type + subType];
         }
@@ -455,7 +462,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         spawnRadius: 4
     },
     ['tank']: {
-        moveRadius: 4,
+        moveRadius: 6,
         health: 8,
         attackRadius: 8,
         attackPower: 3,
@@ -465,7 +472,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         spawnRadius: 0
     },
     ['plane']: {
-        moveRadius: 10,
+        moveRadius: 8,
         health: 2,
         attackRadius: 3,
         attackPower: 3,
@@ -475,7 +482,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         spawnRadius: 0
     },
     ['infantry']: {
-        moveRadius: 8,
+        moveRadius: 4,
         health: 4,
         attackRadius: 3,
         attackPower: 1,

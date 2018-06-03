@@ -2,15 +2,7 @@ import {HexConstants} from '../utils/hexConstants';
 import {Axial, Grid, Hexagon, Point} from '@swg-common/hex/hex';
 import {GameHexagon} from '@swg-common/game';
 import {HexColors} from '../utils/hexColors';
-/**
- * Drawing is used for all you need to draw the hexagon grid and finding hexagons within the grid.
- * In using this constructor, the corners of all the hexes will be generated.
- * @class
- * @param {Grid} grid - The grid of hexagons to be used.
- * @param {Drawing.Options} options - Options to be used.
- * @property {Grid} grid - The grid of hexagons to be used.
- * @property {Drawing.Options} options - Options to be used.
- */
+
 export class Drawing {
     static Orientation: {
         FlatTop: 1;
@@ -25,6 +17,7 @@ export class Drawing {
             this.updateHex(hex, grid, options);
         }
     }
+
     static updateHex(
         hex: GameHexagon,
         grid: Grid<GameHexagon>,
@@ -44,6 +37,11 @@ export class Drawing {
             const p1 = hex.points[i];
             const p2 = hex.points[(i + 1) % 6];
             if (!neighbor[i] || neighbor[i].factionId !== hex.factionId) {
+                if (
+                    hex.factionId === '9' ||
+                    (neighbor[i] && neighbor[i].factionId === '9')
+                )
+                    continue;
                 hex.lines.push({
                     line: [p1, p2],
                     color: HexColors.factionIdToColor(
@@ -69,10 +67,10 @@ export class Drawing {
             options.orientation === Drawing.Orientation.PointyTop ? 90 : 0;
         const angle_deg = 60 * corner + offset;
         const angle_rad = Math.PI / 180 * angle_deg;
-        return new Point(
-            center.x + options.size * Math.cos(angle_rad),
-            center.y + options.size * Math.sin(angle_rad)
-        );
+        return {
+            x: center.x + options.size * Math.cos(angle_rad),
+            y: center.y + options.size * Math.sin(angle_rad)
+        };
     }
 
     static getCenter(axial: Axial, options: DrawingOptions) {
@@ -87,9 +85,7 @@ export class Drawing {
             x = (c.x + c.z / 2) * options.width;
             y = c.z * options.height * 3 / 4;
         }
-        x += options.center.x;
-        y += options.center.y;
-        return new Point(x, y);
+        return {x,y};
     }
 
     static getHexAt<T extends Hexagon = Hexagon>(
@@ -124,14 +120,12 @@ export class DrawingOptions {
 
     static default = new DrawingOptions(
         HexConstants.height / 2 - 1,
-        Drawing.Orientation.PointyTop,
-        new Point(0, 0)
+        Drawing.Orientation.PointyTop
     );
 
     constructor(
         side: number,
         public orientation: 1 | 2 = Drawing.Orientation.FlatTop,
-        public center: Point = new Point(0, 0)
     ) {
         this.size = side;
         if (this.orientation === Drawing.Orientation.FlatTop) {

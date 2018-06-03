@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import {HttpUser} from '@swg-common/models/http/httpUser';
 import {SwgStore} from '../store/reducers';
 import {RouteComponentProps} from 'react-router';
-import {EntityAction, GameEntity, GameLogic} from '@swg-common/game';
+import {EntityAction, GameEntity, GameLogic, GameModel} from '@swg-common/game';
 import {GameThunks} from '../store/game/actions';
 import {Dispatcher} from '../store/actions';
 import {RoundState} from '@swg-common/models/roundState';
@@ -14,7 +14,7 @@ interface Props extends RouteComponentProps<{}> {
     isVoting?: boolean;
     selectedEntity?: GameEntity;
     roundState?: RoundState;
-    game?: GameLogic;
+    game?: GameModel;
     startEntityAction: typeof GameThunks.startEntityAction;
 }
 

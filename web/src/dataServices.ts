@@ -1,6 +1,5 @@
-
 import {JwtGetUserResponse} from '@swg-common/models/http/userController';
-import {EntityAction} from '@swg-common/game';
+import {EntityAction, FactionId} from '@swg-common/game';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {RoundState} from '@swg-common/models/roundState';
@@ -13,7 +12,10 @@ export class DataService {
     private static voteServer: string = 'https://api.socialwargames.com';
     private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
 
-    static async login(email: string, password: string): Promise<JwtGetUserResponse> {
+    static async login(
+        email: string,
+        password: string
+    ): Promise<JwtGetUserResponse> {
         let response = await fetch(this.userServer + '/user/login', {
             method: 'POST',
             body: JSON.stringify({
@@ -33,7 +35,10 @@ export class DataService {
         return json;
     }
 
-    static async register(email: string, password: string): Promise<JwtGetUserResponse> {
+    static async register(
+        email: string,
+        password: string
+    ): Promise<JwtGetUserResponse> {
         let response = await fetch(this.userServer + '/user/register', {
             method: 'POST',
             body: JSON.stringify({
@@ -84,25 +89,31 @@ export class DataService {
         return (await response.json()) as GameLayout;
     }
 
-    static async getGameState() {
-        let response = await fetch(this.s3Server + '/game-state.json?bust='+(+new Date()), {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
+    static async getGameState(factionId: FactionId) {
+        let response = await fetch(
+            `${this.s3Server}/game-state-${factionId}.json?bust=${+new Date()}`,
+            {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                }
             }
-        });
+        );
         return (await response.json()) as GameState;
     }
 
-    static async getRoundState() {
-        let response = await fetch(this.s3Server + '/round-state.json?bust='+(+new Date()), {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
+    static async getRoundState(factionId: FactionId) {
+        let response = await fetch(
+            `${this.s3Server}/round-state-${factionId}.json?bust=${+new Date()}`,
+            {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                }
             }
-        });
+        );
         return (await response.json()) as RoundState;
     }
 }

@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {HttpUser} from '@swg-common/models/http/httpUser';
 import {SwgStore} from '../store/reducers';
 import {RouteComponentProps} from 'react-router';
-import {GameEntity, GameHexagon, GameLogic} from '@swg-common/game';
+import {GameEntity, GameHexagon, GameLogic, GameModel} from '@swg-common/game';
 import {HexConstants} from '../utils/hexConstants';
 import {GameActions, GameThunks} from '../store/game/actions';
 import {DataService} from '../dataServices';
@@ -20,7 +20,7 @@ import {Drawing, DrawingOptions} from '../drawing/hexDrawing';
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
     selectedEntity?: GameEntity;
-    game?: GameLogic;
+    game?: GameModel;
     imagesLoading?: number;
     roundState?: RoundState;
     updateGame: typeof GameActions.updateGame;
@@ -50,8 +50,12 @@ export class Component extends React.Component<Props, State> {
         this.props.startLoading();
 
         this.layout = await DataService.getLayout();
-        this.gameState = await DataService.getGameState();
-        const roundState = await DataService.getRoundState();
+        this.gameState = await DataService.getGameState(
+            this.props.user.factionId
+        );
+        const roundState = await DataService.getRoundState(
+            this.props.user.factionId
+        );
         this.grid = new Grid<GameHexagon>(0, 0, 100, 100);
         let game = GameLogic.buildGame(this.grid, this.layout, this.gameState);
         Drawing.update(game.grid, DrawingOptions.default);
@@ -61,7 +65,9 @@ export class Component extends React.Component<Props, State> {
     }
     private getNewState(timeout: number) {
         setTimeout(async () => {
-            const roundState = await DataService.getRoundState();
+            const roundState = await DataService.getRoundState(
+                this.props.user.factionId
+            );
             let shouldUpdate = true;
             if (this.props.roundState.hash.indexOf(roundState.hash) === 0) {
                 if (roundState.generation === this.props.game.generation) {
@@ -69,7 +75,9 @@ export class Component extends React.Component<Props, State> {
                 }
             }
             if (roundState.generation !== this.props.game.generation) {
-                this.gameState = await DataService.getGameState();
+                this.gameState = await DataService.getGameState(
+                    this.props.user.factionId
+                );
                 shouldUpdate = true;
             }
             if (shouldUpdate) {
@@ -82,7 +90,7 @@ export class Component extends React.Component<Props, State> {
                 this.props.updateGame(game, roundState);
             }
             this.getNewState(roundState.nextUpdate - +new Date());
-        }, Math.max(timeout + 500, 1000));
+        }, Math.max(timeout + 1000, 500));
     }
 
     render() {

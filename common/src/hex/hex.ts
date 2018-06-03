@@ -1,7 +1,8 @@
 // https://github.com/bodinaren/BHex.js
 
-import {GameHexagon} from '../game';
+import {GameEntity, GameHexagon} from '../game';
 import {HexConstants} from '../../../web/src/utils/hexConstants';
+import {HashArray} from '../utils/hashArray';
 
 /**
  * Axial is a axial position of a Hexagon within a grid.
@@ -10,7 +11,7 @@ export class Axial {
     constructor(public x: number, public y: number) {}
 
     getKey() {
-        return `${this.x}x${this.y}`;
+        return this.y * 10000 + this.x;
     }
 
     add(x: number, y: number) {
@@ -83,7 +84,7 @@ export class Hexagon extends Axial {
 }
 
 export class Grid<T extends Hexagon = Hexagon> {
-    hexes: T[];
+    hexes: HashArray<T, Point>;
 
     constructor(
         public boundsX: number,
@@ -91,7 +92,7 @@ export class Grid<T extends Hexagon = Hexagon> {
         public boundsWidth: number,
         public boundsHeight: number
     ) {
-        this.hexes = [];
+        this.hexes = new HashArray<T, Point>(PointHashKey);
     }
 
     easyBounds(x: number, y: number): Axial {
@@ -119,10 +120,10 @@ export class Grid<T extends Hexagon = Hexagon> {
      * @returns {Hexagon}
      */
     getHexAt(a: Point): T | undefined {
-        return this.hexes.find(h => h.compareTo(a));
+        return this.hexes.get(a);
     }
 
-    neighborCache: {[key: string]: T[]} = {};
+    private neighborCache: {[key: string]: T[]} = {};
     getNeighbors(a: Point): T[] {
         let key = `${a.x} ${a.y}`;
         if (this.neighborCache[key]) return this.neighborCache[key];
@@ -204,10 +205,7 @@ export class Grid<T extends Hexagon = Hexagon> {
         return line1.length > line2.length ? line1 : line2;
     }
 
-    /**
-     * Gets all the hexes within a specified range, taking inertia (Hexagon.cost) into account.
-     */
-    getRange(start: T, movement: number) {
+    getRange(start: T, movement: number, blockEntities: HashArray<GameEntity, Point>): T[] {
         const grid = this;
         const openHeap = new BinaryHeap((node: Grid_Search_Node<T>) => node.F);
         const closedHexes: {[key: string]: T} = {};
@@ -230,7 +228,7 @@ export class Grid<T extends Hexagon = Hexagon> {
                 if (!n || n.blocked || closedHexes[n.getKey()]) continue;
 
                 // Get the total cost of going to this neighbor.
-                const g = current.G + n.cost;
+                const g = current.G + n.cost + (blockEntities.exists(n) && 1000);
 
                 const visited = visitedNodes[n.getKey()];
 
@@ -252,7 +250,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             }
         }
 
-        const arr = [];
+        const arr: T[] = [];
         for (const i in visitedNodes) if (visitedNodes.hasOwnProperty(i)) arr.push(visitedNodes[i].hex);
 
         return arr;
@@ -264,7 +262,7 @@ export class Grid<T extends Hexagon = Hexagon> {
      * @param {Axial} end - The ending axial position.
      * @returns {Hexagon[]} The path from the first hex to the last hex (excluding the starting position).
      */
-    findPath(start: T, end: T) {
+    findPath(start: T, end: T): T[] {
         const grid = this;
         const openHeap = new BinaryHeap<T>(node => node.F);
         const closedHexes: {[key: string]: Grid_Search_Node<T>} = {};
@@ -321,6 +319,10 @@ export class Grid<T extends Hexagon = Hexagon> {
         // Failed to find a path
         return [];
     }
+
+    bustCache() {
+        this.neighborCache = {};
+    }
 }
 
 /**
@@ -357,11 +359,11 @@ class Grid_Search_Node<T> {
     }
 }
 
-
-export class Point {
-    constructor(public x: number, public y: number) {}
+export interface Point {
+    x: number;
+    y: number;
 }
-
+export let PointHashKey = (a: Point) => a.x + a.y * 10000 + '';
 
 // Binary Heap implementation by bgrins https://github.com/bgrins/javascript-astar
 // Based on implementation by Marijn Haverbeke http://eloquentjavascript.net/1st_edition/appendix2.html

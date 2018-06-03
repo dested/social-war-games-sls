@@ -1,11 +1,11 @@
 import {GameAction, GameActionOptions} from './actions';
-import {EntityAction, GameEntity, GameLogic} from '@swg-common/game';
+import {EntityAction, GameEntity,  GameModel} from '@swg-common/game';
 import {RoundState} from '@swg-common/models/roundState';
 
 const initialState: GameStore = {};
 
 export interface GameStore {
-    game?: GameLogic;
+    game?: GameModel;
     roundState?: RoundState;
     selectedEntity?: GameEntity;
     selectedEntityAction?: EntityAction;

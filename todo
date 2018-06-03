@@ -24,6 +24,9 @@
 '/ draw board
 '/ draw votes
 
+unify tsconfig
+convert entites to hasharray
+cleanup gmae grid game logic bullshit 
 make it so you can only see your factions stuff
 stress test
 add user vote stats
@@ -31,7 +34,7 @@ add game stats breakdown (current score)
 update images
 implement spawn logic
 
-convert to canvas
+'/ convert to canvas
 
 
 sell

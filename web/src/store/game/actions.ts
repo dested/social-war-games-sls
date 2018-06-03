@@ -3,6 +3,7 @@ import {
     GameEntity,
     GameHexagon,
     GameLogic,
+    GameModel,
     HexagonTypes,
     VoteResult
 } from '@swg-common/game';
@@ -47,7 +48,7 @@ export interface SelectViableHexAction {
 
 export interface UpdateGameAction {
     type: GameActionOptions.UpdateGame;
-    game: GameLogic;
+    game: GameModel;
     roundState: RoundState;
 }
 
@@ -73,7 +74,7 @@ export class GameActions {
     }
 
     static updateGame(
-        game: GameLogic,
+        game: GameModel,
         roundState: RoundState
     ): UpdateGameAction {
         return {
@@ -183,9 +184,7 @@ export class GameThunks {
             const game = getState().gameState.game;
             let radius = 0;
             const entityDetails = EntityDetails[entity.entityType];
-            const entityHex = game.grid.hexes.find(
-                a => a.x === entity.x && a.y === entity.y
-            );
+            const entityHex = game.grid.hexes.get(entity);
             switch (action) {
                 case 'attack':
                     radius = entityDetails.attackRadius;
@@ -198,7 +197,11 @@ export class GameThunks {
                     break;
             }
 
-            let viableHexes = game.grid.getRange(entityHex, radius);
+            let viableHexes = game.grid.getRange(
+                entityHex,
+                radius,
+                game.entities
+            );
 
             switch (action) {
                 case 'attack':

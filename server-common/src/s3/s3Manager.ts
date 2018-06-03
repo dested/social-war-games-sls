@@ -1,5 +1,6 @@
 import {config, S3, SES, SNS} from 'aws-sdk';
 import {Config} from '../config';
+import {ContentType} from 'aws-sdk/clients/s3';
 
 config.region = Config.awsRegion;
 config.update({
@@ -16,7 +17,8 @@ export class S3Manager {
                 Bucket: bucket,
                 Key: key,
                 Body: content,
-                ACL: 'public-read'
+                ACL: 'public-read',
+                ContentType:'application/json'
             })
             .promise();
 
