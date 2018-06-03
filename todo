@@ -23,18 +23,77 @@
 '/ add create and login pages
 '/ draw board
 '/ draw votes
+'/ convert entites to hasharray
+'/ make it so you can only see your factions stuff
+'/ convert to canvas
 
+each faction has 3 small bases
+  4 infantry
+  2 tanks
+  1 plane
+
+
+you always control 4 radius around base
+  2 radius around unit
+  other than that, faction tile expires 2 rounds after set
+
+units youve participated in, howd they do
+add round notes 
+  your base was attacked 
+    link to tap and go to that unit
+ mike was attacked
+ joe was moved
+
+cleanup view code
+  maintain view position
+hot units
+  units that move all the time
+ladder of players
+  votes cast
+  rounds participated in
+  damage done
+  distance moved
+  units destroyed
+  units created
+planes can fly over water
+get more turns button
+  watch ad
+  microtransaction
+ad support
+payment processor support
 unify tsconfig
-convert entites to hasharray
+fix flickering vote
+add game stats
+  percent owned by your faciton
+  show replay of turns
+add healing per tick
+show attack radius 
+add changing color to percent bar
+build bots
+more interesting level generation
+dont show votes on enemies
+add analytics
+show minimap
+how many players voted last round
+show game under login/register screen
+deploy api server
+deploy web
+cleanup entity screen
+determine level layout
+store game in mongo
+cleanup login screen
+encrypt faction
+better mobile support
 cleanup gmae grid game logic bullshit 
-make it so you can only see your factions stuff
+  remove grid
 stress test
-add user vote stats
+add user details call
+  number of votes left
+  faction encryption token
 add game stats breakdown (current score)
 update images
 implement spawn logic
-
-'/ convert to canvas
+migrate from s3
 
 
 sell

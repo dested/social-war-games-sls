@@ -7,7 +7,8 @@
     "pretty": "npx prettier \"*/**/*.ts*\"  --config .prettierrc --write",
     "lint": "npx tslint -p tsconfig.json --fix",
     "pre": "npm run tsc & npm run pretty & npm run lint",
-    "build-vote": "cross-env NODE_ENV=production webpack --progress --hide-modules"
+    "build-vote": "cross-env NODE_ENV=production webpack --progress --hide-modules",
+    "deploy": "npm run build-vote && aws lambda update-function-code --function-name swg-vote --zip-file fileb://C:\\code\\swg\\lambda\\dist\\vote\\vote.zip --publish"
   },
   "dependencies": {
     "aws-sdk": "^2.218.1",

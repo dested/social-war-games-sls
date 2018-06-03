@@ -1,9 +1,8 @@
 import {FactionId} from '@swg-common/game';
 
 export class FactionUtils {
-    static randomFaction() : FactionId{
+    static randomFaction(): FactionId {
         // todo should try to even out the teams based on active??
-        const r = Math.random() * 3;
-        return Math.floor(r).toString() as FactionId;
+        return (Math.floor(Math.random() * 3) + 1).toString() as FactionId;
     }
 }

@@ -262,7 +262,7 @@ export class Grid<T extends Hexagon = Hexagon> {
      * @param {Axial} end - The ending axial position.
      * @returns {Hexagon[]} The path from the first hex to the last hex (excluding the starting position).
      */
-    findPath(start: T, end: T): T[] {
+    findPath(start: T, end: T, blockEntities: HashArray<GameEntity, Point>): T[] {
         const grid = this;
         const openHeap = new BinaryHeap<T>(node => node.F);
         const closedHexes: {[key: string]: Grid_Search_Node<T>} = {};
@@ -294,7 +294,7 @@ export class Grid<T extends Hexagon = Hexagon> {
                 if (n.blocked || closedHexes[n.getKey()]) continue;
 
                 // Get the total cost of going to this neighbor.
-                const g = current.G + n.cost;
+                const g = current.G + n.cost + +(blockEntities.exists(n) && 1000);
 
                 const visited = visitedNodes[n.getKey()];
 

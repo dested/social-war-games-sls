@@ -42,12 +42,14 @@ export class Drawing {
                     (neighbor[i] && neighbor[i].factionId === '9')
                 )
                     continue;
+                const color = HexColors.factionIdToColor(
+                    hex.factionId,
+                    !neighbor[i] ? '0' : neighbor[i].factionId
+                );
+                if(!color)continue;
                 hex.lines.push({
                     line: [p1, p2],
-                    color: HexColors.factionIdToColor(
-                        hex.factionId,
-                        !neighbor[i] ? '0' : neighbor[i].factionId
-                    )
+                    color: color
                 });
             }
         }

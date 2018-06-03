@@ -7,6 +7,7 @@ import {
     HexagonTypes,
     VoteResult
 } from '@swg-common/game';
+import * as _ from 'lodash';
 import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
@@ -14,6 +15,8 @@ import {EntityDetails} from '@swg-common/game';
 import {RoundState} from '@swg-common/models/roundState';
 import {loadEntities} from '../../drawing/gameRenderer';
 import {HexImages} from '../../utils/hexImages';
+import {Point, PointHashKey} from '@swg-common/hex/hex';
+import {HashArray} from '@swg-common/utils/hashArray';
 
 export enum GameActionOptions {
     UpdateGame = 'UPDATE_GAME',
@@ -28,7 +31,7 @@ export interface SetEntityActionAction {
     type: GameActionOptions.SetEntityAction;
     entity: GameEntity;
     action: EntityAction;
-    viableHexIds: string[];
+    viableHexIds: {[hexId: string]: boolean};
 }
 
 export interface SelectEntityAction {
@@ -94,7 +97,7 @@ export class GameActions {
     static setEntityAction(
         entity: GameEntity,
         action: EntityAction,
-        viableHexIds: string[]
+        viableHexIds: {[hexId: string]: boolean}
     ): SetEntityActionAction {
         return {
             type: GameActionOptions.SetEntityAction,
@@ -185,23 +188,24 @@ export class GameThunks {
             let radius = 0;
             const entityDetails = EntityDetails[entity.entityType];
             const entityHex = game.grid.hexes.get(entity);
+            let entityHash: HashArray<GameEntity, Point>;
+
             switch (action) {
                 case 'attack':
                     radius = entityDetails.attackRadius;
+                    entityHash = new HashArray<GameEntity, Point>(PointHashKey);
                     break;
                 case 'move':
                     radius = entityDetails.moveRadius;
+                    entityHash = game.entities;
                     break;
                 case 'spawn':
                     radius = entityDetails.spawnRadius;
+                    entityHash = game.entities;
                     break;
             }
 
-            let viableHexes = game.grid.getRange(
-                entityHex,
-                radius,
-                game.entities
-            );
+            let viableHexes = game.grid.getRange(entityHex, radius, entityHash);
 
             switch (action) {
                 case 'attack':
@@ -232,7 +236,10 @@ export class GameThunks {
                 GameActions.setEntityAction(
                     entity,
                     action,
-                    viableHexes.map(a => a.id)
+                    viableHexes.reduce((a, b) => {
+                        a[b.id] = true;
+                        return a;
+                    }, {})
                 )
             );
         };

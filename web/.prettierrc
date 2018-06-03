@@ -2,6 +2,6 @@
   "tabWidth": 4,
   "singleQuote": true,
   "parser": "typescript",
-  "printWidth": 80,
+  "printWidth": 120,
   "bracketSpacing": false
 }

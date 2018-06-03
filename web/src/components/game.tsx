@@ -65,31 +65,36 @@ export class Component extends React.Component<Props, State> {
     }
     private getNewState(timeout: number) {
         setTimeout(async () => {
-            const roundState = await DataService.getRoundState(
-                this.props.user.factionId
-            );
-            let shouldUpdate = true;
-            if (this.props.roundState.hash.indexOf(roundState.hash) === 0) {
-                if (roundState.generation === this.props.game.generation) {
-                    shouldUpdate = false;
-                }
-            }
-            if (roundState.generation !== this.props.game.generation) {
-                this.gameState = await DataService.getGameState(
+            try {
+                const roundState = await DataService.getRoundState(
                     this.props.user.factionId
                 );
-                shouldUpdate = true;
+                let shouldUpdate = true;
+                if (this.props.roundState.hash.indexOf(roundState.hash) === 0) {
+                    if (roundState.generation === this.props.game.generation) {
+                        shouldUpdate = false;
+                    }
+                }
+                if (roundState.generation !== this.props.game.generation) {
+                    this.gameState = await DataService.getGameState(
+                        this.props.user.factionId
+                    );
+                    shouldUpdate = true;
+                }
+                if (shouldUpdate) {
+                    const game = GameLogic.buildGame(
+                        this.grid,
+                        this.layout,
+                        this.gameState
+                    );
+                    Drawing.update(game.grid, DrawingOptions.default);
+                    this.props.updateGame(game, roundState);
+                }
+                this.getNewState(roundState.nextUpdate - +new Date());
+            } catch (ex) {
+                console.error(ex);
+                this.getNewState(5000);
             }
-            if (shouldUpdate) {
-                const game = GameLogic.buildGame(
-                    this.grid,
-                    this.layout,
-                    this.gameState
-                );
-                Drawing.update(game.grid, DrawingOptions.default);
-                this.props.updateGame(game, roundState);
-            }
-            this.getNewState(roundState.nextUpdate - +new Date());
         }, Math.max(timeout + 1000, 500));
     }
 

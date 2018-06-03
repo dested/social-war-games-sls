@@ -234,7 +234,21 @@ export class GameLogic {
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
         if (!toHex) return VoteResult.ToHexNotFound;
 
-        const path = game.grid.findPath(fromHex, toHex);
+        let entityHash: HashArray<GameEntity, Point>;
+
+        switch (vote.action) {
+            case 'attack':
+                entityHash = new HashArray<GameEntity, Point>(PointHashKey);
+                break;
+            case 'move':
+                entityHash = game.entities;
+                break;
+            case 'spawn':
+                entityHash = game.entities;
+                break;
+        }
+
+        const path = game.grid.findPath(fromHex, toHex, entityHash);
         if (path.length === 0) return VoteResult.PathIsZero;
 
         const entityDetails = EntityDetails[entity.entityType];
@@ -291,8 +305,21 @@ export class GameLogic {
 
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
         if (!toHex) return VoteResult.ToHexNotFound;
+        let entityHash: HashArray<GameEntity, Point>;
 
-        const path = game.grid.findPath(fromHex, toHex);
+        switch (vote.action) {
+            case 'attack':
+                entityHash = new HashArray<GameEntity, Point>(PointHashKey);
+                break;
+            case 'move':
+                entityHash = game.entities;
+                break;
+            case 'spawn':
+                entityHash = game.entities;
+                break;
+        }
+
+        const path = game.grid.findPath(fromHex, toHex, entityHash);
         if (path.length === 0) return VoteResult.PathIsZero;
 
         const entityDetails = EntityDetails[entity.entityType];

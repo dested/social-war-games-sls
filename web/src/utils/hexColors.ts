@@ -5,7 +5,7 @@ export class HexColors {
     ) {
         switch (factionId) {
             case '0':
-                return 'transparent';
+                return null;
             case '1':
                 switch (neighborFactionId) {
                     case '0':
