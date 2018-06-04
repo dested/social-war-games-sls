@@ -1,4 +1,5 @@
 export interface EntityDetail {
+    type: EntityType;
     solid: boolean;
     moveRadius: number;
     attackRadius: number;
@@ -13,6 +14,8 @@ export type EntityAction = 'attack' | 'move' | 'spawn';
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
 export type FactionId = '0' | '1' | '2' | '3' | '9';
 
+export let Factions: FactionId[] = ['1', '2', '3'];
+
 export class GameEntity {
     id: string;
     x: number;
@@ -23,6 +26,7 @@ export class GameEntity {
 }
 export let EntityDetails: {[key in EntityType]: EntityDetail} = {
     ['factory']: {
+        type: 'factory',
         moveRadius: 0,
         health: 30,
         attackRadius: 0,
@@ -33,6 +37,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         spawnRadius: 4
     },
     ['tank']: {
+        type: 'tank',
         moveRadius: 6,
         health: 8,
         attackRadius: 8,
@@ -43,6 +48,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         spawnRadius: 0
     },
     ['plane']: {
+        type: 'plane',
         moveRadius: 8,
         health: 2,
         attackRadius: 3,
@@ -53,6 +59,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         spawnRadius: 0
     },
     ['infantry']: {
+        type: 'infantry',
         moveRadius: 4,
         health: 4,
         attackRadius: 3,

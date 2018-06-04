@@ -15,7 +15,6 @@ import {VoteRequestResults} from '@swg-common/models/http/voteResults';
 let layout: GameLayout;
 let gameState: GameState;
 let game: GameModel;
-const grid = new Grid<GameHexagon>(0, 0, 100, 100);
 
 export const handler = async (event: Event) => {
     let startTime = +new Date();
@@ -48,7 +47,7 @@ export const handler = async (event: Event) => {
         layout = layout || (await redisManager.get<GameLayout>('layout'));
         if (!gameState || gameState.generation !== generation) {
             gameState = await redisManager.get<GameState>('game-state');
-            game = GameLogic.buildGame(grid, layout, gameState);
+            game = GameLogic.buildGame(layout, gameState);
         }
 
         const body = event.body;
@@ -91,6 +90,7 @@ export const handler = async (event: Event) => {
 function response(reason: VoteRequestResults, body: any = null) {
     return {
         reason: reason,
+        statusCode: 200,
         headers: {'Content-Type': 'application/json'},
         body: body ? JSON.stringify(body) : undefined
     };

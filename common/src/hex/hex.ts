@@ -95,6 +95,8 @@ export class Grid<T extends Hexagon = Hexagon> {
     }
 
     easyBounds(x: number, y: number): Axial {
+        x = Math.round(x);
+        y = Math.round(y);
         return new Axial(x - Math.floor(y / 2), y);
     }
 
@@ -147,20 +149,62 @@ export class Grid<T extends Hexagon = Hexagon> {
         return (Math.abs(a.x - b.x) + Math.abs(a.x + a.y - b.x - b.y) + Math.abs(a.y - b.y)) / 2;
     }
 
-    /**
-     * Get a line of sight between two axial positions.
-     * @param {Axial} start -  The starting axial position.
-     * @param {Axial} end -  The ending axial position.
-     * @returns {Hexagon[]} The hexagons along the line of sight, excluding starting position.
-     */
-    getLine(start: Axial, end: Axial) {
+    getThickLine(start: Axial, end: Axial, wd: number): T[] {
+        let x0 = start.x;
+        let y0 = start.y;
+
+        let x1 = end.x;
+        let y1 = end.y;
+        const dx = Math.abs(x1 - x0);
+        const sx = x0 < x1 ? 1 : -1;
+        const dy = Math.abs(y1 - y0);
+        const sy = y0 < y1 ? 1 : -1;
+        let err = dx - dy;
+        let e2: number;
+        let x2: number;
+        let y2: number;
+
+        const ed = dx + dy == 0 ? 1 : Math.sqrt(dx * dx + dy * dy);
+
+        let hexes: T[] = [];
+
+        for (wd = (wd + 1) / 2; ; ) {
+            let hex = this.getHexAt(this.easyBounds(x0, y0));
+            if (hex) hexes.push(hex);
+            e2 = err;
+            x2 = x0;
+            if (2 * e2 >= -dx) {
+                for (e2 += dy, y2 = y0; e2 < ed * wd && (y1 != y2 || dx > dy); e2 += dx) {
+                    hex = this.getHexAt(this.easyBounds(x0, (y2 += sy)));
+                    if (hex) hexes.push(hex);
+                }
+                if (x0 == x1) break;
+                e2 = err;
+                err -= dy;
+                x0 += sx;
+            }
+            if (2 * e2 <= dy) {
+                for (e2 = dx - e2; e2 < ed * wd && (x1 != x2 || dx < dy); e2 += dy) {
+                    hex = this.getHexAt(this.easyBounds((x2 += sx), y0));
+                    if (hex) hexes.push(hex);
+                }
+
+                if (y0 == y1) break;
+                err += dx;
+                y0 += sy;
+            }
+        }
+        return hexes;
+    }
+
+    getLine(start: Axial, end: Axial): T[] {
         if (start.compareTo(end)) return [];
 
         const cube_lerp = (a: Cube, b: Cube, t: number) =>
             new Cube(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t);
         const N = this.getDistance(start, end);
-        const line1 = [];
-        const line2 = [];
+        const line1: T[] = [];
+        const line2: T[] = [];
         const cStart = start.toCube();
         const cEnd1 = end.toCube();
         const cEnd2 = end.toCube();

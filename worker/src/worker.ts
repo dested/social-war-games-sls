@@ -55,9 +55,7 @@ export class Worker {
 
             const layout = await this.redisManager.get<GameLayout>('layout');
             let gameState = await this.redisManager.get<GameState>('game-state');
-            const grid = new Grid<GameHexagon>(0, 0, 100, 100);
-
-            const game = GameLogic.buildGame(grid, layout, gameState);
+            const game = GameLogic.buildGame(layout, gameState);
 
             const voteCounts = (await DBVote.getVoteCount(generation)).sort(
                 (left, right) => _.sumBy(left.actions, a => a.count) - _.sumBy(right.actions, a => a.count)
@@ -117,9 +115,7 @@ export class Worker {
             const generation = (await this.redisManager.get<number>('game-generation')) || 1;
             const gameState = await this.redisManager.get<GameState>('game-state');
             const layout = await this.redisManager.get<GameLayout>('layout');
-            const grid = new Grid<GameHexagon>(0, 0, 100, 100);
-
-            const game = GameLogic.buildGame(grid, layout, gameState);
+            const game = GameLogic.buildGame( layout, gameState);
 
             const voteCounts = await DBVote.getVoteCount(generation);
             await S3Splitter.output(

@@ -5,7 +5,7 @@ import {GameLayout} from '@swg-common/models/gameLayout';
 import {Point, PointHashKey} from '@swg-common/hex/hex';
 import {HashArray} from '@swg-common/utils/hashArray';
 import {GameModel} from '@swg-common/game/gameLogic';
-import {EntityDetails, FactionId, GameEntity} from '@swg-common/game/entityDetail';
+import {EntityDetails, FactionId, Factions, GameEntity} from '@swg-common/game/entityDetail';
 
 export class S3Splitter {
     static async output(
@@ -16,11 +16,10 @@ export class S3Splitter {
         outputGameState: boolean
     ) {
         // console.time('factionId split');
-        const factions = ['1', '2', '3'];
         const factionList = gameState.factions.split('');
         const emptyEntityList = new HashArray<GameEntity, Point>(PointHashKey);
-        for (let i = 0; i < factions.length; i++) {
-            const factionId = factions[i] as FactionId;
+        for (let i = 0; i < Factions.length; i++) {
+            const factionId = Factions[i];
             const visibleHexes = new HashArray<Point>(PointHashKey);
 
             for (let h = 0; h < layout.hexes.length; h++) {
@@ -64,7 +63,6 @@ export class S3Splitter {
     private static filterItems(layout: GameLayout, gameState: GameState, visibleHexes: HashArray<Point>): GameState {
         const entities = gameState.entities;
 
-        const factions = ['1', '2', '3'];
         const visibleEntities: GameStateEntityMap = {
             '0': [],
             '1': [],
@@ -72,8 +70,8 @@ export class S3Splitter {
             '3': [],
             '9': []
         };
-        for (let i = 0; i < factions.length; i++) {
-            const faction = factions[i] as FactionId;
+        for (let i = 0; i < Factions.length; i++) {
+            const faction = Factions[i];
             for (let i = 0; i < entities[faction].length; i++) {
                 const entity = entities[faction][i];
                 if (visibleHexes.exists(entity)) {

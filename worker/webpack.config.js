@@ -23,12 +23,12 @@ module.exports = env => {
             new webpack.IgnorePlugin(/hiredis/),
             env === 'deploy' &&
                 new SshWebpackPlugin({
-                    host: 'ec2-34-219-192-19.us-west-2.compute.amazonaws.com',
+                    host: 'ec2-34-219-238-88.us-west-2.compute.amazonaws.com',
                     port: '22',
                     username: 'ec2-user',
                     privateKey: fs.readFileSync('C:\\junk\\certs\\aws-dested.ppk'),
                     from: path.join(__dirname, 'dist'),
-                    zip: true,
+                    zip:false,
                     to: '/home/ec2-user'
                 })
         ].filter(a => a),

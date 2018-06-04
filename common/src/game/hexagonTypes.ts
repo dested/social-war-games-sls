@@ -1,3 +1,5 @@
+import {Utils} from '../utils/utils';
+
 export type TileType = 'Dirt' | 'Grass' | 'Stone' | 'Clay' | 'Water';
 export type TileSubType = '1' | '2' | '3' | '4' | '5';
 
@@ -75,7 +77,7 @@ export class HexagonTypes {
     });
 
     static randomSubType(): TileSubType {
-        if (Math.random() * 100 < 90) return '1';
+        if (Utils.random(90)) return '1';
         return (Math.floor(Math.random() * 5) + 1).toString() as TileSubType;
     }
 

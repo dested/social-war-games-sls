@@ -29,13 +29,14 @@
 
 
 gameplay
-  each faction has 3 small bases
-    4 infantry
-    2 tanks
-    1 plane
-  you always control 4 radius around base
+  '/each faction has 5 small bases
+  '/  4 infantry
+  '/  2 tanks
+  '/  1 plane
+  you always control 5 radius around base
     2 radius around unit
     other than that, faction tile expires 2 rounds after set
+  what happens when you destroy a factory
   planes can fly over water
   add healing per tick
   show attack radius 
@@ -48,6 +49,7 @@ gameplay
     number of votes left
     faction encryption token
   implement spawn logic
+  add resources??
   
 stats
   units youve participated in, howd they do
@@ -78,6 +80,7 @@ janitorial
   unify tsconfig
   cleanup gmae grid game logic bullshit 
     remove grid
+  make better use of caching in server
   
 endgame
   get more turns button

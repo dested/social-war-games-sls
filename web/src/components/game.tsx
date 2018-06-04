@@ -36,7 +36,6 @@ interface State {
 export class Component extends React.Component<Props, State> {
     private gameRenderer: GameRenderer;
     private layout: GameLayout;
-    private grid: Grid<GameHexagon>;
     private gameState: GameState;
     constructor(props: Props, context: any) {
         super(props, context);
@@ -51,25 +50,19 @@ export class Component extends React.Component<Props, State> {
         this.props.startLoading();
 
         this.layout = await DataService.getLayout();
-        this.gameState = await DataService.getGameState(
-            this.props.user.factionId
-        );
-        const roundState = await DataService.getRoundState(
-            this.props.user.factionId
-        );
-        this.grid = new Grid<GameHexagon>(0, 0, 100, 100);
-        let game = GameLogic.buildGame(this.grid, this.layout, this.gameState);
+        this.gameState = await DataService.getGameState(this.props.user.factionId);
+        const roundState = await DataService.getRoundState(this.props.user.factionId);
+        let game = GameLogic.buildGame(this.layout, this.gameState);
         Drawing.update(game.grid, DrawingOptions.default);
         this.props.updateGame(game, roundState);
 
         this.getNewState(roundState.nextUpdate - +new Date());
     }
+
     private getNewState(timeout: number) {
         setTimeout(async () => {
             try {
-                const roundState = await DataService.getRoundState(
-                    this.props.user.factionId
-                );
+                const roundState = await DataService.getRoundState(this.props.user.factionId);
                 let shouldUpdate = true;
                 if (this.props.roundState.hash.indexOf(roundState.hash) === 0) {
                     if (roundState.generation === this.props.game.generation) {
@@ -77,17 +70,11 @@ export class Component extends React.Component<Props, State> {
                     }
                 }
                 if (roundState.generation !== this.props.game.generation) {
-                    this.gameState = await DataService.getGameState(
-                        this.props.user.factionId
-                    );
+                    this.gameState = await DataService.getGameState(this.props.user.factionId);
                     shouldUpdate = true;
                 }
                 if (shouldUpdate) {
-                    const game = GameLogic.buildGame(
-                        this.grid,
-                        this.layout,
-                        this.gameState
-                    );
+                    const game = GameLogic.buildGame(this.layout, this.gameState);
                     Drawing.update(game.grid, DrawingOptions.default);
                     this.props.updateGame(game, roundState);
                 }
@@ -106,18 +93,12 @@ export class Component extends React.Component<Props, State> {
             Number.isNaN(this.props.imagesLoading)
         ) {
             return (
-                <div style={{width: '30%', height: '30%', margin: 'auto'}}>
-                    Images Left: {this.props.imagesLoading}
-                </div>
+                <div style={{width: '30%', height: '30%', margin: 'auto'}}>Images Left: {this.props.imagesLoading}</div>
             );
         }
         return (
             <Fragment>
-                <canvas
-                    ref={e => this.gameRenderer.start(e)}
-                    width={window.innerWidth}
-                    height={window.innerHeight}
-                />
+                <canvas ref={e => this.gameRenderer.start(e)} width={window.innerWidth} height={window.innerHeight} />
                 {this.props.selectedEntity && <GameSidePanel />}
             </Fragment>
         );

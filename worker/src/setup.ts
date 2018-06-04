@@ -32,6 +32,8 @@ export class Setup {
         console.log('set generation', game.generation);
 
         const gameLayout: GameLayout = {
+            boardWidth: game.grid.boundsWidth,
+            boardHeight: game.grid.boundsHeight,
             hexes: game.grid.hexes.map(a => ({
                 x: a.x,
                 y: a.y,
@@ -46,7 +48,7 @@ export class Setup {
 
         console.log('built state');
 
-        /*await*/ S3Manager.uploadJson('layout.json', JSON.stringify(gameLayout));
+        await S3Manager.uploadJson('layout.json', JSON.stringify(gameLayout));
 
         await S3Splitter.output(game, gameLayout, gameState, roundState, true);
 

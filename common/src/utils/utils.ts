@@ -9,6 +9,10 @@ export class Utils {
         );
     }
 
+    static random(chance: number) {
+        return Math.random() * 100 < chance;
+    }
+
     static timeout(timeout: number): Promise<void> {
         return new Promise(res => {
             setTimeout(() => {
