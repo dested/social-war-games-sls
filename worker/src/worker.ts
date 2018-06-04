@@ -9,9 +9,9 @@ import {GameLayout} from '@swg-common/models/gameLayout';
 import {S3Splitter} from './s3Splitter';
 import {StateManager} from './stateManager';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
-import {GameLogic} from '@swg-common/game/gameLogic';
+import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {FactionId} from '@swg-common/game/entityDetail';
+import {FactionId, Factions} from '@swg-common/game/entityDetail';
 
 export class Worker {
     private static redisManager: RedisManager;
@@ -87,6 +87,7 @@ export class Worker {
                     }
                 }
             }
+            this.updateFactions(gameState, game);
 
             console.log('Executed Votes', winningVotes);
             game.generation++;
@@ -104,6 +105,35 @@ export class Worker {
         }
     }
 
+    private static updateFactions(gameState: GameState, game: GameModel) {
+        for (let i = 0; i < Factions.length; i++) {
+            const faction = Factions[i];
+            for (let i = 0; i < gameState.entities[faction].length; i++) {
+                const entity = gameState.entities[faction][i];
+                if (entity.entityType === 'factory') {
+                    for (const gameHexagon of game.grid.getCircle({x: entity.x, y: entity.y}, 5)) {
+                        gameHexagon.setFactionId(faction, 3);
+                    }
+                } else {
+                    for (const gameHexagon of game.grid.getCircle({x: entity.x, y: entity.y}, 1)) {
+                        gameHexagon.setFactionId(faction, 3);
+                    }
+                }
+            }
+        }
+
+        const hexes = game.grid.hexes.array;
+        for (let h = 0; h < hexes.length; h++) {
+            const hex = hexes[h];
+            if (hex.factionDuration === 1) {
+                hex.factionDuration = 0;
+                hex.factionId = '0';
+            } else if (hex.factionDuration > 0) {
+                hex.factionDuration--;
+            }
+        }
+    }
+
     private static async processRoundUpdate() {
         this.update++;
         if (this.update % (Config.gameDuration / Config.roundUpdateDuration) === 0) {
@@ -115,7 +145,7 @@ export class Worker {
             const generation = (await this.redisManager.get<number>('game-generation')) || 1;
             const gameState = await this.redisManager.get<GameState>('game-state');
             const layout = await this.redisManager.get<GameLayout>('layout');
-            const game = GameLogic.buildGame( layout, gameState);
+            const game = GameLogic.buildGame(layout, gameState);
 
             const voteCounts = await DBVote.getVoteCount(generation);
             await S3Splitter.output(

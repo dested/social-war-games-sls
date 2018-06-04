@@ -26,7 +26,7 @@ export class StateManager {
 
     static buildGameState(game: GameModel): GameState {
         return {
-            factions: game.grid.hexes.map(a => a.factionId).join(''),
+            factions: game.grid.hexes.map(a => a.factionId + '' + a.factionDuration).join(''),
             entities: game.entities.reduce(
                 (entities, ent) => {
                     if (!entities[ent.factionId]) entities[ent.factionId] = [];

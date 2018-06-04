@@ -4,7 +4,7 @@ import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {Point, PointHashKey} from '@swg-common/hex/hex';
 import {HashArray} from '@swg-common/utils/hashArray';
-import {GameModel} from '@swg-common/game/gameLogic';
+import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {EntityDetails, FactionId, Factions, GameEntity} from '@swg-common/game/entityDetail';
 
 export class S3Splitter {
@@ -16,7 +16,7 @@ export class S3Splitter {
         outputGameState: boolean
     ) {
         // console.time('factionId split');
-        const factionList = gameState.factions.split('');
+
         const emptyEntityList = new HashArray<GameEntity, Point>(PointHashKey);
         for (let i = 0; i < Factions.length; i++) {
             const factionId = Factions[i];
@@ -24,7 +24,7 @@ export class S3Splitter {
 
             for (let h = 0; h < layout.hexes.length; h++) {
                 const hex = layout.hexes[h];
-                if (factionId === factionList[h]) {
+                if (factionId === GameLogic.getFactionId(gameState.factions, h)) {
                     for (const gameHexagon of game.grid.getCircle(hex, 2)) {
                         visibleHexes.push(gameHexagon);
                     }
@@ -84,9 +84,11 @@ export class S3Splitter {
         for (let h = 0; h < layout.hexes.length; h++) {
             const hex = layout.hexes[h];
             if (visibleHexes.exists(hex)) {
-                factionStr.push(gameState.factions[h]);
+                factionStr.push(GameLogic.getFactionId(gameState.factions, h));
+                factionStr.push(GameLogic.getFactionDuration(gameState.factions, h));
             } else {
                 factionStr.push(9);
+                factionStr.push(0);
             }
         }
         return {...gameState, entities: visibleEntities, factions: factionStr.join('')};

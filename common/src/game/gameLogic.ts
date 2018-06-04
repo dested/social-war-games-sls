@@ -21,13 +21,16 @@ export interface GameModel {
 export class GameLogic {
     static buildGame(layout: GameLayout, gameState: GameState): GameModel {
         const grid = new Grid<GameHexagon>(0, 0, layout.boardWidth, layout.boardHeight);
-        const factions = gameState.factions.split('') as FactionId[];
+
         grid.hexes = new HashArray<GameHexagon, Point>(PointHashKey);
 
         for (let i = 0; i < layout.hexes.length; i++) {
             const hex = layout.hexes[i];
             const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), hex.id, hex.x, hex.y);
-            gameHexagon.setFactionId(factions[i]);
+            gameHexagon.setFactionId(
+                GameLogic.getFactionId(gameState.factions, i),
+                GameLogic.getFactionDuration(gameState.factions, i)
+            );
             grid.hexes.push(gameHexagon);
         }
 
@@ -133,8 +136,10 @@ export class GameLogic {
                 factionCenters.push(center);
                 const baseHexes = grid.getCircle(center, baseRadius);
                 for (const hex of baseHexes) {
-                    hex.setFactionId(faction);
+                    hex.setFactionId(faction, 3);
                 }
+                const innerBaseHexes = grid.getCircle(center, baseRadius-1);
+
 
                 entities.push({
                     id: this.nextId(),
@@ -146,7 +151,7 @@ export class GameLogic {
                 });
 
                 for (let i = 1; i < entitiesPerBase.length; i++) {
-                    const hex = baseHexes[Math.floor(Math.random() * baseHexes.length)];
+                    const hex = innerBaseHexes[Math.floor(Math.random() * innerBaseHexes.length)];
                     if (entities.find(a => a.x === hex.x && a.y === hex.y)) {
                         i--;
                         continue;
@@ -361,7 +366,9 @@ export class GameLogic {
                 if (toEntity) return VoteResult.MoveSpotNotEmpty;
                 console.log('path length', path.length);
                 for (let index = 0; index < path.length; index++) {
-                    path[index].setFactionId(entity.factionId);
+                    for (const gameHexagon of game.grid.getCircle(path[index], 1)) {
+                        gameHexagon.setFactionId(entity.factionId, 3);
+                    }
                 }
                 entity.x = toHex.x;
                 entity.y = toHex.y;
@@ -373,5 +380,13 @@ export class GameLogic {
         }
 
         return VoteResult.Success;
+    }
+
+    static getFactionId(factions: string, index: number): FactionId {
+        return factions.charAt(index * 2) as FactionId;
+    }
+
+    static getFactionDuration(factions: string, index: number): number {
+        return parseInt(factions.charAt(index * 2 + 1));
     }
 }
