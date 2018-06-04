@@ -9,7 +9,7 @@
     "verify": "tsc --noEmit",
     "pre": "npm run tsc & npm run pretty & npm run lint",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --port 8787 --open",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules --env=deploy"
   },
   "dependencies": {
     "glamor": "^2.20.40",
@@ -25,17 +25,20 @@
     "redux": "^4.0.0"
   },
   "devDependencies": {
+    "@types/hammerjs": "^2.0.35",
     "@types/lodash": "4.14.109",
     "@types/react": "^16.0.17",
+    "@types/react-dom": "^16.0.2",
+    "@types/react-redux": "^6.0.0",
     "@types/react-router": "^4.0.25",
     "@types/react-router-dom": "^4.2.6",
     "@types/redux": "^3.6.0",
     "@types/redux-thunk": "^2.1.0",
-    "@types/react-redux": "^6.0.0",
-    "@types/react-dom": "^16.0.2",
-    "@types/hammerjs": "^2.0.35",
-    "typescript": "^2.8.3",
+    "less": "^3.0.4",
+    "less-loader": "^4.1.0",
     "ts-loader": "^3.0.5",
+    "typescript": "^2.8.3",
+    "uglifyjs-webpack-plugin": "^1.2.5",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.3"
   }

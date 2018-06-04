@@ -2,6 +2,8 @@ const webpack = require('webpack');
 const fs = require('fs');
 const path = require('path');
 const SshWebpackPlugin = require('ssh-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+
 module.exports = env => {
     return {
         entry: './src/server.ts',
@@ -21,6 +23,7 @@ module.exports = env => {
         externals: {},
         plugins: [
             new webpack.IgnorePlugin(/hiredis/),
+            env === 'deploy' && new UglifyJsPlugin(),
             env === 'deploy' &&
                 new SshWebpackPlugin({
                     host: 'ec2-34-219-238-88.us-west-2.compute.amazonaws.com',
@@ -28,7 +31,7 @@ module.exports = env => {
                     username: 'ec2-user',
                     privateKey: fs.readFileSync('C:\\junk\\certs\\aws-dested.ppk'),
                     from: path.join(__dirname, 'dist'),
-                    zip:false,
+                    zip: false,
                     to: '/home/ec2-user'
                 })
         ].filter(a => a),

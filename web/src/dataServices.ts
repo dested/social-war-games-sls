@@ -8,8 +8,8 @@ import {EntityAction, FactionId} from '@swg-common/game/entityDetail';
 import {VoteRequestResults} from '@swg-common/models/http/voteResults';
 
 export class DataService {
-    // private static voteServer: string = 'https://vote.socialwargames.com/';
-    private static userServer: string = 'http://localhost:4569';
+    private static userServer: string = 'https://user.socialwargames.com';
+    // private static userServer: string = 'http://localhost:4569';
     private static voteServer: string = 'https://api.socialwargames.com';
     private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
 

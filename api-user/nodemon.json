@@ -2,5 +2,5 @@
   "watch": ["dist"],
   "ext": "js",
   "ignore": ["bin/**/*.test.js"],
-  "exec": "node dist/index.js"
+  "exec": "node dist/user.js"
 }
