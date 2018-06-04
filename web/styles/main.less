@@ -7,12 +7,16 @@ body {
 }
 
 body {
-  height: 100%;
+  height:100vh;
+  width:100vw;
   position: relative;
-  width: 100%;
   overflow: hidden;
 }
-
+#main{
+  height:100%;
+  width:100%;
+  display: flex;
+}
 .center {
   display: block;
   margin-left: auto;
@@ -45,118 +49,32 @@ body {
 
 }
 
-.game-ui {
+.hexagon {
+  position: relative;
+  width: 150px;
+  height: 86.60px;
+  background-color: #64C7CC;
+  margin: 43.30px 0;
+}
 
-  width: 100vw;
+.hexagon:before,
+.hexagon:after {
+  content: "";
   position: absolute;
-  height: 25vh;
-  bottom: 0;
-  cursor: default;
-  pointer-events: none;
-
-  .countdown-container {
-    left: 24.6%;
-    width: 75.8%;
-    position: absolute;
-    height: 7%;
-    bottom: 40%;
-    background: rgba(189, 189, 189, 0.68);
-    .countdown-container-ticker {
-      height: 100%;
-      background: rgba(0, 157, 0, 0.8);
-      background-size: 20px 20px;
-      background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent);
-      background-position: 0 0;
-
-      animation-name: MOVE-BG;
-      animation-duration: 10s;
-      animation-timing-function: linear;
-      animation-iteration-count: infinite;
-
-
-    }
-    .countdown-frozen {
-      background: rgba(181, 188, 20, 0.8);
-      height: 100%;
-      background-size: 20px 20px;
-      background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent);
-      background-position: 0 0;
-
-      animation-name: MOVE-BG;
-      animation-duration: 10s;
-      animation-timing-function: linear;
-      animation-iteration-count: infinite;
-    }
-  }
-  @keyframes MOVE-BG {
-    from {
-      background-position: 0 0;
-    }
-    to {
-      background-position: -400px 0;
-    }
-  }
-
-  .label {
-    font-size: 24px;
-    font-weight: bold;
-    color: #434343;
-  }
-
-  .left-bubble {
-    pointer-events: auto;
-    left: 0;
-    width: 25%;
-    border-top-right-radius: 70%;
-    border-top: 10px solid black;
-    border-right: 4px solid black;
-    position: absolute;
-    height: 100%;
-    bottom: 0;
-    background: rgba(244, 244, 244, 0.6);
-    overflow: hidden;
-    margin-left: 0;
-    margin-top: 0;
-    cursor: all-scroll;
-  }
-  .center {
-    pointer-events: auto;
-    padding: 10px;
-    left: 24.8%;
-    width: 75.4%;
-    position: absolute;
-    height: 40%;
-    bottom: 0;
-    background: rgba(255, 0, 0, 0.74);
-    border-top: solid 4px black;
-  }
+  width: 0;
+  border-left: 75px solid transparent;
+  border-right: 75px solid transparent;
 }
 
-.action-button {
-  float: left;
-  margin-left: 20px;
-  border: solid 2px black;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100px;
-  height: 100%;
+.hexagon:before {
+  bottom: 100%;
+  border-bottom: 43.30px solid #64C7CC;
 }
 
-.attack-button {
-  background-color: #da1709;
-}
-
-.move-button {
-  background-color: #71ccff;
-}
-
-.spawn-button {
-  background-color: #30ff7b;
-}
-
-.selected-button {
-  border: solid 4px #333333;
+.hexagon:after {
+  top: 100%;
+  width: 0;
+  border-top: 43.30px solid #64C7CC;
 }
 
 /* Absolute Center Spinner */

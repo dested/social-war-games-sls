@@ -12,24 +12,22 @@ export class Drawing {
         PointyTop: 2
     };
 
-    static update(grid: Grid<GameHexagon>, options: DrawingOptions) {
+    static update(grid: Grid<GameHexagon>, options: DrawingOptions, smallOptions: DrawingOptions) {
         for (const hex of grid.hexes) {
-            this.updateHex(hex, grid, options);
+            this.updateHex(hex, grid, options, smallOptions);
         }
     }
 
-    static updateHex(
-        hex: GameHexagon,
-        grid: Grid<GameHexagon>,
-        options: DrawingOptions
-    ) {
+    static updateHex(hex: GameHexagon, grid: Grid<GameHexagon>, options: DrawingOptions, smallOptions: DrawingOptions) {
         hex.center = hex.center || Drawing.getCenter(hex, options);
+        hex.smallCenter = hex.smallCenter || Drawing.getCenter(hex, smallOptions);
+
         hex.points = hex.points || Drawing.getCorners(hex.center, options);
-        hex.pointsSvg =
-            hex.pointsSvg ||
-            new Path2D(
-                'M' + hex.points.map(a => `${a.x},${a.y}`).join(' ') + 'Z'
-            );
+        hex.smallPoints = hex.smallPoints || Drawing.getCorners(hex.smallCenter, smallOptions);
+
+        hex.pointsSvg = hex.pointsSvg || new Path2D('M' + hex.points.map(a => `${a.x},${a.y}`).join(' ') + 'Z');
+        hex.smallPointsSvg =
+            hex.smallPointsSvg || new Path2D('M' + hex.smallPoints.map(a => `${a.x},${a.y}`).join(' ') + 'Z');
 
         const neighbor = grid.getNeighbors(hex);
         hex.lines = [];
@@ -37,16 +35,13 @@ export class Drawing {
             const p1 = hex.points[i];
             const p2 = hex.points[(i + 1) % 6];
             if (!neighbor[i] || neighbor[i].factionId !== hex.factionId) {
-                if (
-                    hex.factionId === '9' ||
-                    (neighbor[i] && neighbor[i].factionId === '9')
-                )
-                    continue;
+                if (hex.factionId === '9' || (neighbor[i] && neighbor[i].factionId === '9')) continue;
                 const color = HexColors.factionIdToColor(
                     hex.factionId,
-                    !neighbor[i] ? '0' : neighbor[i].factionId
+                    !neighbor[i] ? '0' : neighbor[i].factionId,
+                    '1'
                 );
-                if(!color)continue;
+                if (!color) continue;
                 hex.lines.push({
                     line: [p1, p2],
                     color: color
@@ -65,8 +60,7 @@ export class Drawing {
     }
 
     static getCorner(center: Point, options: DrawingOptions, corner: number) {
-        const offset =
-            options.orientation === Drawing.Orientation.PointyTop ? 90 : 0;
+        const offset = options.orientation === Drawing.Orientation.PointyTop ? 90 : 0;
         const angle_deg = 60 * corner + offset;
         const angle_rad = Math.PI / 180 * angle_deg;
         return {
@@ -87,14 +81,10 @@ export class Drawing {
             x = (c.x + c.z / 2) * options.width;
             y = c.z * options.height * 3 / 4;
         }
-        return {x,y};
+        return {x, y};
     }
 
-    static getHexAt<T extends Hexagon = Hexagon>(
-        p: Point,
-        grid: Grid<T>,
-        options: DrawingOptions
-    ) {
+    static getHexAt<T extends Hexagon = Hexagon>(p: Point, grid: Grid<T>, options: DrawingOptions) {
         let x;
         let y;
 
@@ -120,15 +110,10 @@ export class DrawingOptions {
     width: number;
     height: number;
 
-    static default = new DrawingOptions(
-        HexConstants.height / 2 - 1,
-        Drawing.Orientation.PointyTop
-    );
+    static default = new DrawingOptions(HexConstants.height / 2 - 1, Drawing.Orientation.PointyTop);
+    static defaultSmall = new DrawingOptions(HexConstants.smallHeight / 2 - 1, Drawing.Orientation.PointyTop);
 
-    constructor(
-        side: number,
-        public orientation: 1 | 2 = Drawing.Orientation.FlatTop,
-    ) {
+    constructor(side: number, public orientation: 1 | 2 = Drawing.Orientation.FlatTop) {
         this.size = side;
         if (this.orientation === Drawing.Orientation.FlatTop) {
             this.width = side * 2;

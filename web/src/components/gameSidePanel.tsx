@@ -8,12 +8,13 @@ import {GameThunks} from '../store/game/actions';
 import {Dispatcher} from '../store/actions';
 import {RoundState} from '@swg-common/models/roundState';
 import {GameModel} from '@swg-common/game/gameLogic';
-import {EntityAction, GameEntity} from '@swg-common/game/entityDetail';
+import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
+import {EntityAssets} from '../drawing/gameRenderer';
+import {HexColors} from '../utils/hexColors';
+import {ColorUtils} from '../utils/colorUtils';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
-    isVoting?: boolean;
-    votingError?: boolean;
     selectedEntity?: GameEntity;
     roundState?: RoundState;
     game?: GameModel;
@@ -30,22 +31,85 @@ export class Component extends React.Component<Props, State> {
 
     render() {
         const entity = this.props.selectedEntity;
-        let actions;
+        const entityDetails = EntityDetails[entity.entityType];
+        const myEntity = this.props.user.factionId === entity.factionId;
+        return (
+            <div
+                style={{
+                    height: myEntity ? '368px' : '300px',
+                    borderBottomLeftRadius: '40px',
+                    width: '330px',
+                    position: 'absolute',
+                    right: 0,
+                    backgroundColor: 'rgba(255,255,255,.6)',
+                    padding: 20,
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
+            >
+                <div
+                    style={{
+                        borderRadius: '50%',
+                        width: '180px',
+                        height: '180px',
+                        display: 'flex',
+                        alignSelf: 'center',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        margin: '10px',
+                        backgroundColor: HexColors.factionIdToColor(entity.factionId, '0', '.8')
+                    }}
+                >
+                    <img src={EntityAssets[entity.entityType].imageUrl} style={{width: '120px'}} />
+                </div>
+                <div
+                    style={{
+                        display: 'flex',
+                        borderRadius: '20px',
+                        border: 'solid 2px black',
+                        backgroundColor: 'rgba(50,50,50,1)',
+                        height: '40px'
+                    }}
+                >
+                    <div
+                        style={{
+                            borderRadius: '20px',
+                            width: `${entity.health / entityDetails.health * 100}%`,
+                            backgroundColor: ColorUtils.lerpColor(
+                                '#FF0000',
+                                '#00FF00',
+                                entity.health / entityDetails.health
+                            )
+                        }}
+                    />
+                </div>
+                {myEntity && this.renderActions(entity)}
+            </div>
+        );
+    }
+
+    private renderActions(entity) {
         const actionButton = {
             width: 100,
             margin: 10,
-            borderRadius: 5,
+            borderRadius: 10,
             alignItems: 'center',
-            justifyContent: 'center',
             height: 100,
             color: 'white',
+            justifyContent: 'center',
+
             display: 'flex'
+        };
+        const outer = {
+            display: 'flex',
+            justifyContent: 'center',
+            fontSize: '25px'
         };
 
         switch (entity.entityType) {
             case 'infantry':
-                actions = (
-                    <div style={{display: 'flex'}}>
+                return (
+                    <div style={outer}>
                         <div
                             style={{...actionButton, backgroundColor: 'red'}}
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
@@ -60,10 +124,9 @@ export class Component extends React.Component<Props, State> {
                         </div>
                     </div>
                 );
-                break;
             case 'tank':
-                actions = (
-                    <div style={{display: 'flex'}}>
+                return (
+                    <div style={outer}>
                         <div
                             style={{...actionButton, backgroundColor: 'red'}}
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
@@ -78,10 +141,9 @@ export class Component extends React.Component<Props, State> {
                         </div>
                     </div>
                 );
-                break;
             case 'plane':
-                actions = (
-                    <div style={{display: 'flex'}}>
+                return (
+                    <div style={outer}>
                         <div
                             style={{...actionButton, backgroundColor: 'red'}}
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
@@ -96,10 +158,9 @@ export class Component extends React.Component<Props, State> {
                         </div>
                     </div>
                 );
-                break;
             case 'factory':
-                actions = (
-                    <div style={{display: 'flex'}}>
+                return (
+                    <div style={outer}>
                         <div
                             style={{
                                 ...actionButton,
@@ -111,38 +172,13 @@ export class Component extends React.Component<Props, State> {
                         </div>
                     </div>
                 );
-                break;
         }
-
-        return (
-            <div
-                style={{
-                    height: '100%',
-                    width: '30%',
-                    position: 'absolute',
-                    right: 0,
-                    backgroundColor: 'rgba(255,255,255,.8)',
-                    padding: 20,
-                    display: 'flex',
-                    flexDirection: 'column'
-                }}
-            >
-                <span>{entity.entityType}</span>
-                <span>Health: {entity.health}</span>
-                <span>Faction: {entity.factionId}</span>
-                {this.props.user.factionId === entity.factionId && actions}
-                {this.props.isVoting === true && 'Submitting your vote!'}
-                {this.props.votingError === true && 'There was an issue with your vote!'}
-            </div>
-        );
     }
 }
 
 export let GameSidePanel = connect(
     (state: SwgStore) => ({
         user: state.appState.user,
-        isVoting: state.gameState.isVoting,
-        votingError: state.gameState.votingError,
         game: state.gameState.game,
         roundState: state.gameState.roundState,
         selectedEntity: state.gameState.selectedEntity

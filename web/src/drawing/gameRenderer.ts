@@ -10,22 +10,26 @@ import {HexColors} from '../utils/hexColors';
 import {Drawing, DrawingOptions} from './hexDrawing';
 import {HexImages} from '../utils/hexImages';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
-import {GameEntity} from '@swg-common/game/entityDetail';
+import {EntityType, GameEntity} from '@swg-common/game/entityDetail';
 import {ColorUtils} from '../utils/colorUtils';
+import {GameView} from './gameView';
+import {UIConstants} from '../utils/uiConstants';
 
 type EntityAsset = {
     image: HTMLImageElement;
+    imageUrl: string;
     width: number;
     height: number;
     centerX: number;
     centerY: number;
 };
 
-export let EntityAssets: {[key: string]: EntityAsset};
+export let EntityAssets: {[key in EntityType]: EntityAsset};
 export let loadEntities = () => {
     EntityAssets = {
         infantry: {
             image: ImageUtils.preloadImage(`./assets/infantry.png`),
+            imageUrl: `./assets/infantry.png`,
             width: 120,
             height: 180,
             centerX: 60,
@@ -33,6 +37,7 @@ export let loadEntities = () => {
         },
         tank: {
             image: ImageUtils.preloadImage(`./assets/tank.png`),
+            imageUrl: `./assets/tank.png`,
             width: 120,
             height: 140,
             centerX: 60,
@@ -41,6 +46,7 @@ export let loadEntities = () => {
 
         plane: {
             image: ImageUtils.preloadImage(`./assets/plane.png`),
+            imageUrl: `./assets/plane.png`,
             width: 120,
             height: 140,
             centerX: 60,
@@ -49,6 +55,7 @@ export let loadEntities = () => {
 
         factory: {
             image: ImageUtils.preloadImage(`./assets/factory.png`),
+            imageUrl: `./assets/factory.png`,
             width: 120,
             height: 140,
             centerX: 60,
@@ -60,14 +67,7 @@ export let loadEntities = () => {
 export class GameRenderer {
     private canvas: HTMLCanvasElement;
     private context: CanvasRenderingContext2D;
-    private view: {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        scale: number;
-    };
-    private viewSlop = 100;
+    view: GameView;
 
     selectEntity = (entity: GameEntity) => getStore().dispatch(GameActions.selectEntity(entity));
     selectedViableHex = (hex: GameHexagon) => getStore().dispatch(GameThunks.selectViableHex(hex));
@@ -109,8 +109,7 @@ export class GameRenderer {
                 duration: 250,
                 easing: AnimationUtils.easings.easeInCubic,
                 callback: c => {
-                    this.view.x = AnimationUtils.lerp(startX, endX, c);
-                    this.view.y = AnimationUtils.lerp(startY, endY, c);
+                    this.view.setPosition(AnimationUtils.lerp(startX, endX, c), AnimationUtils.lerp(startY, endY, c));
                 }
             });
             AnimationUtils.start({
@@ -150,18 +149,11 @@ export class GameRenderer {
         let startViewX = 0;
         let startViewY = 0;
 
-        this.view = {
-            x: 0,
-            y: 0,
-            width: window.innerWidth,
-            height: window.innerHeight,
-            scale: 1
-        };
+        this.view = new GameView(this.canvas);
 
         manager.on('panmove', e => {
             if (e.velocity === 0) return;
-            this.view.x = startViewX + (startX - e.center.x);
-            this.view.y = startViewY + (startY - e.center.y);
+            this.view.setPosition(startViewX + (startX - e.center.x), startViewY + (startY - e.center.y));
         });
 
         manager.on('panstart', e => {
@@ -178,8 +170,8 @@ export class GameRenderer {
             const {game} = state.gameState;
             const hex = Drawing.getHexAt(
                 {
-                    x: this.view.x + e.center.x,
-                    y: this.view.y + e.center.y
+                    x: this.view.x + (e.center.x - e.target.offsetLeft),
+                    y: this.view.y + (e.center.y - e.target.offsetTop)
                 },
                 game.grid,
                 DrawingOptions.default
@@ -226,11 +218,11 @@ export class GameRenderer {
         context.translate(offsetX, offsetY);
 */
 
-        const vx = this.view.x - this.viewSlop;
-        const vy = this.view.y - this.viewSlop;
+        const vx = this.view.xSlop;
+        const vy = this.view.ySlop;
 
-        const vwidth = this.view.width + this.viewSlop * 2;
-        const vheight = this.view.height + this.viewSlop * 2;
+        const vwidth = this.view.widthSlop;
+        const vheight = this.view.heightSlop;
 
         const hexes = grid.hexes.filter(
             hexagon =>
@@ -256,7 +248,6 @@ export class GameRenderer {
             const isViableHex = viableHexIds[hexagon.id];
             const hasEntity = game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
             context.lineWidth = isViableHex ? 4 : 2;
-            const factionColor = HexColors.factionIdToColor(hexagon.factionId, '0');
 
             if (hexagon.factionId === '9') {
                 context.fillStyle = 'rgba(0,0,0,.6)';
@@ -264,13 +255,15 @@ export class GameRenderer {
                 if (isViableHex) {
                     context.fillStyle = 'rgba(128,52,230,.25)';
                 } else {
-                    if (!factionColor) {
-                        continue;
-                    }
+                    if (hexagon.factionId === '0') continue;
                     if (hasEntity) {
-                        context.fillStyle = factionColor.replace(',1)', ',.8)');
+                        context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '.8');
                     } else {
-                        context.fillStyle = factionColor.replace(',1)', ',.4)');
+                        context.fillStyle = HexColors.factionIdToColor(
+                            hexagon.factionId,
+                            '0',
+                            hexagon.factionDuration === 1 ? '.2' : '.5'
+                        );
                     }
                 }
             }
@@ -302,22 +295,19 @@ export class GameRenderer {
                 context.stroke();
             }
         }
+        const wRatio = HexConstants.width / HexConstants.defaultWidth;
+        const hRatio = HexConstants.height / HexConstants.defaultHeight;
+        let rectWidth = HexConstants.width * 0.35;
+        let rectHeight = HexConstants.height * 0.4;
+        let fontSize = Math.round(rectWidth / 1.7);
         context.textAlign = 'center';
         context.textBaseline = 'bottom';
+        context.font = `${fontSize}px Arial`;
 
         for (let i = 0; i < game.entities.length; i++) {
             const entity = game.entities.getIndex(i);
             const hex = grid.getHexAt(entity);
             const asset = EntityAssets[entity.entityType];
-            const wRatio = HexConstants.width / HexConstants.defaultWidth;
-            const hRatio = HexConstants.height / HexConstants.defaultHeight;
-            let rectX = hex.center.x - HexConstants.width / 2;
-            let voteRectX = hex.center.x + HexConstants.width / 6;
-            let rectY = hex.center.y;
-            let rectWidth = HexConstants.width * 0.35;
-            let rectHeight = HexConstants.height * 0.4;
-            let fontSize = Math.round(rectWidth / 1.7);
-            const voteCount = roundState.entities[entity.id] && _.sum(roundState.entities[entity.id].map(a => a.count));
 
             context.drawImage(
                 asset.image,
@@ -326,13 +316,22 @@ export class GameRenderer {
                 asset.width * wRatio,
                 asset.height * hRatio
             );
+        }
+        for (let i = 0; i < game.entities.length; i++) {
+            const entity = game.entities.getIndex(i);
+            const hex = grid.getHexAt(entity);
+            let voteRectX = hex.center.x + HexConstants.width / 6;
+            let rectX = hex.center.x - HexConstants.width / 2;
+            let rectY = hex.center.y;
+
+            const voteCount = roundState.entities[entity.id] && _.sum(roundState.entities[entity.id].map(a => a.count));
             this.roundRect(rectX, rectY, rectWidth, rectHeight, 5, 'rgba(0,0,0,.6)');
-            context.font = `${fontSize}px Arial`;
+
             context.fillStyle = 'white';
             context.fillText(entity.health.toString(), rectX + rectWidth / 2 - 1, rectY + rectHeight / 1.4, rectWidth);
             if (voteCount > 0) {
                 this.roundRect(voteRectX, rectY, rectWidth, rectHeight, 5, 'rgba(240,240,240,.6)');
-                context.font = `${fontSize}px Arial`;
+
                 context.fillStyle = 'black';
                 context.fillText(
                     voteCount.toString(),
@@ -347,9 +346,19 @@ export class GameRenderer {
 
         const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
         context.fillStyle = 'grey';
-        context.fillRect(0, canvas.height - 40, canvas.width, 40);
-        context.fillStyle = ColorUtils.lerpColor('#00FF00', '#FF0000', Math.min(percent,1));
-        context.fillRect(0, canvas.height - 40, canvas.width * percent, 40);
+        context.fillRect(
+            UIConstants.miniMapWidth,
+            canvas.height - UIConstants.progressBarHeight,
+            canvas.width - UIConstants.miniMapWidth,
+            UIConstants.progressBarHeight
+        );
+        context.fillStyle = ColorUtils.lerpColor('#00FF00', '#FF0000', Math.min(percent, 1));
+        context.fillRect(
+            UIConstants.miniMapWidth,
+            canvas.height - UIConstants.progressBarHeight,
+            (canvas.width - UIConstants.miniMapWidth) * percent,
+            UIConstants.progressBarHeight
+        );
     }
 
     roundRect(
@@ -370,6 +379,7 @@ export class GameRenderer {
                 radius[side] = radius[side] || defaultRadius[side];
             }
         }
+        this.context.save();
         this.context.beginPath();
         this.context.moveTo(x + radius.tl, y);
         this.context.lineTo(x + width - radius.tr, y);
@@ -389,5 +399,6 @@ export class GameRenderer {
             this.context.strokeStyle = stroke;
             this.context.stroke();
         }
+        this.context.restore();
     }
 }

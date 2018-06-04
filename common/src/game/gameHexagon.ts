@@ -7,8 +7,11 @@ export class GameHexagon extends Hexagon {
     factionDuration: number = 0;
 
     center: Point;
+    smallCenter: Point;
     points: Point[];
+    smallPoints: Point[];
     pointsSvg: Path2D;
+    smallPointsSvg: Path2D;
 
     constructor(public tileType: HexagonTileType, public id: string, x: number, y: number) {
         super(x, y, tileType.cost, tileType.blocked);

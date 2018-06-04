@@ -39,18 +39,19 @@ gameplay
   '/ add healing per tick
   '/ show attack radius 
   '/add changing color to percent bar
-  planes can fly over water
-  fix flickering vote
-  dont show votes on enemies
-  show minimap
-  cleanup entity screen
+  '/ dont show votes on enemies
+  '/ show minimap
+  '/ cleanup entity screen
+  implement spawn logic
+  add resources??
   add user details call
     number of votes left
     faction encryption token
-  implement spawn logic
-  add resources??
+  planes can fly over water
   cant vote for the same action twice
   what happens when all factories for a faction is destroyed
+  fix flickering vote
+  put bounds on view
   
 stats
   units youve participated in, howd they do
@@ -76,8 +77,8 @@ stats
   randomize factionid
   
 janitorial
-  cleanup view code
-    maintain view position
+  '/ cleanup view code
+  '/   maintain view position
   unify tsconfig
   cleanup gmae grid game logic bullshit 
     remove grid

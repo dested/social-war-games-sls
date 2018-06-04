@@ -3,15 +3,13 @@ import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {GameState} from '@swg-common/models/gameState';
 import {Config} from '@swg-server-common/config';
 import {DataManager} from '@swg-server-common/db/dataManager';
-import {Grid} from '@swg-common/hex/hex';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {S3Splitter} from './s3Splitter';
 import {StateManager} from './stateManager';
-import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {EntityDetail, EntityDetails, FactionId, Factions} from '@swg-common/game/entityDetail';
+import {EntityDetails, FactionId} from '@swg-common/game/entityDetail';
 
 export class Worker {
     private static redisManager: RedisManager;
@@ -44,6 +42,12 @@ export class Worker {
         setInterval(() => {
             this.cleanupVotes();
         }, Config.gameDuration * 2);
+
+        const stdin = process.openStdin();
+
+        stdin.addListener('data', d => {
+            this.processNewRound();
+        });
     }
 
     private static async processNewRound() {

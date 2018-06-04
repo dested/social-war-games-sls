@@ -1,4 +1,4 @@
-import {config, S3, SNS} from 'aws-sdk';
+import {config} from 'aws-sdk';
 import {Config} from '../config';
 
 config.region = Config.awsRegion;

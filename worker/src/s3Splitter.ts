@@ -1,5 +1,5 @@
 import {GameState, GameStateEntityMap} from '@swg-common/models/gameState';
-import {RoundState} from '@swg-common/models/roundState';
+import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {Point, PointHashKey} from '@swg-common/hex/hex';
@@ -32,9 +32,6 @@ export class S3Splitter {
             }
 
             const factionEntities = gameState.entities[factionId];
-            if (!factionEntities) {
-                console.log(gameState.entities, factionId);
-            }
 
             for (let i = 0; i < factionEntities.length; i++) {
                 const entity = factionEntities[i];
@@ -48,10 +45,15 @@ export class S3Splitter {
                 visibleHexes.pushRange(game.grid.getRange(hexAt, radius, emptyEntityList).map(a => a));
             }
 
-            const factionGameState = this.filterItems(layout, gameState, visibleHexes);
-
+            const [factionGameState, factionRoundState] = this.filterItems(
+                layout,
+                gameState,
+                roundState,
+                factionId,
+                visibleHexes
+            );
             const gameStateJson = JSON.stringify(factionGameState);
-            const roundStateJson = JSON.stringify(roundState);
+            const roundStateJson = JSON.stringify(factionRoundState);
             if (outputGameState) {
                 /*await*/ S3Manager.uploadJson(`game-state-${factionId}.json`, gameStateJson);
             }
@@ -60,8 +62,15 @@ export class S3Splitter {
         // console.timeEnd('factionId split');
     }
 
-    private static filterItems(layout: GameLayout, gameState: GameState, visibleHexes: HashArray<Point>): GameState {
+    private static filterItems(
+        layout: GameLayout,
+        gameState: GameState,
+        roundState: RoundState,
+        factionId: FactionId,
+        visibleHexes: HashArray<Point>
+    ): [GameState, RoundState] {
         const entities = gameState.entities;
+        const visibleEntityVotes: {[id: string]: RoundStateEntityVote[]} = {};
 
         const visibleEntities: GameStateEntityMap = {
             '0': [],
@@ -77,6 +86,12 @@ export class S3Splitter {
                 if (visibleHexes.exists(entity)) {
                     visibleEntities[faction].push(entity);
                 }
+
+                if (faction === factionId) {
+                    if (roundState.entities[entity.id]) {
+                        visibleEntityVotes[entity.id] = roundState.entities[entity.id];
+                    }
+                }
             }
         }
 
@@ -91,6 +106,9 @@ export class S3Splitter {
                 factionStr.push(0);
             }
         }
-        return {...gameState, entities: visibleEntities, factions: factionStr.join('')};
+        return [
+            {...gameState, entities: visibleEntities, factions: factionStr.join('')},
+            {...roundState, entities: visibleEntityVotes}
+        ];
     }
 }

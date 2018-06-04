@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {Fragment} from 'react';
-import {Grid} from '@swg-common/hex/hex';
 import {withRouter} from 'react-router-dom';
 import {connect} from 'react-redux';
 import {HttpUser} from '@swg-common/models/http/httpUser';
@@ -14,9 +13,10 @@ import {GameRenderer} from '../drawing/gameRenderer';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {Drawing, DrawingOptions} from '../drawing/hexDrawing';
-import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {GameEntity} from '@swg-common/game/entityDetail';
+import {SmallGameRenderer} from '../drawing/smallGameRenderer';
+import {UIConstants} from '../utils/uiConstants';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -29,17 +29,21 @@ interface Props extends RouteComponentProps<{}> {
 }
 
 interface State {
-    viewX: number;
-    viewY: number;
+    ready: boolean;
 }
 
 export class Component extends React.Component<Props, State> {
     private gameRenderer: GameRenderer;
+    private miniGameRenderer: SmallGameRenderer;
     private layout: GameLayout;
     private gameState: GameState;
     constructor(props: Props, context: any) {
         super(props, context);
         this.gameRenderer = new GameRenderer();
+        this.miniGameRenderer = new SmallGameRenderer();
+        this.state = {
+            ready: false
+        };
     }
 
     async componentDidMount() {
@@ -53,10 +57,11 @@ export class Component extends React.Component<Props, State> {
         this.gameState = await DataService.getGameState(this.props.user.factionId);
         const roundState = await DataService.getRoundState(this.props.user.factionId);
         let game = GameLogic.buildGame(this.layout, this.gameState);
-        Drawing.update(game.grid, DrawingOptions.default);
+        Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
         this.props.updateGame(game, roundState);
-
+        this.miniGameRenderer.forceRender();
         this.getNewState(roundState.nextUpdate - +new Date());
+        this.setState({ready: true});
     }
 
     private getNewState(timeout: number) {
@@ -75,8 +80,9 @@ export class Component extends React.Component<Props, State> {
                 }
                 if (shouldUpdate) {
                     const game = GameLogic.buildGame(this.layout, this.gameState);
-                    Drawing.update(game.grid, DrawingOptions.default);
+                    Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
                     this.props.updateGame(game, roundState);
+                    this.miniGameRenderer.forceRender();
                 }
                 this.getNewState(roundState.nextUpdate - +new Date());
             } catch (ex) {
@@ -88,17 +94,38 @@ export class Component extends React.Component<Props, State> {
 
     render() {
         if (
+            !this.state.ready ||
             this.props.imagesLoading === undefined ||
             this.props.imagesLoading > 0 ||
             Number.isNaN(this.props.imagesLoading)
         ) {
-            return (
-                <div style={{width: '30%', height: '30%', margin: 'auto'}}>Images Left: {this.props.imagesLoading}</div>
-            );
+            return <div className="loading" />;
         }
+
         return (
             <Fragment>
-                <canvas ref={e => this.gameRenderer.start(e)} width={window.innerWidth} height={window.innerHeight} />
+                <canvas
+                    id="big-game"
+                    ref={e => this.gameRenderer.start(e)}
+                    width={window.innerWidth}
+                    height={window.innerHeight}
+                />
+
+                <canvas
+                    id="minimap"
+                    style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        borderTopRightRadius: '70%',
+                        backgroundColor: 'black',
+                        borderTop: 'solid 5px black',
+                        borderRight: 'solid 5px black'
+                    }}
+                    ref={e => this.miniGameRenderer.start(e, this.gameRenderer)}
+                    width={UIConstants.miniMapWidth}
+                    height={UIConstants.miniMapHeight}
+                />
                 {this.props.selectedEntity && <GameSidePanel />}
             </Fragment>
         );

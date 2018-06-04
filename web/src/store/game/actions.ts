@@ -175,6 +175,7 @@ export class GameThunks {
                     hexId,
                     generation
                 });
+
                 if (serverVoteResult.reason !== 'ok') {
                     dispatch(GameActions.voting(false));
                     dispatch(GameActions.votingError());

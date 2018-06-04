@@ -6,8 +6,6 @@ import {GameState} from '@swg-common/models/gameState';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameLogic, GameModel} from '@swg-common/../../common/src/game/gameLogic';
 import {HttpUser} from '@swg-common/models/http/httpUser';
-import {Grid} from '@swg-common/hex/hex';
-import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {EntityAction} from '@swg-common/game/entityDetail';
 import {VoteRequestResults} from '@swg-common/models/http/voteResults';
