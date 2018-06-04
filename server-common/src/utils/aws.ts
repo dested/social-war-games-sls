@@ -8,6 +8,7 @@ config.update({
 });
 
 export class AwsUtils {
+/*
     static async uploadImage(base64: string, fileType: string) {
         const s3 = new S3();
         const key = `avatars/a`;
@@ -33,6 +34,7 @@ export class AwsUtils {
         };
         return sns.publish(params).promise();
     }
+*/
 
 
 }

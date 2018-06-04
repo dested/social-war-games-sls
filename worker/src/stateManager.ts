@@ -35,7 +35,8 @@ export class StateManager {
                         y: ent.y,
                         entityType: ent.entityType,
                         health: ent.health,
-                        id: ent.id
+                        id: ent.id,
+                        healthRegenStep: ent.healthRegenStep
                     });
                     return entities;
                 },

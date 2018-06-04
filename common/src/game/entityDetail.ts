@@ -23,6 +23,7 @@ export class GameEntity {
     factionId: FactionId;
     entityType: EntityType;
     health: number;
+    healthRegenStep: number;
 }
 export let EntityDetails: {[key in EntityType]: EntityDetail} = {
     ['factory']: {
@@ -32,9 +33,9 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         attackRadius: 0,
         attackPower: 0,
         ticksToSpawn: 0,
-        healthRegenRate: 0,
+        healthRegenRate: -1,
         solid: true,
-        spawnRadius: 4
+        spawnRadius: 4,
     },
     ['tank']: {
         type: 'tank',
@@ -43,7 +44,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         attackRadius: 8,
         attackPower: 3,
         ticksToSpawn: 3,
-        healthRegenRate: 1,
+        healthRegenRate: 2,
         solid: false,
         spawnRadius: 0
     },
@@ -54,7 +55,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         attackRadius: 3,
         attackPower: 3,
         ticksToSpawn: 4,
-        healthRegenRate: 1,
+        healthRegenRate: 2,
         solid: false,
         spawnRadius: 0
     },
@@ -65,7 +66,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         attackRadius: 3,
         attackPower: 1,
         ticksToSpawn: 2,
-        healthRegenRate: 1,
+        healthRegenRate: 2,
         solid: false,
         spawnRadius: 2
     }

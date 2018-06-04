@@ -11,7 +11,7 @@ import {StateManager} from './stateManager';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {FactionId, Factions} from '@swg-common/game/entityDetail';
+import {EntityDetail, EntityDetails, FactionId, Factions} from '@swg-common/game/entityDetail';
 
 export class Worker {
     private static redisManager: RedisManager;
@@ -87,7 +87,8 @@ export class Worker {
                     }
                 }
             }
-            this.updateFactions(gameState, game);
+
+            this.postVoteTasks(game);
 
             console.log('Executed Votes', winningVotes);
             game.generation++;
@@ -105,20 +106,43 @@ export class Worker {
         }
     }
 
-    private static updateFactions(gameState: GameState, game: GameModel) {
-        for (let i = 0; i < Factions.length; i++) {
-            const faction = Factions[i];
-            for (let i = 0; i < gameState.entities[faction].length; i++) {
-                const entity = gameState.entities[faction][i];
-                if (entity.entityType === 'factory') {
-                    for (const gameHexagon of game.grid.getCircle({x: entity.x, y: entity.y}, 5)) {
-                        gameHexagon.setFactionId(faction, 3);
+    private static postVoteTasks(game: GameModel) {
+        for (let i = 0; i < game.entities.array.length; i++) {
+            const entity = game.entities.array[i];
+            const details = EntityDetails[entity.entityType];
+            if (details.healthRegenRate >= 0) {
+                entity.healthRegenStep++;
+                if (entity.healthRegenStep >= details.healthRegenRate) {
+                    if (entity.health < details.health) {
+                        entity.health++;
+                        entity.healthRegenStep = 0;
                     }
-                } else {
-                    for (const gameHexagon of game.grid.getCircle({x: entity.x, y: entity.y}, 1)) {
-                        gameHexagon.setFactionId(faction, 3);
-                    }
+                    entity.healthRegenStep = 0;
                 }
+            }
+
+            if (entity.entityType === 'factory') {
+                for (const gameHexagon of game.grid.getCircle({x: entity.x, y: entity.y}, 5)) {
+                    gameHexagon.setFactionId(entity.factionId, 3);
+                }
+            }
+        }
+
+        for (let i = 0; i < game.entities.array.length; i++) {
+            const entity = game.entities.array[i];
+            const details = EntityDetails[entity.entityType];
+            if (entity.entityType !== 'factory') {
+                for (const gameHexagon of game.grid.getCircle({x: entity.x, y: entity.y}, 1)) {
+                    gameHexagon.setFactionId(entity.factionId, 3);
+                }
+            }
+        }
+
+        for (let i = 0; i < game.entities.array.length; i++) {
+            const entity = game.entities.array[i];
+            const details = EntityDetails[entity.entityType];
+            if (entity.entityType !== 'factory') {
+                game.grid.getHexAt({x: entity.x, y: entity.y}).setFactionId(entity.factionId, 3);
             }
         }
 

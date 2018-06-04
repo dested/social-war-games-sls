@@ -41,7 +41,8 @@ export class GameLogic {
                 health: a.health,
                 x: a.x,
                 y: a.y,
-                entityType: a.entityType
+                entityType: a.entityType,
+                healthRegenStep: a.healthRegenStep
             })),
             ...gameState.entities['2'].map(a => ({
                 factionId: '2' as FactionId,
@@ -49,7 +50,8 @@ export class GameLogic {
                 health: a.health,
                 x: a.x,
                 y: a.y,
-                entityType: a.entityType
+                entityType: a.entityType,
+                healthRegenStep: a.healthRegenStep
             })),
             ...gameState.entities['3'].map(a => ({
                 factionId: '3' as FactionId,
@@ -57,7 +59,8 @@ export class GameLogic {
                 health: a.health,
                 x: a.x,
                 y: a.y,
-                entityType: a.entityType
+                entityType: a.entityType,
+                healthRegenStep: a.healthRegenStep
             }))
         ];
 
@@ -138,8 +141,7 @@ export class GameLogic {
                 for (const hex of baseHexes) {
                     hex.setFactionId(faction, 3);
                 }
-                const innerBaseHexes = grid.getCircle(center, baseRadius-1);
-
+                const innerBaseHexes = grid.getCircle(center, baseRadius - 1);
 
                 entities.push({
                     id: this.nextId(),
@@ -147,7 +149,8 @@ export class GameLogic {
                     health: entitiesPerBase[0].health,
                     x: center.x,
                     y: center.y,
-                    entityType: entitiesPerBase[0].type
+                    entityType: entitiesPerBase[0].type,
+                    healthRegenStep:entitiesPerBase[0].healthRegenRate
                 });
 
                 for (let i = 1; i < entitiesPerBase.length; i++) {
@@ -162,7 +165,8 @@ export class GameLogic {
                         health: entitiesPerBase[i].health,
                         x: hex.x,
                         y: hex.y,
-                        entityType: entitiesPerBase[i].type
+                        entityType: entitiesPerBase[i].type,
+                        healthRegenStep:entitiesPerBase[i].healthRegenRate
                     });
                 }
             }

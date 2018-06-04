@@ -9,4 +9,11 @@ export type GameState = {
     roundEnd: number;
 };
 export type GameStateEntityMap = {[faction in FactionId]: GameStateEntity[]};
-export type GameStateEntity = {x: number; y: number; id: string; entityType: EntityType; health: number};
+export type GameStateEntity = {
+    x: number;
+    y: number;
+    id: string;
+    entityType: EntityType;
+    health: number;
+    healthRegenStep: number;
+};

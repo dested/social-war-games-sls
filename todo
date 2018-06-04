@@ -33,15 +33,14 @@ gameplay
   '/  4 infantry
   '/  2 tanks
   '/  1 plane
-  you always control 5 radius around base
-    2 radius around unit
-    other than that, faction tile expires 2 rounds after set
-  what happens when you destroy a factory
+  '/ you always control 5 radius around base
+  '/  2 radius around unit
+  '/   other than that, faction tile expires 2 rounds after set
+  '/ add healing per tick
+  '/ show attack radius 
+  '/add changing color to percent bar
   planes can fly over water
-  add healing per tick
-  show attack radius 
   fix flickering vote
-  add changing color to percent bar
   dont show votes on enemies
   show minimap
   cleanup entity screen
@@ -50,6 +49,8 @@ gameplay
     faction encryption token
   implement spawn logic
   add resources??
+  cant vote for the same action twice
+  what happens when all factories for a faction is destroyed
   
 stats
   units youve participated in, howd they do
@@ -83,6 +84,7 @@ janitorial
   make better use of caching in server
   
 endgame
+  balance units
   get more turns button
     watch ad
     microtransaction

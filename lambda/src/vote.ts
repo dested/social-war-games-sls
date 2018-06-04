@@ -87,9 +87,9 @@ export const handler = async (event: Event) => {
     }
 };
 
-function response(reason: VoteRequestResults, body: any = null) {
+function response(reason: VoteRequestResults, body: any = {}) {
+    body.reason = reason;
     return {
-        reason: reason,
         statusCode: 200,
         headers: {'Content-Type': 'application/json'},
         body: body ? JSON.stringify(body) : undefined

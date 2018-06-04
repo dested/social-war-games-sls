@@ -11,6 +11,7 @@ import {Drawing, DrawingOptions} from './hexDrawing';
 import {HexImages} from '../utils/hexImages';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameEntity} from '@swg-common/game/entityDetail';
+import {ColorUtils} from '../utils/colorUtils';
 
 type EntityAsset = {
     image: HTMLImageElement;
@@ -86,6 +87,7 @@ export class GameRenderer {
         const endY = this.view.y + (hexagon.center.y - (this.view.y + this.view.height / 2));
 
         let moveTo = false;
+
         if (viableHexIds && viableHexIds[hexagon.id]) {
             this.selectedViableHex(hexagon);
         } else {
@@ -262,7 +264,7 @@ export class GameRenderer {
                 if (isViableHex) {
                     context.fillStyle = 'rgba(128,52,230,.25)';
                 } else {
-                    if(!factionColor){
+                    if (!factionColor) {
                         continue;
                     }
                     if (hasEntity) {
@@ -346,7 +348,7 @@ export class GameRenderer {
         const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
         context.fillStyle = 'grey';
         context.fillRect(0, canvas.height - 40, canvas.width, 40);
-        context.fillStyle = 'green';
+        context.fillStyle = ColorUtils.lerpColor('#00FF00', '#FF0000', Math.min(percent,1));
         context.fillRect(0, canvas.height - 40, canvas.width * percent, 40);
     }
 

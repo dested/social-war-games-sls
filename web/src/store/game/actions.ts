@@ -18,7 +18,8 @@ export enum GameActionOptions {
     SelectEntity = 'SELECT_ENTITY',
     SetEntityAction = 'SET_ENTITY_ACTION',
     SelectViableHex = 'SELECT_VIABLE_HEX',
-    Voting = 'VOTING'
+    Voting = 'VOTING',
+    VotingError = 'VOTING_ERROR'
 }
 
 export interface SetEntityActionAction {
@@ -36,6 +37,10 @@ export interface SelectEntityAction {
 export interface SetImagesLoadingAction {
     type: GameActionOptions.SetImagesLoading;
     imagesLoading: number;
+}
+
+export interface VotingErrorAction {
+    type: GameActionOptions.VotingError;
 }
 
 export interface SelectViableHexAction {
@@ -60,7 +65,8 @@ export type GameAction =
     | SetImagesLoadingAction
     | SetEntityActionAction
     | SelectViableHexAction
-    | UpdateGameAction;
+    | UpdateGameAction
+    | VotingErrorAction;
 
 export class GameActions {
     static selectEntity(entity: GameEntity): SelectEntityAction {
@@ -82,6 +88,12 @@ export class GameActions {
         return {
             type: GameActionOptions.Voting,
             isVoting
+        };
+    }
+
+    static votingError(): VotingErrorAction {
+        return {
+            type: GameActionOptions.VotingError
         };
     }
 
@@ -146,8 +158,8 @@ export class GameThunks {
                 hexId,
                 factionId: appState.user.factionId
             });
+
             if (voteResult !== VoteResult.Success) {
-                console.log('Vote Error', voteResult);
                 return;
             }
 
@@ -155,15 +167,27 @@ export class GameThunks {
             await dispatch(GameThunks.vote(entityId, action, hexId));
 
             const generation = game.generation;
-            await DataService.vote({
-                entityId,
-                action,
-                hexId,
-                generation
-            });
 
-            dispatch(GameActions.voting(false));
-            dispatch(GameActions.selectEntity(null));
+            try {
+                const serverVoteResult = await DataService.vote({
+                    entityId,
+                    action,
+                    hexId,
+                    generation
+                });
+                if (serverVoteResult.reason !== 'ok') {
+                    dispatch(GameActions.voting(false));
+                    dispatch(GameActions.votingError());
+                    return;
+                }
+
+                dispatch(GameActions.voting(false));
+                dispatch(GameActions.selectEntity(null));
+            } catch (ex) {
+                console.error(ex);
+                dispatch(GameActions.voting(false));
+                dispatch(GameActions.votingError());
+            }
         };
     }
 
@@ -194,9 +218,9 @@ export class GameThunks {
 
             switch (action) {
                 case 'attack':
-                    viableHexes = viableHexes.filter(a =>
+                /*    viableHexes = viableHexes.filter(a =>
                         game.entities.find(e => e.factionId !== entity.factionId && e.x === a.x && e.y === a.y)
-                    );
+                    );*/
                     break;
                 case 'move':
                     viableHexes = viableHexes.filter(a => !game.entities.find(e => e.x === a.x && e.y === a.y));

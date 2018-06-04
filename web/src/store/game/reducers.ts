@@ -13,12 +13,10 @@ export interface GameStore {
     viableHexIds?: {[hexId: string]: boolean};
     imagesLoading?: number;
     isVoting?: boolean;
+    votingError?: boolean;
 }
 
-export default function gameReducer(
-    state: GameStore = initialState,
-    action: GameAction
-): GameStore {
+export default function gameReducer(state: GameStore = initialState, action: GameAction): GameStore {
     switch (action.type) {
         case GameActionOptions.SelectEntity: {
             return {
@@ -44,7 +42,14 @@ export default function gameReducer(
         case GameActionOptions.Voting: {
             return {
                 ...state,
-                isVoting: action.isVoting
+                isVoting: action.isVoting,
+                votingError: false
+            };
+        }
+        case GameActionOptions.VotingError: {
+            return {
+                ...state,
+                votingError: true
             };
         }
         case GameActionOptions.SetEntityAction: {

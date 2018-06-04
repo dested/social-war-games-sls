@@ -13,6 +13,7 @@ import {EntityAction, GameEntity} from '@swg-common/game/entityDetail';
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
     isVoting?: boolean;
+    votingError?: boolean;
     selectedEntity?: GameEntity;
     roundState?: RoundState;
     game?: GameModel;
@@ -131,6 +132,7 @@ export class Component extends React.Component<Props, State> {
                 <span>Faction: {entity.factionId}</span>
                 {this.props.user.factionId === entity.factionId && actions}
                 {this.props.isVoting === true && 'Submitting your vote!'}
+                {this.props.votingError === true && 'There was an issue with your vote!'}
             </div>
         );
     }
@@ -140,6 +142,7 @@ export let GameSidePanel = connect(
     (state: SwgStore) => ({
         user: state.appState.user,
         isVoting: state.gameState.isVoting,
+        votingError: state.gameState.votingError,
         game: state.gameState.game,
         roundState: state.gameState.roundState,
         selectedEntity: state.gameState.selectedEntity
