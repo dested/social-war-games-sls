@@ -1,6 +1,4 @@
-import {config, S3, SES, SNS} from 'aws-sdk';
-import {AWSError} from 'aws-sdk/lib/error';
-import {PromiseResult} from 'aws-sdk/lib/request';
+import {config, S3, SNS} from 'aws-sdk';
 import {Config} from '../config';
 
 config.region = Config.awsRegion;

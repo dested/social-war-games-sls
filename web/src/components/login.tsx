@@ -4,9 +4,7 @@ import {DataService} from '../dataServices';
 import {RouteComponentProps} from 'react-router';
 import {connect} from 'react-redux';
 import {SwgStore} from '../store/reducers';
-import {AppAction, AppActions} from '../store/app/actions';
-import {HttpUser} from '@swg-common/models/http/httpUser';
-import {Dispatcher} from '../store/actions';
+import {AppActions} from '../store/app/actions';
 
 interface Props extends RouteComponentProps<{}> {
     setJwt: typeof AppActions.setJWT;

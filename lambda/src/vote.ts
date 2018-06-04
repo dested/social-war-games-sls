@@ -1,13 +1,16 @@
 import * as jwt from 'jsonwebtoken';
 import {Config} from '@swg-server-common/config';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
-import {EntityAction, GameHexagon, GameModel, VoteResult} from '@swg-common/game';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {GameState} from '@swg-common/models/gameState';
 import {GameLayout} from '@swg-common/models/gameLayout';
-import {GameLogic} from '@swg-common/game';
+import {GameLogic, GameModel} from '@swg-common/../../common/src/game/gameLogic';
 import {HttpUser} from '@swg-common/models/http/httpUser';
 import {Grid} from '@swg-common/hex/hex';
+import {GameHexagon} from '@swg-common/game/gameHexagon';
+import {VoteResult} from '@swg-common/game/voteResult';
+import {EntityAction} from '@swg-common/game/entityDetail';
+import {VoteRequestResults} from '@swg-common/models/http/voteResults';
 
 let layout: GameLayout;
 let gameState: GameState;
@@ -17,7 +20,7 @@ const grid = new Grid<GameHexagon>(0, 0, 100, 100);
 export const handler = async (event: Event) => {
     let startTime = +new Date();
     console.log('auth', event);
-    if (!event.headers || !event.headers.Authorization) return response(401);
+    if (!event.headers || !event.headers.Authorization) return response('auth');
 
     const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
     try {
@@ -26,7 +29,7 @@ export const handler = async (event: Event) => {
         console.log('connected to redis');
         const shouldStop = await redisManager.get<boolean>('stop');
         if (shouldStop) {
-            return response(409);
+            return response('stopped');
         }
 
         const generation = await redisManager.get<number>('game-generation');
@@ -38,7 +41,7 @@ export const handler = async (event: Event) => {
         }
 
         if (totalVotes > user.maxVotesPerRound) {
-            return response(423);
+            return response('max_votes');
         }
         await redisManager.incr(`user-${user.id}-${generation}-votes`);
 
@@ -51,7 +54,7 @@ export const handler = async (event: Event) => {
         const body = event.body;
 
         if (body.generation !== generation) {
-            return response(417, {
+            return response('bad_generation', {
                 votesLeft: user.maxVotesPerRound - (totalVotes || 0) + 1
             });
         }
@@ -66,7 +69,7 @@ export const handler = async (event: Event) => {
 
         let voteResult = GameLogic.validateVote(game, vote);
         if (voteResult !== VoteResult.Success) {
-            return response(409, {
+            return response('vote_failed', {
                 votesLeft: user.maxVotesPerRound - (totalVotes || 0) + 1,
                 voteResult
             });
@@ -75,19 +78,19 @@ export const handler = async (event: Event) => {
         await DBVote.db.insertDocument(vote);
         let endTime = +new Date();
 
-        return response(200, {
+        return response('ok', {
             votesLeft: user.maxVotesPerRound - (totalVotes || 0) + 1,
             duration: endTime - startTime
         });
     } catch (ex) {
         console.log('er', ex);
-        return response(500, ex.stack + JSON.stringify(event));
+        return response('error', ex.stack + JSON.stringify(event));
     }
 };
 
-function response(code: number, body: any = null) {
+function response(reason: VoteRequestResults, body: any = null) {
     return {
-        statusCode: code,
+        reason: reason,
         headers: {'Content-Type': 'application/json'},
         body: body ? JSON.stringify(body) : undefined
     };

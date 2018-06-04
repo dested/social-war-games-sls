@@ -1,4 +1,4 @@
-import {EntityAction} from '../game';
+import {EntityAction} from '../game/entityDetail';
 
 export type RoundState = {
     hash: string;

@@ -4,11 +4,14 @@ import {GameState} from '@swg-common/models/gameState';
 import {Config} from '@swg-server-common/config';
 import {DataManager} from '@swg-server-common/db/dataManager';
 import {Grid} from '@swg-common/hex/hex';
-import {FactionId, GameHexagon, GameLogic, VoteResult} from '@swg-common/game';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {S3Splitter} from './s3Splitter';
 import {StateManager} from './stateManager';
+import {GameHexagon} from '@swg-common/game/gameHexagon';
+import {GameLogic} from '@swg-common/game/gameLogic';
+import {VoteResult} from '@swg-common/game/voteResult';
+import {FactionId} from '@swg-common/game/entityDetail';
 
 export class Worker {
     private static redisManager: RedisManager;

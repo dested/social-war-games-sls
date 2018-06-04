@@ -1,35 +1,12 @@
-import {Grid, Hexagon, Point, PointHashKey} from '../hex/hex';
+import {Grid, Point, PointHashKey} from '../hex/hex';
+import {GameHexagon} from './gameHexagon';
 import {GameLayout} from '../models/gameLayout';
 import {GameState} from '../models/gameState';
 import {HashArray} from '../utils/hashArray';
+import {HexagonTypes} from './hexagonTypes';
 import {Config} from '../../../server-common/src/config';
-
-export type EntityAction = 'attack' | 'move' | 'spawn';
-export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
-export type FactionId = '0' | '1' | '2' | '3' | '9';
-
-export class GameEntity {
-    id: string;
-    x: number;
-    y: number;
-    factionId: FactionId;
-    entityType: EntityType;
-    health: number;
-}
-export enum VoteResult {
-    Success = 'Success',
-    EntityCannotSpawn = 'EntityCannotSpawn',
-    SpawnSpotNotEmpty = 'SpawnSpotNotEmpty',
-    MoveSpotNotEmpty = 'MoveSpotNotEmpty',
-    AttackFactionMismatch = 'AttackFactionMismatch',
-    NoEntityToAttack = 'NoEntityToAttack',
-    PathOutOfRange = 'PathOutOfRange',
-    PathIsZero = 'PathIsZero',
-    ToHexNotFound = 'ToHexNotFound',
-    FromHexNotFound = 'FromHexNotFound',
-    FactionMismatch = 'FactionMismatch',
-    EntityNotFound = 'EntityNotFound'
-}
+import {EntityAction, EntityDetails, FactionId, GameEntity} from './entityDetail';
+import {VoteResult} from './voteResult';
 
 export interface GameModel {
     roundStart: number;
@@ -222,7 +199,7 @@ export class GameLogic {
 
     static validateVote(
         game: GameModel,
-        vote: {action: EntityAction; hexId: string; factionId?: FactionId; entityId: string}
+        vote: { action: EntityAction; hexId: string; factionId?: FactionId; entityId: string }
     ): VoteResult {
         const entity = game.entities.find(a => a.id === vote.entityId);
         if (!entity) return VoteResult.EntityNotFound;
@@ -293,7 +270,7 @@ export class GameLogic {
 
     static processVote(
         game: GameModel,
-        vote: {action: EntityAction; hexId: string; factionId: FactionId; entityId: string}
+        vote: { action: EntityAction; hexId: string; factionId: FactionId; entityId: string }
     ): VoteResult {
         const entity = game.entities.find(a => a.id === vote.entityId);
         if (!entity) return VoteResult.EntityNotFound;
@@ -373,183 +350,4 @@ export class GameLogic {
 
         return VoteResult.Success;
     }
-}
-
-export type TileType = 'Dirt' | 'Grass' | 'Stone' | 'Clay' | 'Water';
-export type TileSubType = '1' | '2' | '3' | '4' | '5';
-
-export interface HexagonTileType {
-    type: TileType;
-    subType: TileSubType;
-    cost: number;
-    blocked: boolean;
-}
-
-export class HexagonTypes {
-    static preloadTypes() {
-        return [
-            HexagonTypes.get('Dirt', '1'),
-            HexagonTypes.get('Dirt', '2'),
-            HexagonTypes.get('Dirt', '3'),
-            HexagonTypes.get('Dirt', '4'),
-            HexagonTypes.get('Dirt', '5'),
-            HexagonTypes.get('Clay', '1'),
-            HexagonTypes.get('Clay', '2'),
-            HexagonTypes.get('Clay', '3'),
-            HexagonTypes.get('Clay', '4'),
-            HexagonTypes.get('Clay', '5'),
-            HexagonTypes.get('Stone', '1'),
-            HexagonTypes.get('Stone', '2'),
-            HexagonTypes.get('Stone', '3'),
-            HexagonTypes.get('Stone', '4'),
-            HexagonTypes.get('Stone', '5'),
-            HexagonTypes.get('Water', '1'),
-            HexagonTypes.get('Water', '2'),
-            HexagonTypes.get('Water', '3'),
-            HexagonTypes.get('Water', '4'),
-            HexagonTypes.get('Water', '5'),
-            HexagonTypes.get('Grass', '1'),
-            HexagonTypes.get('Grass', '2'),
-            HexagonTypes.get('Grass', '3'),
-            HexagonTypes.get('Grass', '4'),
-            HexagonTypes.get('Grass', '5')
-        ];
-    }
-
-    static dirt: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
-        type: 'Dirt',
-        subType,
-        cost: 1,
-        blocked: false
-    });
-
-    static grass: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
-        type: 'Grass',
-        subType,
-        cost: 2,
-        blocked: false
-    });
-
-    static clay: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
-        type: 'Clay',
-        subType,
-        cost: 3,
-        blocked: false
-    });
-
-    static stone: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
-        type: 'Stone',
-        subType,
-        cost: 4,
-        blocked: false
-    });
-
-    static water: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
-        type: 'Water',
-        subType,
-        cost: 0,
-        blocked: true
-    });
-
-    static randomSubType(): TileSubType {
-        if (Math.random() * 100 < 90) return '1';
-        return (Math.floor(Math.random() * 5) + 1).toString() as TileSubType;
-    }
-
-    private static cache: {[key: string]: HexagonTileType} = {};
-
-    static get(type: TileType, subType: TileSubType): HexagonTileType {
-        if (this.cache[type + subType]) {
-            return this.cache[type + subType];
-        }
-        switch (type) {
-            case 'Dirt':
-                return (this.cache[type + subType] = this.dirt(subType));
-            case 'Clay':
-                return (this.cache[type + subType] = this.clay(subType));
-            case 'Grass':
-                return (this.cache[type + subType] = this.grass(subType));
-            case 'Stone':
-                return (this.cache[type + subType] = this.stone(subType));
-            case 'Water':
-                return (this.cache[type + subType] = this.water(subType));
-        }
-    }
-}
-
-export let EntityDetails: {[key in EntityType]: EntityDetail} = {
-    ['factory']: {
-        moveRadius: 0,
-        health: 30,
-        attackRadius: 0,
-        attackPower: 0,
-        ticksToSpawn: 0,
-        healthRegenRate: 0,
-        solid: true,
-        spawnRadius: 4
-    },
-    ['tank']: {
-        moveRadius: 6,
-        health: 8,
-        attackRadius: 8,
-        attackPower: 3,
-        ticksToSpawn: 3,
-        healthRegenRate: 1,
-        solid: false,
-        spawnRadius: 0
-    },
-    ['plane']: {
-        moveRadius: 8,
-        health: 2,
-        attackRadius: 3,
-        attackPower: 3,
-        ticksToSpawn: 4,
-        healthRegenRate: 1,
-        solid: false,
-        spawnRadius: 0
-    },
-    ['infantry']: {
-        moveRadius: 4,
-        health: 4,
-        attackRadius: 3,
-        attackPower: 1,
-        ticksToSpawn: 2,
-        healthRegenRate: 1,
-        solid: false,
-        spawnRadius: 2
-    }
-};
-
-export interface EntityDetail {
-    solid: boolean;
-    moveRadius: number;
-    attackRadius: number;
-    spawnRadius: number;
-    attackPower: number;
-    ticksToSpawn: number;
-    health: number;
-    healthRegenRate: number;
-}
-
-export class GameHexagon extends Hexagon {
-    factionId: FactionId = '0';
-
-    center: Point;
-    points: Point[];
-    pointsSvg: Path2D;
-
-    constructor(public tileType: HexagonTileType, public id: string, x: number, y: number) {
-        super(x, y, tileType.cost, tileType.blocked);
-    }
-
-    setTileType(tileType: HexagonTileType) {
-        this.tileType = tileType;
-        this.cost = tileType.cost;
-        this.blocked = tileType.blocked;
-    }
-
-    setFactionId(factionId: FactionId) {
-        this.factionId = factionId;
-    }
-    lines: {line: [Point, Point]; color: string}[] = [];
 }

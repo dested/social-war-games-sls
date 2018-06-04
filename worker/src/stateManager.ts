@@ -2,7 +2,7 @@ import {VoteCountResult} from '@swg-server-common/db/models/dbVote';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {Config} from '@swg-server-common/config';
 import {GameState, GameStateEntityMap} from '@swg-common/models/gameState';
-import {GameLogic, GameModel} from '@swg-common/game';
+import {GameModel} from '@swg-common/../../common/src/game/gameLogic';
 
 export class StateManager {
     static buildRoundState(generation: number, voteCounts: VoteCountResult[]): RoundState {

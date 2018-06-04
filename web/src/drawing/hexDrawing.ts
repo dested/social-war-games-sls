@@ -1,6 +1,6 @@
 import {HexConstants} from '../utils/hexConstants';
 import {Axial, Grid, Hexagon, Point} from '@swg-common/hex/hex';
-import {GameHexagon} from '@swg-common/game';
+import {GameHexagon} from '@swg-common/../../../common/src/game/gameHexagon';
 import {HexColors} from '../utils/hexColors';
 
 export class Drawing {

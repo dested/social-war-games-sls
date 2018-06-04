@@ -1,4 +1,4 @@
-import {Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Req, UseGuards} from '@nestjs/common';
+import {Body, Controller, Get, HttpException, HttpStatus, Post, Req, UseGuards} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import {AuthService} from '../auth/auth.service';
 import {AuthGuard} from '../guards/authGuard';

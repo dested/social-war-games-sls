@@ -5,11 +5,12 @@ import {Manager, Pan} from 'hammerjs';
 import {HexConstants} from '../utils/hexConstants';
 import * as _ from 'lodash';
 import {ImageUtils} from '../utils/imageUtils';
-import {GameEntity, GameHexagon} from '@swg-common/game';
 import {AnimationUtils} from '../utils/animationUtils';
 import {HexColors} from '../utils/hexColors';
 import {Drawing, DrawingOptions} from './hexDrawing';
 import {HexImages} from '../utils/hexImages';
+import {GameHexagon} from '@swg-common/game/gameHexagon';
+import {GameEntity} from '@swg-common/game/entityDetail';
 
 type EntityAsset = {
     image: HTMLImageElement;

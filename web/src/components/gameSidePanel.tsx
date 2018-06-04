@@ -4,10 +4,11 @@ import {connect} from 'react-redux';
 import {HttpUser} from '@swg-common/models/http/httpUser';
 import {SwgStore} from '../store/reducers';
 import {RouteComponentProps} from 'react-router';
-import {EntityAction, GameEntity, GameLogic, GameModel} from '@swg-common/game';
 import {GameThunks} from '../store/game/actions';
 import {Dispatcher} from '../store/actions';
 import {RoundState} from '@swg-common/models/roundState';
+import {GameModel} from '@swg-common/game/gameLogic';
+import {EntityAction, GameEntity} from '@swg-common/game/entityDetail';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;

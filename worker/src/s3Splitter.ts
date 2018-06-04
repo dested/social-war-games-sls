@@ -2,9 +2,10 @@ import {GameState, GameStateEntityMap} from '@swg-common/models/gameState';
 import {RoundState} from '@swg-common/models/roundState';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {GameLayout} from '@swg-common/models/gameLayout';
-import {EntityDetails, FactionId, GameEntity, GameHexagon, GameLogic, GameModel, HexagonTypes} from '@swg-common/game';
-import {Grid, Point, PointHashKey} from '@swg-common/hex/hex';
+import {Point, PointHashKey} from '@swg-common/hex/hex';
 import {HashArray} from '@swg-common/utils/hashArray';
+import {GameModel} from '@swg-common/game/gameLogic';
+import {EntityDetails, FactionId, GameEntity} from '@swg-common/game/entityDetail';
 
 export class S3Splitter {
     static async output(

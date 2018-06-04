@@ -27,73 +27,74 @@
 '/ make it so you can only see your factions stuff
 '/ convert to canvas
 
-each faction has 3 small bases
-  4 infantry
-  2 tanks
-  1 plane
 
-
-you always control 4 radius around base
-  2 radius around unit
-  other than that, faction tile expires 2 rounds after set
-
-units youve participated in, howd they do
-add round notes 
-  your base was attacked 
-    link to tap and go to that unit
- mike was attacked
- joe was moved
-
-cleanup view code
-  maintain view position
-hot units
-  units that move all the time
-ladder of players
-  votes cast
-  rounds participated in
-  damage done
-  distance moved
-  units destroyed
-  units created
-planes can fly over water
-get more turns button
-  watch ad
-  microtransaction
-ad support
-payment processor support
-unify tsconfig
-fix flickering vote
-add game stats
+gameplay
+  each faction has 3 small bases
+    4 infantry
+    2 tanks
+    1 plane
+  you always control 4 radius around base
+    2 radius around unit
+    other than that, faction tile expires 2 rounds after set
+  planes can fly over water
+  add healing per tick
+  show attack radius 
+  fix flickering vote
+  add changing color to percent bar
+  dont show votes on enemies
+  show minimap
+  cleanup entity screen
+  add user details call
+    number of votes left
+    faction encryption token
+  implement spawn logic
+  
+stats
+  units youve participated in, howd they do
   percent owned by your faciton
   show replay of turns
-add healing per tick
-show attack radius 
-add changing color to percent bar
-build bots
-more interesting level generation
-dont show votes on enemies
-add analytics
-show minimap
-how many players voted last round
-show game under login/register screen
-deploy api server
-deploy web
-cleanup entity screen
-determine level layout
-store game in mongo
-cleanup login screen
-encrypt faction
-better mobile support
-cleanup gmae grid game logic bullshit 
-  remove grid
-stress test
-add user details call
-  number of votes left
-  faction encryption token
-add game stats breakdown (current score)
-update images
-implement spawn logic
-migrate from s3
 
-
-sell
+  add round notes 
+    your base was attacked 
+      link to tap and go to that unit
+   mike was attacked
+   joe was moved
+  hot units
+    units that move all the time
+  ladder of players
+    votes cast
+    rounds participated in
+    damage done
+    distance moved
+    units destroyed
+    units created
+  how many players voted last round
+  add game stats breakdown (current score)
+  randomize factionid
+  
+janitorial
+  cleanup view code
+    maintain view position
+  unify tsconfig
+  cleanup gmae grid game logic bullshit 
+    remove grid
+  
+endgame
+  get more turns button
+    watch ad
+    microtransaction
+  ad support
+  payment processor support
+  build bots  
+  add analytics
+  show game under login/register screen
+  deploy api server
+  deploy web
+  store game in mongo
+  cleanup login screen
+  encrypt faction
+  better mobile support
+  stress test
+  update images
+  migrate from s3
+  sell

@@ -1,4 +1,4 @@
-import {FactionId} from '../../game';
+import {FactionId} from '../../game/entityDetail';
 
 export interface HttpUser {
     id: string;

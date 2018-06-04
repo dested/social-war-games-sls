@@ -28,7 +28,7 @@ module.exports = env => {
                     username: 'ec2-user',
                     privateKey: fs.readFileSync('C:\\junk\\certs\\aws-dested.ppk'),
                     from: path.join(__dirname, 'dist'),
-                    zip: false,
+                    zip: true,
                     to: '/home/ec2-user'
                 })
         ].filter(a => a),

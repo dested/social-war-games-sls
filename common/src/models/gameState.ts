@@ -1,4 +1,4 @@
-import {EntityType, FactionId} from '../game';
+import {EntityType, FactionId} from '../game/entityDetail';
 
 export type GameState = {
     factions: string;

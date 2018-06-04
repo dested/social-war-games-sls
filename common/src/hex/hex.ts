@@ -1,8 +1,7 @@
 // https://github.com/bodinaren/BHex.js
 
-import {GameEntity, GameHexagon} from '../game';
-import {HexConstants} from '../../../web/src/utils/hexConstants';
 import {HashArray} from '../utils/hashArray';
+import {GameEntity} from '../game/entityDetail';
 
 /**
  * Axial is a axial position of a Hexagon within a grid.

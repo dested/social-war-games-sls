@@ -1,10 +1,10 @@
 import {JwtGetUserResponse} from '@swg-common/models/http/userController';
-import {EntityAction, FactionId} from '@swg-common/game';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {RoundState} from '@swg-common/models/roundState';
 
 import {getStore} from './store';
+import {EntityAction, FactionId} from '@swg-common/game/entityDetail';
 
 export class DataService {
     // private static voteServer: string = 'https://vote.socialwargames.com/';
@@ -53,9 +53,7 @@ export class DataService {
         if (!response.ok)
             // or check for response.status
             throw new Error(response.statusText);
-        const json = await response.json();
-
-        return json;
+        return await response.json();
     }
 
     static async vote(vote: {

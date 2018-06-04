@@ -1,12 +1,5 @@
-import {
-    HexagonTileType,
-    HexagonTypes,
-    TileSubType,
-    TileType
-} from '@swg-common/game';
-import {getStore} from '../store';
-import {GameActions} from '../store/game/actions';
 import {ImageUtils} from './imageUtils';
+import {TileSubType, TileType} from '@swg-common/game/hexagonTypes';
 
 export class HexImages {
     static imageCache: {[key: string]: HTMLImageElement} = {};

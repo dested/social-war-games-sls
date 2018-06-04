@@ -1,16 +1,11 @@
 import {RedisManager} from '@swg-server-common/redis/redisManager';
-import {GameState, GameStateEntityMap} from '@swg-common/models/gameState';
-import {Config} from '@swg-server-common/config';
-import * as _ from 'lodash';
 import {DataManager} from '@swg-server-common/db/dataManager';
-import {Grid} from '@swg-common/hex/hex';
-import {GameHexagon, GameLogic, VoteResult} from '@swg-common/game';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
-import {RoundState} from '@swg-common/models/roundState';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {S3Splitter} from './s3Splitter';
 import {StateManager} from './stateManager';
+import {GameLogic} from '@swg-common/game/gameLogic';
 
 export class Setup {
     static start() {

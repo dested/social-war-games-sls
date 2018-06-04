@@ -1,6 +1,7 @@
 import {GameAction, GameActionOptions} from './actions';
-import {EntityAction, GameEntity, GameModel} from '@swg-common/game';
 import {RoundState} from '@swg-common/models/roundState';
+import {GameModel} from '@swg-common/game/gameLogic';
+import {EntityAction, GameEntity} from '@swg-common/game/entityDetail';
 
 const initialState: GameStore = {};
 

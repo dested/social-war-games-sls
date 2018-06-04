@@ -1,13 +1,11 @@
 import * as React from 'react';
 import {Fragment} from 'react';
-import {Grid, Point} from '@swg-common/hex/hex';
+import {Grid} from '@swg-common/hex/hex';
 import {withRouter} from 'react-router-dom';
 import {connect} from 'react-redux';
 import {HttpUser} from '@swg-common/models/http/httpUser';
 import {SwgStore} from '../store/reducers';
 import {RouteComponentProps} from 'react-router';
-import {GameEntity, GameHexagon, GameLogic, GameModel} from '@swg-common/game';
-import {HexConstants} from '../utils/hexConstants';
 import {GameActions, GameThunks} from '../store/game/actions';
 import {DataService} from '../dataServices';
 import {RoundState} from '@swg-common/models/roundState';
@@ -16,6 +14,9 @@ import {GameRenderer} from '../drawing/gameRenderer';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {Drawing, DrawingOptions} from '../drawing/hexDrawing';
+import {GameHexagon} from '@swg-common/game/gameHexagon';
+import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
+import {GameEntity} from '@swg-common/game/entityDetail';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
