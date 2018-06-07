@@ -44,6 +44,7 @@ gameplay
   '/ cleanup entity screen
   '/ add resources??
   '/ implement spawn logic
+  show votes on screen
   add user details call
     number of votes left
     faction encryption token
@@ -101,6 +102,10 @@ endgame
     ad support
     payment processor support
   build bots  
+  out of sync/time clients
+  figure out a way to prevent multiple accounts
+    prevent fake email addresses
+    ip based?
   show game under login/register screen
   store game in mongo
   cleanup login screen
