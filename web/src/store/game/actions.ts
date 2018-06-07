@@ -2,7 +2,6 @@ import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
 import {RoundState} from '@swg-common/models/roundState';
-import {loadEntities} from '../../drawing/gameRenderer';
 import {HexImages} from '../../utils/hexImages';
 import {Point, PointHashKey} from '@swg-common/hex/hex';
 import {HashArray} from '@swg-common/utils/hashArray';
@@ -11,11 +10,14 @@ import {HexagonTypes} from '@swg-common/game/hexagonTypes';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
+import {loadEntities} from '../../drawing/gameAssets';
+import {GameResource} from '@swg-common/game/gameResource';
 
 export enum GameActionOptions {
     UpdateGame = 'UPDATE_GAME',
     SetImagesLoading = 'SET_IMAGES_LOADING',
     SelectEntity = 'SELECT_ENTITY',
+    SelectResource = 'SELECT_RESOURCE',
     SetEntityAction = 'SET_ENTITY_ACTION',
     SelectViableHex = 'SELECT_VIABLE_HEX',
     Voting = 'VOTING',
@@ -32,6 +34,11 @@ export interface SetEntityActionAction {
 export interface SelectEntityAction {
     type: GameActionOptions.SelectEntity;
     entity: GameEntity;
+}
+
+export interface SelectResourceAction {
+    type: GameActionOptions.SelectResource;
+    resource: GameResource;
 }
 
 export interface SetImagesLoadingAction {
@@ -64,6 +71,7 @@ export type GameAction =
     | VotingAction
     | SetImagesLoadingAction
     | SetEntityActionAction
+    | SelectResourceAction
     | SelectViableHexAction
     | UpdateGameAction
     | VotingErrorAction;
@@ -73,6 +81,13 @@ export class GameActions {
         return {
             type: GameActionOptions.SelectEntity,
             entity
+        };
+    }
+
+    static selectResource(resource: GameResource): SelectResourceAction {
+        return {
+            type: GameActionOptions.SelectResource,
+            resource
         };
     }
 
@@ -209,6 +224,10 @@ export class GameThunks {
                     radius = entityDetails.moveRadius;
                     entityHash = game.entities;
                     break;
+                case 'mine':
+                    radius = entityDetails.mineRadius;
+                    entityHash = game.entities;
+                    break;
                 case 'spawn':
                     radius = entityDetails.spawnRadius;
                     entityHash = game.entities;
@@ -219,11 +238,14 @@ export class GameThunks {
 
             switch (action) {
                 case 'attack':
-                /*    viableHexes = viableHexes.filter(a =>
+                    /*    viableHexes = viableHexes.filter(a =>
                         game.entities.find(e => e.factionId !== entity.factionId && e.x === a.x && e.y === a.y)
                     );*/
                     break;
                 case 'move':
+                    viableHexes = viableHexes.filter(a => !game.entities.find(e => e.x === a.x && e.y === a.y));
+                    break;
+                case 'mine':
                     viableHexes = viableHexes.filter(a => !game.entities.find(e => e.x === a.x && e.y === a.y));
                     break;
                 case 'spawn':

@@ -51,21 +51,21 @@ export class HexagonTypes {
     static grass: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Grass',
         subType,
-        cost: 2,
+        cost: 1,
         blocked: false
     });
 
     static clay: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Clay',
         subType,
-        cost: 3,
+        cost: 2,
         blocked: false
     });
 
     static stone: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Stone',
         subType,
-        cost: 4,
+        cost: 2,
         blocked: false
     });
 

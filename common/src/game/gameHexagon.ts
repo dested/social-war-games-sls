@@ -1,9 +1,10 @@
 import {Hexagon, Point} from '../hex/hex';
 import {HexagonTileType} from './hexagonTypes';
-import {FactionId} from './entityDetail';
+import {Faction} from './entityDetail';
+
 
 export class GameHexagon extends Hexagon {
-    factionId: FactionId = '0';
+    factionId: Faction = '0';
     factionDuration: number = 0;
 
     center: Point;
@@ -23,7 +24,7 @@ export class GameHexagon extends Hexagon {
         this.blocked = tileType.blocked;
     }
 
-    setFactionId(factionId: FactionId,duration: number) {
+    setFactionId(factionId: Faction, duration: number) {
         this.factionId = factionId;
         this.factionDuration = duration;
     }

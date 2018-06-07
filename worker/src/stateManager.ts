@@ -1,7 +1,7 @@
 import {VoteCountResult} from '@swg-server-common/db/models/dbVote';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {Config} from '@swg-server-common/config';
-import {GameState, GameStateEntityMap} from '@swg-common/models/gameState';
+import {GameState, GameStateEntityMap, GameStateFactionDetailMap} from '@swg-common/models/gameState';
 import {GameModel} from '@swg-common/../../common/src/game/gameLogic';
 
 export class StateManager {
@@ -27,6 +27,13 @@ export class StateManager {
     static buildGameState(game: GameModel): GameState {
         return {
             factions: game.grid.hexes.map(a => a.factionId + '' + a.factionDuration).join(''),
+            factionDetails: game.factionDetails,
+            resources: game.resources.map(a => ({
+                x: a.x,
+                y: a.y,
+                type: a.resourceType,
+                count: a.currentCount
+            })),
             entities: game.entities.reduce(
                 (entities, ent) => {
                     if (!entities[ent.factionId]) entities[ent.factionId] = [];

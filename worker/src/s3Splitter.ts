@@ -1,11 +1,12 @@
-import {GameState, GameStateEntityMap} from '@swg-common/models/gameState';
+import {GameState, GameStateEntityMap, GameStateResource} from '@swg-common/models/gameState';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {Point, PointHashKey} from '@swg-common/hex/hex';
 import {HashArray} from '@swg-common/utils/hashArray';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
-import {EntityDetails, FactionId, Factions, GameEntity} from '@swg-common/game/entityDetail';
+import {EntityDetails, Faction, Factions, GameEntity, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {GameResource} from '@swg-common/game/gameResource';
 
 export class S3Splitter {
     static async output(
@@ -66,19 +67,33 @@ export class S3Splitter {
         layout: GameLayout,
         gameState: GameState,
         roundState: RoundState,
-        factionId: FactionId,
+        factionId: PlayableFactionId,
         visibleHexes: HashArray<Point>
     ): [GameState, RoundState] {
         const entities = gameState.entities;
         const visibleEntityVotes: {[id: string]: RoundStateEntityVote[]} = {};
+        const visibleResources: GameStateResource[] = [];
 
         const visibleEntities: GameStateEntityMap = {
-            '0': [],
             '1': [],
             '2': [],
             '3': [],
-            '9': []
         };
+
+        const visibleFactionDetails = {...gameState.factionDetails};
+
+        for (const faction of Factions) {
+            if (faction !== factionId) {
+                delete visibleFactionDetails[faction];
+            }
+        }
+
+        for (const resource of gameState.resources) {
+            if (visibleHexes.exists(resource)) {
+                visibleResources.push(resource);
+            }
+        }
+
         for (let i = 0; i < Factions.length; i++) {
             const faction = Factions[i];
             for (let i = 0; i < entities[faction].length; i++) {
@@ -106,8 +121,15 @@ export class S3Splitter {
                 factionStr.push(0);
             }
         }
+
         return [
-            {...gameState, entities: visibleEntities, factions: factionStr.join('')},
+            {
+                ...gameState,
+                resources: visibleResources,
+                factionDetails: visibleFactionDetails,
+                entities: visibleEntities,
+                factions: factionStr.join('')
+            },
             {...roundState, entities: visibleEntityVotes}
         ];
     }

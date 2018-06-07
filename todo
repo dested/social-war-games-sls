@@ -52,6 +52,7 @@ gameplay
   what happens when all factories for a faction is destroyed
   fix flickering vote
   put bounds on view
+  close menu on new round
   
 stats
   units youve participated in, howd they do
@@ -86,6 +87,8 @@ janitorial
   
 endgame
   balance units
+  add fling
+  minify the gamestatejson
   get more turns button
     watch ad
     microtransaction
@@ -104,3 +107,16 @@ endgame
   update images
   migrate from s3
   sell
+
+
+
+resources:
+  only infantry can mine resources 
+  has to be within 3 radius 
+  takes one turn to mine
+  ++ on the factions resource count
+  any factory can now produce a new unit
+    infantry costs 3 resource
+    tank cost 5
+    plane cost 7
+

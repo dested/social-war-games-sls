@@ -1,7 +1,7 @@
-import {FactionId} from '@swg-common/game/entityDetail';
+import {Faction, PlayableFactionId} from '@swg-common/game/entityDetail';
 
 export class FactionUtils {
-    static randomFaction(): FactionId {
-        return (Math.floor(Math.random() * 3) + 1).toString() as FactionId;
+    static randomFaction(): PlayableFactionId {
+        return (Math.floor(Math.random() * 3) + 1).toString() as PlayableFactionId;
     }
 }

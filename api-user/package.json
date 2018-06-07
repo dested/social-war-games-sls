@@ -6,7 +6,7 @@
     "start": "node ./dist/user.js",
     "start-ts": "node ./run.js",
     "start:watch": "nodemon",
-    "deploy": "cross-env NODE_ENV=production webpack --progress --hide-modules & eb deploy",
+    "deploy": "npm run build & eb deploy",
     "test": "npx jest",
     "tsc": "npx tsc",
     "pretty": "npx prettier \"*/**/*.ts*\"  --config .prettierrc --write",
@@ -16,6 +16,8 @@
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules  --env=deploy"
   },
   "dependencies": {
+    "@nest-middlewares/cors": "^1.1.1",
+    "@nest-middlewares/helmet": "^1.1.1",
     "@nestjs/common": "^4.6.6",
     "@nestjs/core": "^4.6.6",
     "@nestjs/microservices": "^4.6.6",

@@ -9,7 +9,7 @@ import {S3Splitter} from './s3Splitter';
 import {StateManager} from './stateManager';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {EntityDetails, FactionId} from '@swg-common/game/entityDetail';
+import {EntityDetails, Faction, PlayableFactionId} from '@swg-common/game/entityDetail';
 
 export class Worker {
     private static redisManager: RedisManager;
@@ -73,7 +73,7 @@ export class Worker {
                     const vote = {
                         entityId: voteCount._id,
                         action: action.action,
-                        factionId: undefined as FactionId,
+                        factionId: undefined as PlayableFactionId,
                         hexId: action.hexId
                     };
 

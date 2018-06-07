@@ -1,8 +1,8 @@
-import {FactionId} from '../../game/entityDetail';
+import { PlayableFactionId} from '../../game/entityDetail';
 
 export interface HttpUser {
     id: string;
     email: string;
-    factionId: FactionId;
+    factionId: PlayableFactionId;
     maxVotesPerRound:number;
 }

@@ -9,13 +9,16 @@ import {Dispatcher} from '../store/actions';
 import {RoundState} from '@swg-common/models/roundState';
 import {GameModel} from '@swg-common/game/gameLogic';
 import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
-import {EntityAssets} from '../drawing/gameRenderer';
 import {HexColors} from '../utils/hexColors';
 import {ColorUtils} from '../utils/colorUtils';
+import {GameAssets} from '../drawing/gameAssets';
+import {GameResource, ResourceDetails} from '@swg-common/game/gameResource';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
     selectedEntity?: GameEntity;
+    selectedResource?: GameResource;
+    selectedEntityAction?: EntityAction;
     roundState?: RoundState;
     game?: GameModel;
     startEntityAction: typeof GameThunks.startEntityAction;
@@ -30,6 +33,74 @@ export class Component extends React.Component<Props, State> {
     }
 
     render() {
+        if (this.props.selectedEntity) {
+            return this.renderEntity();
+        } else if (this.props.selectedResource) {
+            return this.renderResource();
+        }
+    }
+
+    private renderResource() {
+        const resource = this.props.selectedResource;
+        const resourceDetails = ResourceDetails[resource.resourceType];
+
+        const currentFaction = this.props.game.grid.getHexAt(resource).factionId;
+
+        return (
+            <div
+                style={{
+                    height: '300px',
+                    borderBottomLeftRadius: '40px',
+                    width: '330px',
+                    position: 'absolute',
+                    right: 0,
+                    backgroundColor: 'rgba(255,255,255,.6)',
+                    padding: 20,
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
+            >
+                <div
+                    style={{
+                        borderRadius: '50%',
+                        width: '180px',
+                        height: '180px',
+                        display: 'flex',
+                        alignSelf: 'center',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        margin: '10px',
+                        backgroundColor: HexColors.factionIdToColor(currentFaction, '0', '.8')
+                    }}
+                >
+                    <img src={GameAssets[resource.resourceType].imageUrl} style={{width: '120px'}} />
+                </div>
+                <div
+                    style={{
+                        display: 'flex',
+                        borderRadius: '20px',
+                        border: 'solid 2px black',
+                        backgroundColor: 'rgba(50,50,50,1)',
+                        height: '40px'
+                    }}
+                >
+                    <div
+                        style={{
+                            borderRadius: '20px',
+                            width: `${resource.currentCount / resourceDetails.startingCount * 100}%`,
+                            backgroundColor: ColorUtils.lerpColor(
+                                '#FF0000',
+                                '#00FF00',
+                                resource.currentCount / resourceDetails.startingCount
+                            )
+                        }}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    private renderEntity() {
         const entity = this.props.selectedEntity;
         const entityDetails = EntityDetails[entity.entityType];
         const myEntity = this.props.user.factionId === entity.factionId;
@@ -60,7 +131,7 @@ export class Component extends React.Component<Props, State> {
                         backgroundColor: HexColors.factionIdToColor(entity.factionId, '0', '.8')
                     }}
                 >
-                    <img src={EntityAssets[entity.entityType].imageUrl} style={{width: '120px'}} />
+                    <img src={GameAssets[entity.entityType].imageUrl} style={{width: '120px'}} />
                 </div>
                 <div
                     style={{
@@ -106,18 +177,40 @@ export class Component extends React.Component<Props, State> {
             fontSize: '25px'
         };
 
+        const selectedButton = {
+            border: 'solid 5px black'
+        };
+
         switch (entity.entityType) {
             case 'infantry':
                 return (
                     <div style={outer}>
                         <div
-                            style={{...actionButton, backgroundColor: 'red'}}
+                            style={{
+                                ...actionButton,
+                                backgroundColor: 'red',
+                                ...(this.props.selectedEntityAction === 'attack' && selectedButton)
+                            }}
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
                         >
                             <span>Attack</span>
                         </div>
                         <div
-                            style={{...actionButton, backgroundColor: 'blue'}}
+                            style={{
+                                ...actionButton,
+                                backgroundColor: 'purple',
+                                ...(this.props.selectedEntityAction === 'mine' && selectedButton)
+                            }}
+                            onClick={() => this.props.startEntityAction(entity, 'mine')}
+                        >
+                            <span>Mine</span>
+                        </div>
+                        <div
+                            style={{
+                                ...actionButton,
+                                backgroundColor: 'blue',
+                                ...(this.props.selectedEntityAction === 'move' && selectedButton)
+                            }}
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
                             <span>Move</span>
@@ -128,13 +221,21 @@ export class Component extends React.Component<Props, State> {
                 return (
                     <div style={outer}>
                         <div
-                            style={{...actionButton, backgroundColor: 'red'}}
+                            style={{
+                                ...actionButton,
+                                backgroundColor: 'red',
+                                ...(this.props.selectedEntityAction === 'attack' && selectedButton)
+                            }}
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
                         >
                             <span>Attack</span>
                         </div>
                         <div
-                            style={{...actionButton, backgroundColor: 'blue'}}
+                            style={{
+                                ...actionButton,
+                                backgroundColor: 'blue',
+                                ...(this.props.selectedEntityAction === 'move' && selectedButton)
+                            }}
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
                             <span>Move</span>
@@ -145,13 +246,21 @@ export class Component extends React.Component<Props, State> {
                 return (
                     <div style={outer}>
                         <div
-                            style={{...actionButton, backgroundColor: 'red'}}
+                            style={{
+                                ...actionButton,
+                                backgroundColor: 'red',
+                                ...(this.props.selectedEntityAction === 'attack' && selectedButton)
+                            }}
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
                         >
                             <span>Attack</span>
                         </div>
                         <div
-                            style={{...actionButton, backgroundColor: 'blue'}}
+                            style={{
+                                ...actionButton,
+                                backgroundColor: 'blue',
+                                ...(this.props.selectedEntityAction === 'move' && selectedButton)
+                            }}
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
                             <span>Move</span>
@@ -164,7 +273,8 @@ export class Component extends React.Component<Props, State> {
                         <div
                             style={{
                                 ...actionButton,
-                                backgroundColor: 'green'
+                                backgroundColor: 'green',
+                                ...(this.props.selectedEntityAction === 'spawn' && selectedButton)
                             }}
                             onClick={() => this.props.startEntityAction(entity, 'spawn')}
                         >
@@ -181,7 +291,9 @@ export let GameSidePanel = connect(
         user: state.appState.user,
         game: state.gameState.game,
         roundState: state.gameState.roundState,
-        selectedEntity: state.gameState.selectedEntity
+        selectedEntity: state.gameState.selectedEntity,
+        selectedResource: state.gameState.selectedResource,
+        selectedEntityAction: state.gameState.selectedEntityAction
     }),
     (dispatch: Dispatcher) => ({
         startEntityAction: (entity: GameEntity, action: EntityAction) =>

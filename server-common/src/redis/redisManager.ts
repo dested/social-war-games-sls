@@ -8,7 +8,9 @@ export class RedisManager {
             const manager = new RedisManager();
 
             manager.client = createClient({
-                url: Config.redisUrl
+                host: Config.redis.host,
+                port: Config.redis.port,
+                auth_pass: Config.redis.authPass
             });
             manager.client.on('ready', result => {
                 res(manager);

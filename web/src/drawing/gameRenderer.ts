@@ -1,10 +1,9 @@
 import {getStore} from '../store';
 import {SwgStore} from '../store/reducers';
 import {Dispatcher, GameActions, GameThunks} from '../store/actions';
-import {Manager, Pan} from 'hammerjs';
+import {Manager, Pan, Tap, Swipe} from 'hammerjs';
 import {HexConstants} from '../utils/hexConstants';
 import * as _ from 'lodash';
-import {ImageUtils} from '../utils/imageUtils';
 import {AnimationUtils} from '../utils/animationUtils';
 import {HexColors} from '../utils/hexColors';
 import {Drawing, DrawingOptions} from './hexDrawing';
@@ -14,55 +13,8 @@ import {EntityType, GameEntity} from '@swg-common/game/entityDetail';
 import {ColorUtils} from '../utils/colorUtils';
 import {GameView} from './gameView';
 import {UIConstants} from '../utils/uiConstants';
-
-type EntityAsset = {
-    image: HTMLImageElement;
-    imageUrl: string;
-    width: number;
-    height: number;
-    centerX: number;
-    centerY: number;
-};
-
-export let EntityAssets: {[key in EntityType]: EntityAsset};
-export let loadEntities = () => {
-    EntityAssets = {
-        infantry: {
-            image: ImageUtils.preloadImage(`./assets/infantry.png`),
-            imageUrl: `./assets/infantry.png`,
-            width: 120,
-            height: 180,
-            centerX: 60,
-            centerY: 110
-        },
-        tank: {
-            image: ImageUtils.preloadImage(`./assets/tank.png`),
-            imageUrl: `./assets/tank.png`,
-            width: 120,
-            height: 140,
-            centerX: 60,
-            centerY: 70
-        },
-
-        plane: {
-            image: ImageUtils.preloadImage(`./assets/plane.png`),
-            imageUrl: `./assets/plane.png`,
-            width: 120,
-            height: 140,
-            centerX: 60,
-            centerY: 70
-        },
-
-        factory: {
-            image: ImageUtils.preloadImage(`./assets/factory.png`),
-            imageUrl: `./assets/factory.png`,
-            width: 120,
-            height: 140,
-            centerX: 60,
-            centerY: 70
-        }
-    };
-};
+import {GameAssets} from './gameAssets';
+import {GameResource} from '@swg-common/game/gameResource';
 
 export class GameRenderer {
     private canvas: HTMLCanvasElement;
@@ -70,6 +22,7 @@ export class GameRenderer {
     view: GameView;
 
     selectEntity = (entity: GameEntity) => getStore().dispatch(GameActions.selectEntity(entity));
+    selectResource = (resource: GameResource) => getStore().dispatch(GameActions.selectResource(resource));
     selectedViableHex = (hex: GameHexagon) => getStore().dispatch(GameThunks.selectViableHex(hex));
 
     tapHex(hexagon: GameHexagon) {
@@ -91,13 +44,19 @@ export class GameRenderer {
         if (viableHexIds && viableHexIds[hexagon.id]) {
             this.selectedViableHex(hexagon);
         } else {
-            const tappedEntity = game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
+            const tappedEntity = game.entities.get(hexagon);
             if (tappedEntity) {
                 this.selectEntity(tappedEntity);
                 moveTo = true;
             } else {
-                if (selectedEntity) {
-                    this.selectEntity(null);
+                const tappedResource = game.resources.get(hexagon);
+                if (tappedResource) {
+                    this.selectResource(tappedResource);
+                    moveTo = true;
+                } else {
+                    if (selectedEntity) {
+                        this.selectEntity(null);
+                    }
                 }
             }
         }
@@ -141,7 +100,7 @@ export class GameRenderer {
 
         const manager = new Manager(this.canvas); // const swipe = new Swipe();
         manager.add(new Pan({direction: Hammer.DIRECTION_ALL, threshold: 5}));
-        manager.add(new Hammer.Tap({taps: 1}));
+        manager.add(new Tap({taps: 1}));
 
         // manager.add(swipe);
         let startX = 0;
@@ -163,6 +122,7 @@ export class GameRenderer {
             startViewY = this.view.y;
         });
         manager.on('panend', e => {});
+
         manager.on('tap', e => {
             const store = getStore();
             const state = store.getState();
@@ -275,6 +235,9 @@ export class GameRenderer {
         context.lineJoin = 'round';
         context.lineCap = 'round';
 
+        const wRatio = HexConstants.width / HexConstants.defaultWidth;
+        const hRatio = HexConstants.height / HexConstants.defaultHeight;
+
         for (const hexagon of hexes) {
             const isViableHex = viableHexIds[hexagon.id];
             if (hexagon.lines.length > 0) {
@@ -295,8 +258,21 @@ export class GameRenderer {
                 context.stroke();
             }
         }
-        const wRatio = HexConstants.width / HexConstants.defaultWidth;
-        const hRatio = HexConstants.height / HexConstants.defaultHeight;
+
+        for (let i = 0; i < game.resources.array.length; i++) {
+            const resource = game.resources.array[i];
+            const hex = grid.getHexAt(resource);
+            const asset = GameAssets[resource.resourceType];
+
+            context.drawImage(
+                asset.image,
+                hex.center.x - asset.centerX * wRatio,
+                hex.center.y - asset.centerY * hRatio,
+                asset.width * wRatio,
+                asset.height * hRatio
+            );
+        }
+
         let rectWidth = HexConstants.width * 0.35;
         let rectHeight = HexConstants.height * 0.4;
         let fontSize = Math.round(rectWidth / 1.7);
@@ -307,7 +283,7 @@ export class GameRenderer {
         for (let i = 0; i < game.entities.length; i++) {
             const entity = game.entities.getIndex(i);
             const hex = grid.getHexAt(entity);
-            const asset = EntityAssets[entity.entityType];
+            const asset = GameAssets[entity.entityType];
 
             context.drawImage(
                 asset.image,
@@ -317,6 +293,7 @@ export class GameRenderer {
                 asset.height * hRatio
             );
         }
+
         for (let i = 0; i < game.entities.length; i++) {
             const entity = game.entities.getIndex(i);
             const hex = grid.getHexAt(entity);
@@ -325,13 +302,12 @@ export class GameRenderer {
             let rectY = hex.center.y;
 
             const voteCount = roundState.entities[entity.id] && _.sum(roundState.entities[entity.id].map(a => a.count));
-            this.roundRect(rectX, rectY, rectWidth, rectHeight, 5, 'rgba(0,0,0,.6)');
+            context.drawImage(this.roundRect(rectWidth, rectHeight, 5, 'rgba(0,0,0,.6)'), rectX, rectY);
 
             context.fillStyle = 'white';
             context.fillText(entity.health.toString(), rectX + rectWidth / 2 - 1, rectY + rectHeight / 1.4, rectWidth);
             if (voteCount > 0) {
-                this.roundRect(voteRectX, rectY, rectWidth, rectHeight, 5, 'rgba(240,240,240,.6)');
-
+                context.drawImage(this.roundRect(rectWidth, rectHeight, 5, 'rgba(240,240,240,.6)'), voteRectX, rectY);
                 context.fillStyle = 'black';
                 context.fillText(
                     voteCount.toString(),
@@ -361,15 +337,15 @@ export class GameRenderer {
         );
     }
 
-    roundRect(
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        rad: number | number[],
-        fill: string,
-        stroke: string = null
-    ) {
+    roundRectHash: {[key: string]: HTMLCanvasElement} = {};
+
+    roundRect(width: number, height: number, rad: number | number[], fill: string, stroke: string = null) {
+        const key = ` ${width} ${height} ${rad} ${fill} ${stroke}`;
+
+        if (this.roundRectHash[key]) {
+            return this.roundRectHash[key];
+        }
+
         let radius = {tl: 0, tr: 0, br: 0, bl: 0};
         if (typeof rad === 'number') {
             radius = {tl: rad, tr: rad, br: rad, bl: rad};
@@ -379,26 +355,35 @@ export class GameRenderer {
                 radius[side] = radius[side] || defaultRadius[side];
             }
         }
-        this.context.save();
-        this.context.beginPath();
-        this.context.moveTo(x + radius.tl, y);
-        this.context.lineTo(x + width - radius.tr, y);
-        this.context.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
-        this.context.lineTo(x + width, y + height - radius.br);
-        this.context.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
-        this.context.lineTo(x + radius.bl, y + height);
-        this.context.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
-        this.context.lineTo(x, y + radius.tl);
-        this.context.quadraticCurveTo(x, y, x + radius.tl, y);
-        this.context.closePath();
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext('2d');
+
+        const x = 0;
+        const y = 0;
+
+        context.beginPath();
+        context.moveTo(x + radius.tl, y);
+        context.lineTo(x + width - radius.tr, y);
+        context.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+        context.lineTo(x + width, y + height - radius.br);
+        context.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+        context.lineTo(x + radius.bl, y + height);
+        context.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+        context.lineTo(x, y + radius.tl);
+        context.quadraticCurveTo(x, y, x + radius.tl, y);
+        context.closePath();
+
         if (fill) {
-            this.context.fillStyle = fill;
-            this.context.fill();
+            context.fillStyle = fill;
+            context.fill();
         }
         if (stroke) {
-            this.context.strokeStyle = stroke;
-            this.context.stroke();
+            context.strokeStyle = stroke;
+            context.stroke();
         }
-        this.context.restore();
+        return canvas;
     }
 }

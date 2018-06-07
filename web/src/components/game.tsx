@@ -17,10 +17,12 @@ import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {GameEntity} from '@swg-common/game/entityDetail';
 import {SmallGameRenderer} from '../drawing/smallGameRenderer';
 import {UIConstants} from '../utils/uiConstants';
+import {GameResource} from '@swg-common/game/gameResource';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
     selectedEntity?: GameEntity;
+    selectedResource?: GameResource;
     game?: GameModel;
     imagesLoading?: number;
     roundState?: RoundState;
@@ -126,7 +128,7 @@ export class Component extends React.Component<Props, State> {
                     width={UIConstants.miniMapWidth}
                     height={UIConstants.miniMapHeight}
                 />
-                {this.props.selectedEntity && <GameSidePanel />}
+                {(this.props.selectedEntity || this.props.selectedResource) && <GameSidePanel />}
             </Fragment>
         );
     }
@@ -138,7 +140,8 @@ export let Game = connect(
         imagesLoading: state.gameState.imagesLoading,
         game: state.gameState.game,
         roundState: state.gameState.roundState,
-        selectedEntity: state.gameState.selectedEntity
+        selectedEntity: state.gameState.selectedEntity,
+        selectedResource: state.gameState.selectedResource
     }),
     {
         updateGame: GameActions.updateGame,

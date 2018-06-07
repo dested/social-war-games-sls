@@ -4,7 +4,7 @@ import {GameState} from '@swg-common/models/gameState';
 import {RoundState} from '@swg-common/models/roundState';
 
 import {getStore} from './store';
-import {EntityAction, FactionId} from '@swg-common/game/entityDetail';
+import {EntityAction, Faction, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {VoteRequestResults} from '@swg-common/models/http/voteResults';
 
 export class DataService {
@@ -82,7 +82,7 @@ export class DataService {
         return (await response.json()) as GameLayout;
     }
 
-    static async getGameState(factionId: FactionId) {
+    static async getGameState(factionId: PlayableFactionId) {
         let response = await fetch(`${this.s3Server}/game-state-${factionId}.json?bust=${+new Date()}`, {
             method: 'GET',
             headers: {
@@ -93,7 +93,7 @@ export class DataService {
         return (await response.json()) as GameState;
     }
 
-    static async getRoundState(factionId: FactionId) {
+    static async getRoundState(factionId: PlayableFactionId) {
         let response = await fetch(`${this.s3Server}/round-state-${factionId}.json?bust=${+new Date()}`, {
             method: 'GET',
             headers: {

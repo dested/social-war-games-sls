@@ -5,6 +5,7 @@ export enum VoteResult {
     MoveSpotNotEmpty = 'MoveSpotNotEmpty',
     AttackFactionMismatch = 'AttackFactionMismatch',
     NoEntityToAttack = 'NoEntityToAttack',
+    NoResourceToMine = 'NoResourceToMine',
     PathOutOfRange = 'PathOutOfRange',
     PathIsZero = 'PathIsZero',
     ToHexNotFound = 'ToHexNotFound',
