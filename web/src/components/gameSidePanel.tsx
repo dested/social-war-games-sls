@@ -159,7 +159,15 @@ export class Component extends React.Component<Props, State> {
         );
     }
 
-    private renderActions(entity) {
+    private renderActions(entity: GameEntity) {
+        if (entity.busy) {
+            return (
+                <span>
+                    Busy for {entity.busy.ticks} more tick{entity.busy.ticks === 1 ? '' : 's'}
+                </span>
+            );
+        }
+
         const actionButton = {
             width: 100,
             margin: 10,

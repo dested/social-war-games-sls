@@ -1,4 +1,5 @@
 export enum VoteResult {
+    EntityIsBusy = 'EntityIsBusy',
     Success = 'Success',
     EntityCannotSpawn = 'EntityCannotSpawn',
     NotEnoughResources = 'NotEnoughResources',

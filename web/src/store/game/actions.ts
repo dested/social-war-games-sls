@@ -261,10 +261,13 @@ export class GameThunks {
                 GameActions.setEntityAction(
                     entity,
                     action,
-                    viableHexes.reduce((a, b) => {
-                        a[b.id] = true;
-                        return a;
-                    }, {})
+                    viableHexes.reduce(
+                        (a, b) => {
+                            a[b.id] = true;
+                            return a;
+                        },
+                        {} as {[hexId: string]: boolean}
+                    )
                 )
             );
         };

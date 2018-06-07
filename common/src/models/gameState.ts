@@ -1,4 +1,4 @@
-import {EntityType, Faction, PlayableFactionId} from '../game/entityDetail';
+import {EntityAction, EntityType, Faction, PlayableFactionId} from '../game/entityDetail';
 import {ResourceType} from '../game/gameResource';
 
 export type GameState = {
@@ -22,9 +22,16 @@ export type GameStateEntity = {
     x: number;
     y: number;
     id: string;
+    busy: GameStateGameEntityBusyDetails;
     entityType: EntityType;
     health: number;
     healthRegenStep: number;
+};
+
+export type GameStateGameEntityBusyDetails = {
+    ticks: number;
+    action: EntityAction;
+    hexId: string;
 };
 
 export type GameStateResource = {

@@ -58,7 +58,7 @@ export class Component extends React.Component<Props, State> {
         this.layout = await DataService.getLayout();
         this.gameState = await DataService.getGameState(this.props.user.factionId);
         const roundState = await DataService.getRoundState(this.props.user.factionId);
-        let game = GameLogic.buildGame(this.layout, this.gameState);
+        let game = GameLogic.buildGameFromState(this.layout, this.gameState);
         Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
         this.props.updateGame(game, roundState);
         this.miniGameRenderer.forceRender();
@@ -81,7 +81,7 @@ export class Component extends React.Component<Props, State> {
                     shouldUpdate = true;
                 }
                 if (shouldUpdate) {
-                    const game = GameLogic.buildGame(this.layout, this.gameState);
+                    const game = GameLogic.buildGameFromState(this.layout, this.gameState);
                     Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
                     this.props.updateGame(game, roundState);
                     this.miniGameRenderer.forceRender();

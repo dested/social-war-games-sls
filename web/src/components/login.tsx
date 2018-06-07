@@ -25,7 +25,7 @@ class Component extends React.Component<Props, State> {
         };
     }
 
-    private login = async e => {
+    private login = async (e:any) => {
         e.preventDefault();
         try {
             const response = await DataService.login(this.state.email, this.state.password);
@@ -39,8 +39,8 @@ class Component extends React.Component<Props, State> {
         }
     };
 
-    private updateEmail = async e => this.setState({email: e.target.value});
-    private updatePassword = async e => this.setState({password: e.target.value});
+    private updateEmail = async (e:any) => this.setState({email: e.target.value});
+    private updatePassword = async (e:any) => this.setState({password: e.target.value});
 
     render() {
         return (

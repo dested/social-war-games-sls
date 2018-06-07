@@ -45,7 +45,7 @@ export const handler = async (event: Event) => {
         layout = layout || (await redisManager.get<GameLayout>('layout'));
         if (!gameState || gameState.generation !== generation) {
             gameState = await redisManager.get<GameState>('game-state');
-            game = GameLogic.buildGame(layout, gameState);
+            game = GameLogic.buildGameFromState(layout, gameState);
         }
 
         const body = event.body;

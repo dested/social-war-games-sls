@@ -19,11 +19,18 @@ export type PlayableFactionId = '1' | '2' | '3';
 
 export let Factions: PlayableFactionId[] = ['1', '2', '3'];
 
+export type GameEntityBusyDetails = {
+    ticks: number;
+    action: EntityAction;
+    hexId: string;
+};
+
 export interface GameEntity {
     id: string;
     x: number;
     y: number;
     factionId: PlayableFactionId;
+    busy?: GameEntityBusyDetails;
     entityType: EntityType;
     health: number;
     healthRegenStep: number;

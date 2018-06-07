@@ -6,6 +6,7 @@
     "removeComments": false,
     "skipLibCheck": true,
     "moduleResolution": "node",
+    "noImplicitAny": true,
     "target": "es2015",
     "noEmit": true,
     "lib": [

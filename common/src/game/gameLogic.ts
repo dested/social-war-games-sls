@@ -235,7 +235,7 @@ export class GameLogic {
         };
     }
 
-    static buildGame(layout: GameLayout, gameState: GameState): GameModel {
+    static buildGameFromState(layout: GameLayout, gameState: GameState): GameModel {
         const grid = new Grid<GameHexagon>(0, 0, layout.boardWidth, layout.boardHeight);
 
         grid.hexes = new HashArray<GameHexagon, Point>(PointHashKey);
@@ -260,6 +260,7 @@ export class GameLogic {
         const entities: GameEntity[] = [
             ...gameState.entities['1'].map(a => ({
                 factionId: '1' as PlayableFactionId,
+                busy: a.busy,
                 id: a.id,
                 health: a.health,
                 x: a.x,
@@ -269,6 +270,7 @@ export class GameLogic {
             })),
             ...gameState.entities['2'].map(a => ({
                 factionId: '2' as PlayableFactionId,
+                busy: a.busy,
                 id: a.id,
                 health: a.health,
                 x: a.x,
@@ -278,6 +280,7 @@ export class GameLogic {
             })),
             ...gameState.entities['3'].map(a => ({
                 factionId: '3' as PlayableFactionId,
+                busy: a.busy,
                 id: a.id,
                 health: a.health,
                 x: a.x,
@@ -305,6 +308,7 @@ export class GameLogic {
     ): VoteResult {
         const fromEntity = game.entities.find(a => a.id === vote.entityId);
         if (!fromEntity) return VoteResult.EntityNotFound;
+        if (fromEntity.busy) return VoteResult.EntityIsBusy;
         if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
 
         const fromHex = game.grid.hexes.get(fromEntity);
@@ -394,7 +398,7 @@ export class GameLogic {
                         spawnEntity = EntityDetails.plane;
                         break;
                 }
-                if (resourceCount < spawnEntity.spawnCost) return VoteResult.EntityCannotSpawn;
+                if (resourceCount < spawnEntity.spawnCost) return VoteResult.NotEnoughResources;
                 break;
         }
 
@@ -403,10 +407,13 @@ export class GameLogic {
 
     static processVote(
         game: GameModel,
-        vote: {action: EntityAction; hexId: string; factionId: PlayableFactionId; entityId: string}
+        vote: {action: EntityAction; hexId: string; factionId: PlayableFactionId; entityId: string},
+        fromBusy: boolean
     ): VoteResult {
         const fromEntity = game.entities.find(a => a.id === vote.entityId);
         if (!fromEntity) return VoteResult.EntityNotFound;
+
+        if (!fromBusy && fromEntity.busy) return VoteResult.EntityIsBusy;
 
         if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
 
@@ -492,26 +499,34 @@ export class GameLogic {
                 if (toEntity) return VoteResult.MoveSpotNotEmpty;
                 if (!toResource) return VoteResult.NoResourceToMine;
 
-                for (let index = 0; index < path.length; index++) {
-                    for (const gameHexagon of game.grid.getCircle(path[index], 1)) {
-                        gameHexagon.setFactionId(fromEntity.factionId, 3);
+                if (!fromBusy) {
+                    fromEntity.busy = {
+                        ticks: 1,
+                        action: 'mine',
+                        hexId: vote.hexId
+                    };
+                } else {
+                    for (let index = 0; index < path.length; index++) {
+                        for (const gameHexagon of game.grid.getCircle(path[index], 1)) {
+                            gameHexagon.setFactionId(fromEntity.factionId, 3);
+                        }
                     }
-                }
-                toResource.currentCount--;
-                if (toResource.currentCount <= 0) {
-                    game.resources.removeItem(toResource);
-                }
+                    toResource.currentCount--;
+                    if (toResource.currentCount <= 0) {
+                        game.resources.removeItem(toResource);
+                    }
 
-                switch (toResource.resourceType) {
-                    case 'bronze':
-                        game.factionDetails[fromEntity.factionId].resourceCount += 1;
-                        break;
-                    case 'silver':
-                        game.factionDetails[fromEntity.factionId].resourceCount += 2;
-                        break;
-                    case 'gold':
-                        game.factionDetails[fromEntity.factionId].resourceCount += 3;
-                        break;
+                    switch (toResource.resourceType) {
+                        case 'bronze':
+                            game.factionDetails[fromEntity.factionId].resourceCount += 1;
+                            break;
+                        case 'silver':
+                            game.factionDetails[fromEntity.factionId].resourceCount += 2;
+                            break;
+                        case 'gold':
+                            game.factionDetails[fromEntity.factionId].resourceCount += 3;
+                            break;
+                    }
                 }
 
                 break;
@@ -535,17 +550,27 @@ export class GameLogic {
                         spawnEntity = EntityDetails.plane;
                         break;
                 }
-                if (resourceCount < spawnEntity.spawnCost) return VoteResult.EntityCannotSpawn;
-                game.factionDetails[fromEntity.factionId].resourceCount -= spawnEntity.spawnCost;
-                game.entities.push({
-                    x: toHex.x,
-                    y: toHex.y,
-                    factionId: fromEntity.factionId,
-                    id: this.nextId(game.entities.array),
-                    health: spawnEntity.health,
-                    entityType: spawnEntity.type,
-                    healthRegenStep: spawnEntity.healthRegenRate
-                });
+                if (resourceCount < spawnEntity.spawnCost) return VoteResult.NotEnoughResources;
+
+                if (!fromBusy) {
+                    fromEntity.busy = {
+                        ticks: spawnEntity.ticksToSpawn,
+                        action: vote.action,
+                        hexId: vote.hexId
+                    };
+                } else {
+                    game.factionDetails[fromEntity.factionId].resourceCount -= spawnEntity.spawnCost;
+                    game.entities.push({
+                        x: toHex.x,
+                        y: toHex.y,
+                        factionId: fromEntity.factionId,
+                        id: this.nextId(game.entities.array),
+                        health: spawnEntity.health,
+                        entityType: spawnEntity.type,
+                        healthRegenStep: spawnEntity.healthRegenRate
+                    });
+                }
+
                 break;
         }
 

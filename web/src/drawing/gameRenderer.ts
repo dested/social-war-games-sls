@@ -31,7 +31,7 @@ export class GameRenderer {
 
         const {game, roundState, selectedEntity} = state.gameState;
 
-        const viableHexIds = state.gameState.viableHexIds || [];
+        const viableHexIds: {[hexId: string]: boolean} = state.gameState.viableHexIds || {};
 
         const startX = this.view.x;
         const endX = this.view.x + (hexagon.center.x - (this.view.x + this.view.width * 0.7 / 2));
@@ -201,7 +201,7 @@ export class GameRenderer {
                 HexConstants.height
             );
         }
-        const viableHexIds = state.gameState.viableHexIds || [];
+        const viableHexIds = state.gameState.viableHexIds || {};
 
         context.strokeStyle = HexColors.defaultBorder;
         for (const hexagon of hexes) {
@@ -346,11 +346,11 @@ export class GameRenderer {
             return this.roundRectHash[key];
         }
 
-        let radius = {tl: 0, tr: 0, br: 0, bl: 0};
+        let radius: any = {tl: 0, tr: 0, br: 0, bl: 0};
         if (typeof rad === 'number') {
             radius = {tl: rad, tr: rad, br: rad, bl: rad};
         } else {
-            const defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+            const defaultRadius: any = {tl: 0, tr: 0, br: 0, bl: 0};
             for (let side in defaultRadius) {
                 radius[side] = radius[side] || defaultRadius[side];
             }

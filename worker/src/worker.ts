@@ -59,11 +59,32 @@ export class Worker {
 
             const layout = await this.redisManager.get<GameLayout>('layout');
             let gameState = await this.redisManager.get<GameState>('game-state');
-            const game = GameLogic.buildGame(layout, gameState);
+            const game = GameLogic.buildGameFromState(layout, gameState);
 
             const voteCounts = (await DBVote.getVoteCount(generation)).sort(
                 (left, right) => _.sumBy(left.actions, a => a.count) - _.sumBy(right.actions, a => a.count)
             );
+
+            for (const gameEntity of game.entities.filter(a => a.busy)) {
+                gameEntity.busy.ticks--;
+                if (gameEntity.busy.ticks === 0) {
+                    const voteResult = GameLogic.processVote(
+                        game,
+                        {
+                            factionId: gameEntity.factionId,
+                            action: gameEntity.busy.action,
+                            hexId: gameEntity.busy.hexId,
+                            entityId: gameEntity.id
+                        },
+                        true
+                    );
+
+                    if (voteResult !== VoteResult.Success) {
+                        console.log('Busy vote failed:', voteResult);
+                    }
+                    gameEntity.busy = undefined;
+                }
+            }
 
             const winningVotes = [];
             for (const voteCount of voteCounts) {
@@ -79,7 +100,7 @@ export class Worker {
 
                     let voteResult = GameLogic.validateVote(game, vote);
                     if (voteResult === VoteResult.Success) {
-                        voteResult = GameLogic.processVote(game, vote);
+                        voteResult = GameLogic.processVote(game, vote, false);
                         if (voteResult !== VoteResult.Success) {
                             console.log('Process vote failed:', voteResult);
                             continue;
@@ -173,7 +194,7 @@ export class Worker {
             const generation = (await this.redisManager.get<number>('game-generation')) || 1;
             const gameState = await this.redisManager.get<GameState>('game-state');
             const layout = await this.redisManager.get<GameLayout>('layout');
-            const game = GameLogic.buildGame(layout, gameState);
+            const game = GameLogic.buildGameFromState(layout, gameState);
 
             const voteCounts = await DBVote.getVoteCount(generation);
             await S3Splitter.output(

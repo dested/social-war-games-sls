@@ -41,6 +41,7 @@ export class StateManager {
                         x: ent.x,
                         y: ent.y,
                         entityType: ent.entityType,
+                        busy: ent.busy,
                         health: ent.health,
                         id: ent.id,
                         healthRegenStep: ent.healthRegenStep
