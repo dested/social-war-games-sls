@@ -1,6 +1,7 @@
 export enum VoteResult {
     Success = 'Success',
     EntityCannotSpawn = 'EntityCannotSpawn',
+    NotEnoughResources = 'NotEnoughResources',
     SpawnSpotNotEmpty = 'SpawnSpotNotEmpty',
     MoveSpotNotEmpty = 'MoveSpotNotEmpty',
     AttackFactionMismatch = 'AttackFactionMismatch',

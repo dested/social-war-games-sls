@@ -7,11 +7,12 @@ export interface EntityDetail {
     mineRadius: number;
     attackPower: number;
     ticksToSpawn: number;
+    spawnCost: number;
     health: number;
     healthRegenRate: number;
 }
 
-export type EntityAction = 'attack' | 'move' | 'spawn' | 'mine';
+export type EntityAction = 'attack' | 'move' | 'spawn-infantry' | 'spawn-tank' | 'spawn-plane' | 'mine';
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
 export type Faction = '0' | '9' | PlayableFactionId;
 export type PlayableFactionId = '1' | '2' | '3';
@@ -37,6 +38,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         attackPower: 0,
         ticksToSpawn: 0,
         healthRegenRate: -1,
+        spawnCost: 0,
         solid: true,
         spawnRadius: 4
     },
@@ -49,6 +51,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         attackPower: 3,
         ticksToSpawn: 3,
         healthRegenRate: 2,
+        spawnCost: 6,
         solid: false,
         spawnRadius: 0
     },
@@ -61,6 +64,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         attackPower: 3,
         ticksToSpawn: 4,
         healthRegenRate: 2,
+        spawnCost: 10,
         solid: false,
         spawnRadius: 0
     },
@@ -72,6 +76,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         attackRadius: 3,
         attackPower: 1,
         ticksToSpawn: 2,
+        spawnCost: 4,
         healthRegenRate: 2,
         solid: false,
         spawnRadius: 2

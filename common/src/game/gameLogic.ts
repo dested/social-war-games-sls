@@ -5,7 +5,15 @@ import {GameState} from '../models/gameState';
 import {HashArray} from '../utils/hashArray';
 import {HexagonTypes} from './hexagonTypes';
 import {Config} from '../../../server-common/src/config';
-import {EntityAction, EntityDetails, Faction, Factions, GameEntity, PlayableFactionId} from './entityDetail';
+import {
+    EntityAction,
+    EntityDetail,
+    EntityDetails,
+    Faction,
+    Factions,
+    GameEntity,
+    PlayableFactionId
+} from './entityDetail';
 import {VoteResult} from './voteResult';
 import {Utils} from '../utils/utils';
 import {GameResource, ResourceDetails, ResourceType} from './gameResource';
@@ -25,8 +33,13 @@ export interface GameModel {
 export class GameLogic {
     static id = 0;
 
-    static nextId() {
-        return (++this.id).toString();
+    static nextId(entities: GameEntity[]): string {
+        while (true) {
+            const random = Math.floor(Math.random() * 10000).toString();
+            if (!entities.find(a => a.id === random)) {
+                return random;
+            }
+        }
     }
 
     static createGame(): GameModel {
@@ -99,7 +112,7 @@ export class GameLogic {
                 const innerBaseHexes = grid.getCircle(center, baseRadius - 1);
 
                 entities.push({
-                    id: this.nextId(),
+                    id: this.nextId(entities),
                     factionId: faction,
                     health: entitiesPerBase[0].health,
                     x: center.x,
@@ -115,7 +128,7 @@ export class GameLogic {
                         continue;
                     }
                     entities.push({
-                        id: this.nextId(),
+                        id: this.nextId(entities),
                         factionId: faction,
                         health: entitiesPerBase[i].health,
                         x: hex.x,
@@ -152,7 +165,7 @@ export class GameLogic {
             for (let i = 0; i < resource.count; i++) {
                 const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
 
-                if (factionCenters.some(a => grid.getDistance({x: center.x, y: center.y}, a) <= baseRadius+1)) {
+                if (factionCenters.some(a => grid.getDistance({x: center.x, y: center.y}, a) <= baseRadius + 1)) {
                     i--;
                     continue;
                 }
@@ -207,7 +220,7 @@ export class GameLogic {
             },
             '3': {
                 resourceCount: 10
-            },
+            }
         };
 
         return {
@@ -290,11 +303,11 @@ export class GameLogic {
         game: GameModel,
         vote: {action: EntityAction; hexId: string; factionId?: PlayableFactionId; entityId: string}
     ): VoteResult {
-        const entity = game.entities.find(a => a.id === vote.entityId);
-        if (!entity) return VoteResult.EntityNotFound;
-        if (vote.factionId !== undefined && entity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
+        const fromEntity = game.entities.find(a => a.id === vote.entityId);
+        if (!fromEntity) return VoteResult.EntityNotFound;
+        if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
 
-        const fromHex = game.grid.hexes.get(entity);
+        const fromHex = game.grid.hexes.get(fromEntity);
         if (!fromHex) return VoteResult.FromHexNotFound;
 
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
@@ -312,7 +325,9 @@ export class GameLogic {
             case 'mine':
                 entityHash = game.entities;
                 break;
-            case 'spawn':
+            case 'spawn-infantry':
+            case 'spawn-tank':
+            case 'spawn-plane':
                 entityHash = game.entities;
                 break;
         }
@@ -320,7 +335,7 @@ export class GameLogic {
         const path = game.grid.findPath(fromHex, toHex, entityHash);
         if (path.length === 0) return VoteResult.PathIsZero;
 
-        const entityDetails = EntityDetails[entity.entityType];
+        const entityDetails = EntityDetails[fromEntity.entityType];
 
         let range = 0;
         switch (vote.action) {
@@ -333,7 +348,9 @@ export class GameLogic {
             case 'mine':
                 range = entityDetails.mineRadius;
                 break;
-            case 'spawn':
+            case 'spawn-infantry':
+            case 'spawn-tank':
+            case 'spawn-plane':
                 range = entityDetails.spawnRadius;
                 break;
         }
@@ -346,7 +363,7 @@ export class GameLogic {
         switch (vote.action) {
             case 'attack':
                 if (!toEntity) return VoteResult.NoEntityToAttack;
-                if (toEntity.factionId === entity.factionId) {
+                if (toEntity.factionId === fromEntity.factionId) {
                     return VoteResult.AttackFactionMismatch;
                 }
 
@@ -358,10 +375,26 @@ export class GameLogic {
             case 'mine':
                 if (!toResource) return VoteResult.NoResourceToMine;
                 break;
-            case 'spawn':
+            case 'spawn-infantry':
+            case 'spawn-tank':
+            case 'spawn-plane':
                 if (toEntity) return VoteResult.SpawnSpotNotEmpty;
                 if (toResource) return VoteResult.SpawnSpotNotEmpty;
                 if (entityDetails.spawnRadius === 0) return VoteResult.EntityCannotSpawn;
+                const resourceCount = game.factionDetails[fromEntity.factionId].resourceCount;
+                let spawnEntity: EntityDetail;
+                switch (vote.action) {
+                    case 'spawn-infantry':
+                        spawnEntity = EntityDetails.infantry;
+                        break;
+                    case 'spawn-tank':
+                        spawnEntity = EntityDetails.tank;
+                        break;
+                    case 'spawn-plane':
+                        spawnEntity = EntityDetails.plane;
+                        break;
+                }
+                if (resourceCount < spawnEntity.spawnCost) return VoteResult.EntityCannotSpawn;
                 break;
         }
 
@@ -394,7 +427,9 @@ export class GameLogic {
             case 'mine':
                 entityHash = game.entities;
                 break;
-            case 'spawn':
+            case 'spawn-infantry':
+            case 'spawn-tank':
+            case 'spawn-plane':
                 entityHash = game.entities;
                 break;
         }
@@ -415,7 +450,9 @@ export class GameLogic {
             case 'mine':
                 range = entityDetails.mineRadius;
                 break;
-            case 'spawn':
+            case 'spawn-infantry':
+            case 'spawn-tank':
+            case 'spawn-plane':
                 range = entityDetails.spawnRadius;
                 break;
         }
@@ -464,12 +501,51 @@ export class GameLogic {
                 if (toResource.currentCount <= 0) {
                     game.resources.removeItem(toResource);
                 }
-                game.factionDetails[fromEntity.factionId].resourceCount++;
+
+                switch (toResource.resourceType) {
+                    case 'bronze':
+                        game.factionDetails[fromEntity.factionId].resourceCount += 1;
+                        break;
+                    case 'silver':
+                        game.factionDetails[fromEntity.factionId].resourceCount += 2;
+                        break;
+                    case 'gold':
+                        game.factionDetails[fromEntity.factionId].resourceCount += 3;
+                        break;
+                }
+
                 break;
-            case 'spawn':
+
+            case 'spawn-infantry':
+            case 'spawn-tank':
+            case 'spawn-plane':
                 if (toEntity) return VoteResult.SpawnSpotNotEmpty;
-                if (toResource) return VoteResult.MoveSpotNotEmpty;
+                if (toResource) return VoteResult.SpawnSpotNotEmpty;
                 if (entityDetails.spawnRadius === 0) return VoteResult.EntityCannotSpawn;
+                const resourceCount = game.factionDetails[fromEntity.factionId].resourceCount;
+                let spawnEntity: EntityDetail;
+                switch (vote.action) {
+                    case 'spawn-infantry':
+                        spawnEntity = EntityDetails.infantry;
+                        break;
+                    case 'spawn-tank':
+                        spawnEntity = EntityDetails.tank;
+                        break;
+                    case 'spawn-plane':
+                        spawnEntity = EntityDetails.plane;
+                        break;
+                }
+                if (resourceCount < spawnEntity.spawnCost) return VoteResult.EntityCannotSpawn;
+                game.factionDetails[fromEntity.factionId].resourceCount -= spawnEntity.spawnCost;
+                game.entities.push({
+                    x: toHex.x,
+                    y: toHex.y,
+                    factionId: fromEntity.factionId,
+                    id: this.nextId(game.entities.array),
+                    health: spawnEntity.health,
+                    entityType: spawnEntity.type,
+                    healthRegenStep: spawnEntity.healthRegenRate
+                });
                 break;
         }
 

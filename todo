@@ -42,8 +42,8 @@ gameplay
   '/ dont show votes on enemies
   '/ show minimap
   '/ cleanup entity screen
+  '/ add resources??
   implement spawn logic
-  add resources??
   add user details call
     number of votes left
     faction encryption token
@@ -84,6 +84,7 @@ janitorial
   cleanup gmae grid game logic bullshit 
     remove grid
   make better use of caching in server
+  implement tree shaking so server code doesnt make it to the client
   
 endgame
   balance units

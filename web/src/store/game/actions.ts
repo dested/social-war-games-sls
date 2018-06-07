@@ -228,7 +228,9 @@ export class GameThunks {
                     radius = entityDetails.mineRadius;
                     entityHash = game.entities;
                     break;
-                case 'spawn':
+                case 'spawn-infantry':
+                case 'spawn-tank':
+                case 'spawn-plane':
                     radius = entityDetails.spawnRadius;
                     entityHash = game.entities;
                     break;
@@ -248,7 +250,9 @@ export class GameThunks {
                 case 'mine':
                     viableHexes = viableHexes.filter(a => !game.entities.find(e => e.x === a.x && e.y === a.y));
                     break;
-                case 'spawn':
+                case 'spawn-infantry':
+                case 'spawn-tank':
+                case 'spawn-plane':
                     viableHexes = viableHexes.filter(a => !game.entities.find(e => e.x === a.x && e.y === a.y));
                     break;
             }

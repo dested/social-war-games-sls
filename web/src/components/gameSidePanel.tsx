@@ -274,11 +274,31 @@ export class Component extends React.Component<Props, State> {
                             style={{
                                 ...actionButton,
                                 backgroundColor: 'green',
-                                ...(this.props.selectedEntityAction === 'spawn' && selectedButton)
+                                ...(this.props.selectedEntityAction === 'spawn-infantry' && selectedButton)
                             }}
-                            onClick={() => this.props.startEntityAction(entity, 'spawn')}
+                            onClick={() => this.props.startEntityAction(entity, 'spawn-infantry')}
                         >
-                            <span>Spawn</span>
+                            <span>Spawn Infantry ({EntityDetails.infantry.spawnCost})₽</span>
+                        </div>
+                        <div
+                            style={{
+                                ...actionButton,
+                                backgroundColor: 'green',
+                                ...(this.props.selectedEntityAction === 'spawn-tank' && selectedButton)
+                            }}
+                            onClick={() => this.props.startEntityAction(entity, 'spawn-tank')}
+                        >
+                            <span>Spawn Tank ({EntityDetails.tank.spawnCost})₽</span>
+                        </div>
+                        <div
+                            style={{
+                                ...actionButton,
+                                backgroundColor: 'green',
+                                ...(this.props.selectedEntityAction === 'spawn-plane' && selectedButton)
+                            }}
+                            onClick={() => this.props.startEntityAction(entity, 'spawn-plane')}
+                        >
+                            <span>Spawn Plane ({EntityDetails.plane.spawnCost})₽</span>
                         </div>
                     </div>
                 );
