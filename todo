@@ -38,12 +38,12 @@ gameplay
   '/   other than that, faction tile expires 2 rounds after set
   '/ add healing per tick
   '/ show attack radius 
-  '/add changing color to percent bar
+  '/ add changing color to percent bar
   '/ dont show votes on enemies
   '/ show minimap
   '/ cleanup entity screen
   '/ add resources??
-  implement spawn logic
+  '/ implement spawn logic
   add user details call
     number of votes left
     faction encryption token
@@ -87,19 +87,19 @@ janitorial
   implement tree shaking so server code doesnt make it to the client
   
 endgame
+  '/ add analytics
+  '/ deploy api server
+  '/ deploy web
   balance units
   add fling
-  minify the gamestatejson
+  compress the gamestatejson
   get more turns button
     watch ad
     microtransaction
-  ad support
-  payment processor support
+    ad support
+    payment processor support
   build bots  
-  add analytics
   show game under login/register screen
-  deploy api server
-  deploy web
   store game in mongo
   cleanup login screen
   encrypt faction
@@ -108,16 +108,4 @@ endgame
   update images
   migrate from s3
   sell
-
-
-
-resources:
-  only infantry can mine resources 
-  has to be within 3 radius 
-  takes one turn to mine
-  ++ on the factions resource count
-  any factory can now produce a new unit
-    infantry costs 3 resource
-    tank cost 5
-    plane cost 7
 
