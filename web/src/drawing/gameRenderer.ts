@@ -320,21 +320,39 @@ export class GameRenderer {
 
         context.restore();
 
-        const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
-        context.fillStyle = 'grey';
-        context.fillRect(
-            UIConstants.miniMapWidth,
-            canvas.height - UIConstants.progressBarHeight,
-            canvas.width - UIConstants.miniMapWidth,
-            UIConstants.progressBarHeight
-        );
-        context.fillStyle = ColorUtils.lerpColor('#00FF00', '#FF0000', Math.min(percent, 1));
-        context.fillRect(
-            UIConstants.miniMapWidth,
-            canvas.height - UIConstants.progressBarHeight,
-            (canvas.width - UIConstants.miniMapWidth) * percent,
-            UIConstants.progressBarHeight
-        );
+        if (HexConstants.isMobile) {
+            const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
+            context.fillStyle = 'grey';
+            context.fillRect(
+                0,
+                canvas.height - UIConstants.progressBarHeight,
+                canvas.width,
+                UIConstants.progressBarHeight
+            );
+            context.fillStyle = ColorUtils.lerpColor('#00FF00', '#FF0000', Math.min(percent, 1));
+            context.fillRect(
+                0,
+                canvas.height - UIConstants.progressBarHeight,
+                canvas.width * percent,
+                UIConstants.progressBarHeight
+            );
+        } else {
+            const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
+            context.fillStyle = 'grey';
+            context.fillRect(
+                UIConstants.miniMapWidth,
+                canvas.height - UIConstants.progressBarHeight,
+                canvas.width - UIConstants.miniMapWidth,
+                UIConstants.progressBarHeight
+            );
+            context.fillStyle = ColorUtils.lerpColor('#00FF00', '#FF0000', Math.min(percent, 1));
+            context.fillRect(
+                UIConstants.miniMapWidth,
+                canvas.height - UIConstants.progressBarHeight,
+                (canvas.width - UIConstants.miniMapWidth) * percent,
+                UIConstants.progressBarHeight
+            );
+        }
     }
 
     roundRectHash: {[key: string]: HTMLCanvasElement} = {};

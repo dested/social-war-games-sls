@@ -90,9 +90,11 @@ endgame
   '/ add analytics
   '/ deploy api server
   '/ deploy web
+  '/ better mobile support
   balance units
   add fling
   compress the gamestatejson
+  unfuck css
   get more turns button
     watch ad
     microtransaction
@@ -103,7 +105,7 @@ endgame
   store game in mongo
   cleanup login screen
   encrypt faction
-  better mobile support
+  mobile support
   stress test
   update images
   migrate from s3

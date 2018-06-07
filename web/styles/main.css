@@ -6,14 +6,10 @@ body {
   width: 100%;
 }
 body {
-  height: 100vh;
-  width: 100vw;
   position: relative;
   overflow: hidden;
 }
 #main {
-  height: 100%;
-  width: 100%;
   display: flex;
 }
 .center {
@@ -26,8 +22,6 @@ body {
   font-family: 'Telex', sans-serif !important;
   margin: 0;
   padding: 0;
-  height: 100vh;
-  width: 100vw;
 }
 .checkered {
   background-color: #CCC;

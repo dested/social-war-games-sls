@@ -1,9 +1,11 @@
 export class HexConstants {
+    static isMobile =true ||  Math.min(window.innerWidth, window.innerHeight) < 500;
+
     static defaultWidth = 120;
     static defaultHeight = 140;
-    static height = 90;
+    static height = HexConstants.isMobile ? 50 : 90;
     static width = HexConstants.defaultWidth / HexConstants.defaultHeight * HexConstants.height;
 
-    static smallHeight = HexConstants.height / 6;
+    static smallHeight = 90 / 6;
     static smallWidth = HexConstants.defaultWidth / HexConstants.defaultHeight * HexConstants.smallHeight;
 }

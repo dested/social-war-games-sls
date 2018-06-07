@@ -18,6 +18,7 @@ import {GameEntity} from '@swg-common/game/entityDetail';
 import {SmallGameRenderer} from '../drawing/smallGameRenderer';
 import {UIConstants} from '../utils/uiConstants';
 import {GameResource} from '@swg-common/game/gameResource';
+import {HexConstants} from '../utils/hexConstants';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -110,24 +111,41 @@ export class Component extends React.Component<Props, State> {
                     id="big-game"
                     ref={e => this.gameRenderer.start(e)}
                     width={window.innerWidth}
-                    height={window.innerHeight}
+                    height={window.innerHeight - (HexConstants.isMobile ? UIConstants.miniMapHeight : 0)}
                 />
+                {HexConstants.isMobile ? (
+                    <canvas
+                        id="minimap"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            backgroundColor: 'black',
+                            borderTop: 'solid 5px black'
+                        }}
+                        ref={e => this.miniGameRenderer.start(e, this.gameRenderer)}
+                        width={UIConstants.miniMapWidth}
+                        height={UIConstants.miniMapHeight}
+                    />
+                ) : (
+                    <canvas
+                        id="minimap"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            borderTopRightRadius: '70%',
+                            backgroundColor: 'black',
+                            borderTop: 'solid 5px black',
+                            borderRight: 'solid 5px black'
+                        }}
+                        ref={e => this.miniGameRenderer.start(e, this.gameRenderer)}
+                        width={UIConstants.miniMapWidth}
+                        height={UIConstants.miniMapHeight}
+                    />
+                )}
 
-                <canvas
-                    id="minimap"
-                    style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        borderTopRightRadius: '70%',
-                        backgroundColor: 'black',
-                        borderTop: 'solid 5px black',
-                        borderRight: 'solid 5px black'
-                    }}
-                    ref={e => this.miniGameRenderer.start(e, this.gameRenderer)}
-                    width={UIConstants.miniMapWidth}
-                    height={UIConstants.miniMapHeight}
-                />
                 {(this.props.selectedEntity || this.props.selectedResource) && <GameSidePanel />}
             </Fragment>
         );
