@@ -61,6 +61,7 @@ export class Component extends React.Component<Props, State> {
                   backgroundColor: 'rgba(255,255,255,.6)',
                   padding: 10,
                   display: 'flex',
+                  alignItems: 'center',
                   flexDirection: 'column' as 'column'
               }
             : {
@@ -72,7 +73,8 @@ export class Component extends React.Component<Props, State> {
                   backgroundColor: 'rgba(255,255,255,.6)',
                   padding: 20,
                   display: 'flex',
-                  flexDirection: 'column' as 'column'
+                alignItems: 'center',
+                flexDirection: 'column' as 'column'
               };
 
         if (this.props.showFactionDetails) {
@@ -115,12 +117,53 @@ export class Component extends React.Component<Props, State> {
         } else {
             return (
                 <div style={sidePanelBox}>
-                    <button onClick={() => this.showFaction(true)}>Faction: {this.props.user.factionId}</button>
-                    <button onClick={() => this.showGeneration(true)}>Generation: {this.props.game.generation}</button>
-                    <span>{(userDetails.maxVotes - userDetails.voteCount).toString()} Votes Left</span>
+                    <button
+                        style={{
+                            padding: 10,
+                            margin: 3
+                        }}
+                        onClick={() => this.showFaction(true)}
+                    >
+                        Faction: {this.props.user.factionId}
+                    </button>
+                    <button
+                        style={{
+                            padding: 10,
+                            margin: 3
+                        }}
+                        onClick={() => this.showGeneration(true)}
+                    >
+                        Generation: {this.props.game.generation}
+                    </button>
+                    <span
+                        style={{
+                            padding: 10,
+                            margin: 3
+                        }}
+                    >
+                        {(userDetails.maxVotes - userDetails.voteCount).toString()} Votes Left
+                    </span>
 
-                    {this.props.isVoting && <span>Vote Processing...</span>}
-                    {this.props.votingError && <span>Sorry, your vote could not be processed.</span>}
+                    {this.props.isVoting && (
+                        <span
+                            style={{
+                                padding: 10,
+                                margin: 3
+                            }}
+                        >
+                            Vote Processing...
+                        </span>
+                    )}
+                    {this.props.votingError && (
+                        <span
+                            style={{
+                                padding: 10,
+                                margin: 3
+                            }}
+                        >
+                            Sorry, your vote could not be processed.
+                        </span>
+                    )}
                 </div>
             );
         }

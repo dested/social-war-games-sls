@@ -34,6 +34,7 @@ interface Props extends RouteComponentProps<{}> {
     startLoading: typeof GameThunks.startLoading;
 
     setFactionStats: typeof UIActions.setFactionStats;
+    selectEntity: typeof GameActions.selectEntity;
     setGenerationStats: typeof UIActions.setGenerationStats;
 
     showFactionDetails: boolean;
@@ -89,6 +90,7 @@ export class Component extends React.Component<Props, State> {
                     }
                 }
                 if (roundState.generation !== this.props.game.generation) {
+                    this.props.selectEntity(null);
                     this.gameState = await DataService.getGameState(this.props.user.factionId);
                     const userDetails = await DataService.currentUserDetails();
                     this.props.updateUserDetails(userDetails);
@@ -188,6 +190,7 @@ export let Game = connect(
     }),
     {
         updateGame: GameActions.updateGame,
+        selectEntity: GameActions.selectEntity,
         startLoading: GameThunks.startLoading,
         updateUserDetails: GameActions.updateUserDetails,
         setFactionStats: UIActions.setFactionStats,

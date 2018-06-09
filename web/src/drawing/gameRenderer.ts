@@ -32,7 +32,7 @@ export class GameRenderer {
 
         const {game, roundState, selectedEntity} = state.gameState;
 
-        const viableHexIds: { [hexId: string]: boolean } = state.gameState.viableHexIds || {};
+        const viableHexIds: {[hexId: string]: boolean} = state.gameState.viableHexIds || {};
 
         const startX = this.view.x;
         const endX = this.view.x + (hexagon.center.x - (this.view.x + this.view.width * 0.7 / 2));
@@ -124,12 +124,11 @@ export class GameRenderer {
             startViewX = this.view.x;
             startViewY = this.view.y;
         });
-        manager.on('panend', e => {
-        });
+        manager.on('panend', e => {});
 
-        manager.on('swipe', (ev: { velocityX: number, velocityY: number }) => {
-            swipeVelocity.x = ev.velocityX * 10 ;
-            swipeVelocity.y = ev.velocityY * 10 ;
+        manager.on('swipe', (ev: {velocityX: number; velocityY: number}) => {
+            swipeVelocity.x = ev.velocityX * 10;
+            swipeVelocity.y = ev.velocityY * 10;
         });
 
         manager.on('tap', e => {
@@ -151,7 +150,7 @@ export class GameRenderer {
             }
         });
 
-        setInterval(()=>{
+        setInterval(() => {
             if (Math.abs(swipeVelocity.x) > 0) {
                 let sign = Utils.mathSign(swipeVelocity.x);
                 swipeVelocity.x += 0.7 * -sign;
@@ -170,7 +169,7 @@ export class GameRenderer {
             if (Math.abs(swipeVelocity.x) > 0 || Math.abs(swipeVelocity.y) > 0) {
                 this.view.offsetPosition(-swipeVelocity.x, -swipeVelocity.y);
             }
-        },1000/60);
+        }, 1000 / 60);
 
         this.startRender();
     }
@@ -189,26 +188,12 @@ export class GameRenderer {
 
     private render(state: SwgStore, dispatch: Dispatcher) {
         const {canvas, context} = this;
-        const {game, roundState} = state.gameState;
+        const {game, roundState, selectedEntityAction, selectedEntity} = state.gameState;
         if (!game) return;
         const {grid} = game;
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.save();
         context.translate(-this.view.x, -this.view.y);
-        /*
-
-        context.translate(-this.view.width * 0.7 / 2, -this.view.height / 2);
-        context.scale(this.view.scale, this.view.scale);
-        context.translate(this.view.width * 0.7 / 2, this.view.height / 2);
-
-        const scalechange = this.view.scale - 1;
-        const offsetX = -(
-            (this.view.x + this.view.width * 0.7 / 2) *
-            scalechange
-        );
-        const offsetY = -((this.view.y + this.view.height / 2) * scalechange);
-        context.translate(offsetX, offsetY);
-*/
 
         const vx = this.view.xSlop;
         const vy = this.view.ySlop;
@@ -270,8 +255,54 @@ export class GameRenderer {
         const wRatio = HexConstants.width / HexConstants.defaultWidth;
         const hRatio = HexConstants.height / HexConstants.defaultHeight;
 
+        const selectedVoteEntity = selectedEntity && roundState.entities[selectedEntity.id];
+
         for (const hexagon of hexes) {
             const isViableHex = viableHexIds[hexagon.id];
+            const hasEntity = game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
+
+            if (selectedVoteEntity && selectedVoteEntity.length > 0) {
+                if (isViableHex) {
+                    const isVotedHex = selectedVoteEntity.find(
+                        a => a.hexId === hexagon.id && selectedEntityAction === a.action
+                    );
+                    if (isVotedHex) {
+                        context.save();
+                        const count = isVotedHex.count;
+                        context.lineWidth = 6;
+                        if (count < 2) {
+                            context.strokeStyle = '#284a2a';
+                        } else if (count < 6) {
+                            context.strokeStyle = '#4e4d23';
+                        } else if (count < 9) {
+                            context.strokeStyle = '#602a13';
+                        }
+                        context.stroke(hexagon.pointsSvg);
+                        context.restore();
+                        continue;
+                    }
+                }
+            }
+
+            if (hasEntity) {
+                const voteEntities = roundState.entities[hasEntity.id];
+                if (voteEntities && voteEntities.length > 0) {
+                    context.save();
+                    const count = _.sum(voteEntities.map(a => a.count));
+                    context.lineWidth = 6;
+                    if (count < 2) {
+                        context.strokeStyle = '#284a2a';
+                    } else if (count < 6) {
+                        context.strokeStyle = '#4e4d23';
+                    } else if (count < 9) {
+                        context.strokeStyle = '#602a13';
+                    }
+                    context.stroke(hexagon.pointsSvg);
+                    context.restore();
+                    continue;
+                }
+            }
+
             if (hexagon.lines.length > 0) {
                 let strokedColor = hexagon.lines[0].color;
                 context.beginPath();
@@ -387,7 +418,7 @@ export class GameRenderer {
         }
     }
 
-    roundRectHash: { [key: string]: HTMLCanvasElement } = {};
+    roundRectHash: {[key: string]: HTMLCanvasElement} = {};
 
     roundRect(width: number, height: number, rad: number | number[], fill: string, stroke: string = null) {
         const key = ` ${width} ${height} ${rad} ${fill} ${stroke}`;

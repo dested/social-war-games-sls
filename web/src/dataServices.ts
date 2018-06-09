@@ -102,7 +102,7 @@ export class DataService {
         return (await response.json()) as GameLayout;
     }
 
-    static async getGameState(factionId: PlayableFactionId) {
+    static async getGameState(factionId: PlayableFactionId): Promise<GameState> {
         let response = await fetch(`${this.s3Server}/game-state-${factionId}.json?bust=${+new Date()}`, {
             method: 'GET',
             headers: {
@@ -113,7 +113,7 @@ export class DataService {
         return (await response.json()) as GameState;
     }
 
-    static async getRoundState(factionId: PlayableFactionId) {
+    static async getRoundState(factionId: PlayableFactionId): Promise<RoundState> {
         let response = await fetch(`${this.s3Server}/round-state-${factionId}.json?bust=${+new Date()}`, {
             method: 'GET',
             headers: {
