@@ -53,24 +53,22 @@ export class Component extends React.Component<Props, State> {
         if (!userDetails) return null;
         const sidePanelBox = HexConstants.isMobile
             ? {
+                  borderBottomLeftRadius: '20px',
                   height: '175px',
-                  borderTopLeftRadius: '20px',
                   width: '150px',
                   position: 'absolute' as 'absolute',
                   right: 0,
-                  bottom: UIConstants.progressBarHeight,
                   backgroundColor: 'rgba(255,255,255,.6)',
                   padding: 10,
                   display: 'flex',
                   flexDirection: 'column' as 'column'
               }
             : {
+                  borderBottomLeftRadius: '20px',
                   height: '300px',
-                  borderTopLeftRadius: '20px',
                   width: '330px',
                   position: 'absolute' as 'absolute',
                   right: 0,
-                  bottom: UIConstants.progressBarHeight,
                   backgroundColor: 'rgba(255,255,255,.6)',
                   padding: 20,
                   display: 'flex',
@@ -86,6 +84,7 @@ export class Component extends React.Component<Props, State> {
                             const factionStat = this.props.factionStats[faction];
                             return (
                                 <span
+                                    key={faction}
                                     style={{
                                         display: 'flex',
                                         padding: 10,

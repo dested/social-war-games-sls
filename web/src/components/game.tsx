@@ -169,8 +169,7 @@ export class Component extends React.Component<Props, State> {
                     />
                 )}
 
-                {(this.props.selectedEntity || this.props.selectedResource) && <GameSidePanel />}
-                <GameStatsPanel />
+                {this.props.selectedEntity || this.props.selectedResource ? <GameSidePanel /> : <GameStatsPanel />}
             </Fragment>
         );
     }
