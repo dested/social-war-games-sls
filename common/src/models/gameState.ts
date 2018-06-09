@@ -1,4 +1,4 @@
-import {EntityAction, EntityType, Faction, PlayableFactionId} from '../game/entityDetail';
+import {EntityAction, EntityType, PlayableFactionId} from '../game/entityDetail';
 import {ResourceType} from '../game/gameResource';
 
 export type GameState = {

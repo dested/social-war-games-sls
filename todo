@@ -48,61 +48,61 @@
 '/ cleanup entity screen
 '/ add resources??
 '/ implement spawn logic
+'/  cant vote for the same action twice
   
+what happened in each round 
+  round-outcome-255-1.json
+    each vote outcome
+    top 10 hottest entities
+    how many players voted
+    notes[]
+      your base was attacked 
+      link to tap and go to that unit
+      mike was attacked
+      joe was moved
+    score
+
+'/ current user details
+  '/ votes ive cast
+  '/ faction encryption token
+
+'/ current faction details
+  '/ percent owned by your faction
+  '/ amount of resources per faction
+  '/ current score
+
+'/ score 
+  total number of hexes owned by your faction
+  3 x the number of resources
+  5 x number of bases
+  3 x number of planes
+  2 x number of tanks
+  1 x number of infantry
   
+historical user details
+  votes cast
+  rounds participated in
+  damage done
+  resources mined
+  distance moved
+  units destroyed
+  units created
+
+
+
 
 gameplay
-  '/each faction has 5 small bases
-  '/  4 infantry
-  '/  2 tanks
-  '/  1 plane
-  '/ you always control 5 radius around base
-  '/  2 radius around unit
-  '/   other than that, faction tile expires 2 rounds after set
-  '/ add healing per tick
-  '/ show attack radius 
-  '/ add changing color to percent bar
-  '/ dont show votes on enemies
-  '/ show minimap
-  '/ cleanup entity screen
-  '/ add resources??
-  '/ implement spawn logic
   show votes on screen
-  add user details call
-    number of votes left
-    faction encryption token
-  planes can fly over water
-  cant vote for the same action twice
-  fix flickering vote
-  put bounds on view
-  close menu on new round
-  
-stats
-  add user details call
-    number of votes left
-    faction encryption token
+  fix flickering vote  
   units youve participated in, howd they do
-  percent owned by your faciton
   show replay of turns
-
-  add round notes 
-    your base was attacked 
-      link to tap and go to that unit
-   mike was attacked
-   joe was moved
+ 
   hot units
     units that move all the time
-  ladder of players
-    votes cast
-    rounds participated in
-    damage done
-    resources mined
-    distance moved
-    units destroyed
-    units created
+  show user data in ladder
   how many players voted last round
-  add game stats breakdown (current score)
   randomize factionid
+  
   
 endgame
   stress test
@@ -117,8 +117,10 @@ endgame
 
 
 
-
 low priority
+  planes can fly over water
+  put bounds on view
+  close menu on new round
   unify tsconfig
   make better use of caching in server
   implement tree shaking so server code doesnt make it to the client
@@ -138,13 +140,6 @@ low priority
   figure out a way to prevent multiple accounts
     prevent fake email addresses
     ip based?
-  show game under login/register screen
-  store game in mongo
-  cleanup login screen
   encrypt faction
   mobile support
-  stress test
-  update images
-  migrate from s3
-  sell
-
+  move new generation to redux

@@ -1,12 +1,12 @@
 import {GameState, GameStateEntityMap, GameStateResource} from '@swg-common/models/gameState';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
-import {GameLayout} from '@swg-common/models/gameLayout';
-import {Point, PointHashKey} from '@swg-common/hex/hex';
+import {Grid, Point, PointHashKey} from '@swg-common/hex/hex';
 import {HashArray} from '@swg-common/utils/hashArray';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
-import {EntityDetails, Faction, Factions, GameEntity, PlayableFactionId} from '@swg-common/game/entityDetail';
-import {GameResource} from '@swg-common/game/gameResource';
+import {EntityDetails, Factions, GameEntity, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {GameHexagon} from '@swg-common/game/gameHexagon';
+import {GameLayout} from '@swg-common/models/gameLayout';
 
 export class S3Splitter {
     static async output(
@@ -17,7 +17,6 @@ export class S3Splitter {
         outputGameState: boolean
     ) {
         // console.time('factionId split');
-
         const emptyEntityList = new HashArray<GameEntity, Point>(PointHashKey);
         for (let i = 0; i < Factions.length; i++) {
             const factionId = Factions[i];
@@ -77,7 +76,7 @@ export class S3Splitter {
         const visibleEntities: GameStateEntityMap = {
             '1': [],
             '2': [],
-            '3': [],
+            '3': []
         };
 
         const visibleFactionDetails = {...gameState.factionDetails};

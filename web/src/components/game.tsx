@@ -19,6 +19,8 @@ import {SmallGameRenderer} from '../drawing/smallGameRenderer';
 import {UIConstants} from '../utils/uiConstants';
 import {GameResource} from '@swg-common/game/gameResource';
 import {HexConstants} from '../utils/hexConstants';
+import {GameStatsPanel} from './gameStatsPanel';
+import {UIActions} from '../store/ui/actions';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -28,7 +30,14 @@ interface Props extends RouteComponentProps<{}> {
     imagesLoading?: number;
     roundState?: RoundState;
     updateGame: typeof GameActions.updateGame;
+    updateUserDetails: typeof GameActions.updateUserDetails;
     startLoading: typeof GameThunks.startLoading;
+
+    setFactionStats: typeof UIActions.setFactionStats;
+    setGenerationStats: typeof UIActions.setGenerationStats;
+
+    showFactionDetails: boolean;
+    showGenerationDetails: boolean;
 }
 
 interface State {
@@ -65,6 +74,8 @@ export class Component extends React.Component<Props, State> {
         this.miniGameRenderer.forceRender();
         this.getNewState(roundState.nextUpdate - +new Date());
         this.setState({ready: true});
+        const userDetails = await DataService.currentUserDetails();
+        this.props.updateUserDetails(userDetails);
     }
 
     private getNewState(timeout: number) {
@@ -79,6 +90,18 @@ export class Component extends React.Component<Props, State> {
                 }
                 if (roundState.generation !== this.props.game.generation) {
                     this.gameState = await DataService.getGameState(this.props.user.factionId);
+                    const userDetails = await DataService.currentUserDetails();
+                    this.props.updateUserDetails(userDetails);
+                    if (this.props.showFactionDetails) {
+                        this.props.setFactionStats(null);
+                        const factionStats = await DataService.getFactionStats();
+                        this.props.setFactionStats(factionStats);
+                    }
+                    if (this.props.showGenerationDetails) {
+                        // this.props.setFactionStats(null);
+                        // const factionStats = await DataService.getFactionStats();
+                        // this.props.setFactionStats(factionStats);
+                    }
                     shouldUpdate = true;
                 }
                 if (shouldUpdate) {
@@ -147,6 +170,7 @@ export class Component extends React.Component<Props, State> {
                 )}
 
                 {(this.props.selectedEntity || this.props.selectedResource) && <GameSidePanel />}
+                <GameStatsPanel />
             </Fragment>
         );
     }
@@ -159,10 +183,15 @@ export let Game = connect(
         game: state.gameState.game,
         roundState: state.gameState.roundState,
         selectedEntity: state.gameState.selectedEntity,
-        selectedResource: state.gameState.selectedResource
+        selectedResource: state.gameState.selectedResource,
+        showFactionDetails: state.uiState.showFactionDetails,
+        showGenerationDetails: state.uiState.showGenerationDetails
     }),
     {
         updateGame: GameActions.updateGame,
-        startLoading: GameThunks.startLoading
+        startLoading: GameThunks.startLoading,
+        updateUserDetails: GameActions.updateUserDetails,
+        setFactionStats: UIActions.setFactionStats,
+        setGenerationStats: UIActions.setGenerationStats
     }
 )(withRouter(Component));

@@ -1,7 +1,7 @@
 import {getStore} from '../store';
 import {SwgStore} from '../store/reducers';
 import {Dispatcher, GameActions, GameThunks} from '../store/actions';
-import {Manager, Pan, Tap, Swipe} from 'hammerjs';
+import {Manager, Pan, Tap} from 'hammerjs';
 import {HexConstants} from '../utils/hexConstants';
 import * as _ from 'lodash';
 import {AnimationUtils} from '../utils/animationUtils';
@@ -9,7 +9,7 @@ import {HexColors} from '../utils/hexColors';
 import {Drawing, DrawingOptions} from './hexDrawing';
 import {HexImages} from '../utils/hexImages';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
-import {EntityType, GameEntity} from '@swg-common/game/entityDetail';
+import {GameEntity} from '@swg-common/game/entityDetail';
 import {ColorUtils} from '../utils/colorUtils';
 import {GameView} from './gameView';
 import {UIConstants} from '../utils/uiConstants';

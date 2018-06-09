@@ -13,5 +13,6 @@ export enum VoteResult {
     ToHexNotFound = 'ToHexNotFound',
     FromHexNotFound = 'FromHexNotFound',
     FactionMismatch = 'FactionMismatch',
-    EntityNotFound = 'EntityNotFound'
+    EntityNotFound = 'EntityNotFound',
+    Error = 'Error'
 }

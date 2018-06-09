@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import {Grid, Point, PointHashKey} from '../hex/hex';
 import {GameHexagon} from './gameHexagon';
 import {GameLayout} from '../models/gameLayout';
@@ -31,6 +32,23 @@ export interface GameModel {
 }
 
 export class GameLogic {
+    static calculateScore(game: GameModel, faction: PlayableFactionId): number {
+        const factionHexes = game.grid.hexes.map(a => a.factionId);
+        const hexCount = factionHexes.filter(a => a === faction).length;
+        const entities = game.entities.filter(a => a.factionId === faction);
+
+        let score = 0;
+
+        score += hexCount;
+        score += 3 * game.factionDetails[faction].resourceCount;
+        score += 5 * entities.filter(a => a.entityType === 'factory').length;
+        score += 3 * entities.filter(a => a.entityType === 'plane').length;
+        score += 2 * entities.filter(a => a.entityType === 'tank').length;
+        score += 1 * entities.filter(a => a.entityType === 'infantry').length;
+
+        return score;
+    }
+
     static id = 0;
 
     static nextId(entities: GameEntity[]): string {

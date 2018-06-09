@@ -1,6 +1,6 @@
 import {DocumentManager} from '../dataManager';
 import {MongoDocument} from './mongoDocument';
-import {EntityAction, Faction, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
 
 export type VoteCountResult = {_id: string; actions: {action: EntityAction; hexId: string; count: number}[]};
 

@@ -12,9 +12,11 @@ import {VoteResult} from '@swg-common/game/voteResult';
 import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
 import {loadEntities} from '../../drawing/gameAssets';
 import {GameResource} from '@swg-common/game/gameResource';
+import {UserDetails} from '@swg-common/models/http/userDetails';
 
 export enum GameActionOptions {
     UpdateGame = 'UPDATE_GAME',
+    UpdateUserDetails = 'UPDATE_USER_DETAILS',
     SetImagesLoading = 'SET_IMAGES_LOADING',
     SelectEntity = 'SELECT_ENTITY',
     SelectResource = 'SELECT_RESOURCE',
@@ -48,6 +50,7 @@ export interface SetImagesLoadingAction {
 
 export interface VotingErrorAction {
     type: GameActionOptions.VotingError;
+    votingError: VoteResult | null;
 }
 
 export interface SelectViableHexAction {
@@ -61,6 +64,11 @@ export interface UpdateGameAction {
     roundState: RoundState;
 }
 
+export interface UpdateUserDetailsAction {
+    type: GameActionOptions.UpdateUserDetails;
+    userDetails: UserDetails;
+}
+
 export interface VotingAction {
     type: GameActionOptions.Voting;
     isVoting: boolean;
@@ -70,6 +78,7 @@ export type GameAction =
     | SelectEntityAction
     | VotingAction
     | SetImagesLoadingAction
+    | UpdateUserDetailsAction
     | SetEntityActionAction
     | SelectResourceAction
     | SelectViableHexAction
@@ -99,6 +108,13 @@ export class GameActions {
         };
     }
 
+    static updateUserDetails(userDetails: UserDetails): UpdateUserDetailsAction {
+        return {
+            type: GameActionOptions.UpdateUserDetails,
+            userDetails
+        };
+    }
+
     static voting(isVoting: boolean): VotingAction {
         return {
             type: GameActionOptions.Voting,
@@ -106,9 +122,10 @@ export class GameActions {
         };
     }
 
-    static votingError(): VotingErrorAction {
+    static votingError(votingError: VoteResult | null): VotingErrorAction {
         return {
-            type: GameActionOptions.VotingError
+            type: GameActionOptions.VotingError,
+            votingError
         };
     }
 
@@ -167,6 +184,8 @@ export class GameThunks {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             const {gameState, appState} = getState();
             const {game} = gameState;
+            dispatch(GameActions.selectEntity(null));
+
             let voteResult = GameLogic.validateVote(game, {
                 entityId,
                 action,
@@ -193,16 +212,27 @@ export class GameThunks {
 
                 if (serverVoteResult.reason !== 'ok') {
                     dispatch(GameActions.voting(false));
-                    dispatch(GameActions.votingError());
+                    dispatch(GameActions.votingError(serverVoteResult.voteResult || VoteResult.Error));
+                    setTimeout(() => {
+                        dispatch(GameActions.votingError(null));
+                    }, 2000);
                     return;
                 }
+                dispatch(
+                    GameActions.updateUserDetails({
+                        ...gameState.userDetails,
+                        voteCount: gameState.userDetails.maxVotes - serverVoteResult.votesLeft
+                    })
+                );
 
                 dispatch(GameActions.voting(false));
-                dispatch(GameActions.selectEntity(null));
             } catch (ex) {
                 console.error(ex);
                 dispatch(GameActions.voting(false));
-                dispatch(GameActions.votingError());
+                dispatch(GameActions.votingError(VoteResult.Error));
+                setTimeout(() => {
+                    dispatch(GameActions.votingError(null));
+                }, 2000);
             }
         };
     }

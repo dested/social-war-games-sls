@@ -1,7 +1,7 @@
 import {VoteCountResult} from '@swg-server-common/db/models/dbVote';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {Config} from '@swg-server-common/config';
-import {GameState, GameStateEntityMap, GameStateFactionDetailMap} from '@swg-common/models/gameState';
+import {GameState, GameStateEntityMap} from '@swg-common/models/gameState';
 import {GameModel} from '@swg-common/../../common/src/game/gameLogic';
 
 export class StateManager {

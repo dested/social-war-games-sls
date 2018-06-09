@@ -3,6 +3,8 @@ import {RoundState} from '@swg-common/models/roundState';
 import {GameModel} from '@swg-common/game/gameLogic';
 import {EntityAction, GameEntity} from '@swg-common/game/entityDetail';
 import {GameResource} from '@swg-common/game/gameResource';
+import {UserDetails} from '@swg-common/models/http/userDetails';
+import {VoteResult} from '@swg-common/game/voteResult';
 
 const initialState: GameStore = {};
 
@@ -10,12 +12,13 @@ export interface GameStore {
     game?: GameModel;
     roundState?: RoundState;
     selectedResource?: GameResource;
+    userDetails?: UserDetails;
     selectedEntity?: GameEntity;
     selectedEntityAction?: EntityAction;
     viableHexIds?: {[hexId: string]: boolean};
     imagesLoading?: number;
     isVoting?: boolean;
-    votingError?: boolean;
+    votingError?: VoteResult;
 }
 
 export default function gameReducer(state: GameStore = initialState, action: GameAction): GameStore {
@@ -36,6 +39,12 @@ export default function gameReducer(state: GameStore = initialState, action: Gam
                 roundState: action.roundState
             };
         }
+        case GameActionOptions.UpdateUserDetails: {
+            return {
+                ...state,
+                userDetails: action.userDetails
+            };
+        }
         case GameActionOptions.SetImagesLoading: {
             return {
                 ...state,
@@ -46,13 +55,13 @@ export default function gameReducer(state: GameStore = initialState, action: Gam
             return {
                 ...state,
                 isVoting: action.isVoting,
-                votingError: false
+                votingError: null
             };
         }
         case GameActionOptions.VotingError: {
             return {
                 ...state,
-                votingError: true
+                votingError: action.votingError
             };
         }
         case GameActionOptions.SetEntityAction: {

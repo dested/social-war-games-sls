@@ -4,8 +4,11 @@ import {GameState} from '@swg-common/models/gameState';
 import {RoundState} from '@swg-common/models/roundState';
 
 import {getStore} from './store';
-import {EntityAction, Faction, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {VoteRequestResults} from '@swg-common/models/http/voteResults';
+import {UserDetails} from '@swg-common/models/http/userDetails';
+import {VoteResult} from '@swg-common/game/voteResult';
+import {FactionStats} from '@swg-common/models/factionStats';
 
 export class DataService {
     private static userServer: string = 'https://user.socialwargames.com';
@@ -56,7 +59,7 @@ export class DataService {
         action: EntityAction;
         generation: number;
         hexId: string;
-    }): Promise<{reason: VoteRequestResults; votesLeft: number}> {
+    }): Promise<{reason: VoteRequestResults; voteResult?: VoteResult; votesLeft: number}> {
         const state = getStore().getState();
 
         let response = await fetch(this.voteServer + '/vote', {
@@ -68,7 +71,24 @@ export class DataService {
             },
             body: JSON.stringify(vote)
         });
-        return JSON.parse((await response.json()).body);
+        const body = await response.json();
+        return JSON.parse(body.body);
+    }
+
+    static async currentUserDetails(): Promise<UserDetails> {
+        const state = getStore().getState();
+
+        let response = await fetch(this.voteServer + '/user', {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + state.appState.jwt
+            }
+        });
+
+        const body = await response.json();
+        return body.body;
     }
 
     static async getLayout() {
@@ -102,5 +122,16 @@ export class DataService {
             }
         });
         return (await response.json()) as RoundState;
+    }
+
+    static async getFactionStats() {
+        let response = await fetch(`${this.s3Server}/faction-stats.json?bust=${+new Date()}`, {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        return (await response.json()) as FactionStats;
     }
 }

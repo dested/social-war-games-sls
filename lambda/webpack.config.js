@@ -6,9 +6,9 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = env => {
     return {
-        entry: './src/vote.ts',
+        entry: `./src/${env.method}.ts`,
         output: {
-            path: path.join(__dirname, 'dist', 'vote'),
+            path: path.join(__dirname, 'dist', env.method),
             filename: 'index.js',
             libraryTarget: 'commonjs2'
         },
@@ -23,9 +23,9 @@ module.exports = env => {
         externals: {},
         plugins: [
             new webpack.IgnorePlugin(/hiredis/),
-            env === 'deploy' && new UglifyJsPlugin(),
+            new UglifyJsPlugin(),
             new ZipPlugin({
-                filename: 'vote.zip'
+                filename: `${env.method}.zip`
             })
         ].filter(a => a),
         module: {

@@ -1,1 +1,1 @@
-export type VoteRequestResults = 'ok' | 'error'|'vote_failed'|'bad_generation'|'max_votes'|'stopped'|'auth';
+export type VoteRequestResults = 'ok' | 'error'|'vote_failed'|'bad_generation'|'max_votes'|'stopped'|'auth'|'cant_vote_twice';

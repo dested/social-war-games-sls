@@ -2,6 +2,8 @@ import {RedisClient, createClient} from 'redis';
 import {Config} from '../config';
 
 export class RedisManager {
+    // https://github.com/notenoughneon/typed-promisify/blob/master/index.ts
+
     private client: RedisClient;
     static setup(): Promise<RedisManager> {
         return new Promise<RedisManager>((res, rej) => {
@@ -22,7 +24,7 @@ export class RedisManager {
         return Config.gameKey + '-' + key;
     }
 
-    get<T>(key: string): Promise<T> {
+    get<T>(key: string, def: T = undefined): Promise<T> {
         return new Promise((res, rej) => {
             this.client.get(this.getKey(key), (err, result) => {
                 if (err) {
@@ -30,14 +32,41 @@ export class RedisManager {
                     return;
                 }
 
-                res(JSON.parse(result) as T);
+                res(JSON.parse(result) as T || def);
             });
         });
     }
 
+
+    getString(key: string, def: string = undefined): Promise<string> {
+        return new Promise((res, rej) => {
+            this.client.get(this.getKey(key), (err, result) => {
+                if (err) {
+                    rej(err);
+                    return;
+                }
+
+                res(result || def);
+            });
+        });
+    }
+
+
     set<T>(key: string, value: T): Promise<void> {
         return new Promise((res, rej) => {
             this.client.set(this.getKey(key), JSON.stringify(value), (err, result) => {
+                if (err) {
+                    rej(err);
+                    return;
+                }
+                res();
+            });
+        });
+    }
+
+    append(key: string, value: string): Promise<void> {
+        return new Promise((res, rej) => {
+            this.client.append(this.getKey(key), value, (err, result) => {
                 if (err) {
                     rej(err);
                     return;

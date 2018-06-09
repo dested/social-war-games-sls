@@ -79,7 +79,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         type: 'infantry',
         moveRadius: 4,
         health: 4,
-        mineRadius: 3,
+        mineRadius: 2,
         attackRadius: 3,
         attackPower: 1,
         ticksToSpawn: 2,
