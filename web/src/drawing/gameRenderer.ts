@@ -15,6 +15,7 @@ import {GameView} from './gameView';
 import {UIConstants} from '../utils/uiConstants';
 import {GameAssets} from './gameAssets';
 import {GameResource} from '@swg-common/game/gameResource';
+import {Utils} from '@swg-common/utils/utils';
 
 export class GameRenderer {
     private canvas: HTMLCanvasElement;
@@ -31,7 +32,7 @@ export class GameRenderer {
 
         const {game, roundState, selectedEntity} = state.gameState;
 
-        const viableHexIds: {[hexId: string]: boolean} = state.gameState.viableHexIds || {};
+        const viableHexIds: { [hexId: string]: boolean } = state.gameState.viableHexIds || {};
 
         const startX = this.view.x;
         const endX = this.view.x + (hexagon.center.x - (this.view.x + this.view.width * 0.7 / 2));
@@ -100,6 +101,7 @@ export class GameRenderer {
 
         const manager = new Manager(this.canvas); // const swipe = new Swipe();
         manager.add(new Pan({direction: Hammer.DIRECTION_ALL, threshold: 5}));
+        manager.add(new Hammer.Swipe()).recognizeWith(manager.get('pan'));
         manager.add(new Tap({taps: 1}));
 
         // manager.add(swipe);
@@ -107,7 +109,7 @@ export class GameRenderer {
         let startY = 0;
         let startViewX = 0;
         let startViewY = 0;
-
+        let swipeVelocity = {x: 0, y: 0};
         this.view = new GameView(this.canvas);
 
         manager.on('panmove', e => {
@@ -116,14 +118,22 @@ export class GameRenderer {
         });
 
         manager.on('panstart', e => {
+            swipeVelocity.x = swipeVelocity.y = 0;
             startX = e.center.x;
             startY = e.center.y;
             startViewX = this.view.x;
             startViewY = this.view.y;
         });
-        manager.on('panend', e => {});
+        manager.on('panend', e => {
+        });
+
+        manager.on('swipe', (ev: { velocityX: number, velocityY: number }) => {
+            swipeVelocity.x = ev.velocityX * 10 ;
+            swipeVelocity.y = ev.velocityY * 10 ;
+        });
 
         manager.on('tap', e => {
+            swipeVelocity.x = swipeVelocity.y = 0;
             const store = getStore();
             const state = store.getState();
             if (!state.gameState) return;
@@ -140,6 +150,28 @@ export class GameRenderer {
                 this.tapHex(hex);
             }
         });
+
+        setInterval(()=>{
+            if (Math.abs(swipeVelocity.x) > 0) {
+                let sign = Utils.mathSign(swipeVelocity.x);
+                swipeVelocity.x += 0.7 * -sign;
+                if (Utils.mathSign(swipeVelocity.x) != sign) {
+                    swipeVelocity.x = 0;
+                }
+            }
+
+            if (Math.abs(swipeVelocity.y) > 0) {
+                let sign = Utils.mathSign(swipeVelocity.y);
+                swipeVelocity.y += 0.7 * -sign;
+                if (Utils.mathSign(swipeVelocity.y) != sign) {
+                    swipeVelocity.y = 0;
+                }
+            }
+            if (Math.abs(swipeVelocity.x) > 0 || Math.abs(swipeVelocity.y) > 0) {
+                this.view.offsetPosition(-swipeVelocity.x, -swipeVelocity.y);
+            }
+        },1000/60);
+
         this.startRender();
     }
 
@@ -355,7 +387,7 @@ export class GameRenderer {
         }
     }
 
-    roundRectHash: {[key: string]: HTMLCanvasElement} = {};
+    roundRectHash: { [key: string]: HTMLCanvasElement } = {};
 
     roundRect(width: number, height: number, rad: number | number[], fill: string, stroke: string = null) {
         const key = ` ${width} ${height} ${rad} ${fill} ${stroke}`;

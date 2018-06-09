@@ -26,7 +26,30 @@
 '/ convert entites to hasharray
 '/ make it so you can only see your factions stuff
 '/ convert to canvas
-
+'/ cleanup view code
+'/   maintain view position
+'/ add analytics
+'/ deploy api server
+'/ deploy web
+'/ better mobile support
+'/ add fling
+'/each faction has 5 small bases
+'/  4 infantry
+'/  2 tanks
+'/  1 plane
+'/ you always control 5 radius around base
+'/  2 radius around unit
+'/   other than that, faction tile expires 2 rounds after set
+'/ add healing per tick
+'/ show attack radius 
+'/ add changing color to percent bar
+'/ dont show votes on enemies
+'/ show minimap
+'/ cleanup entity screen
+'/ add resources??
+'/ implement spawn logic
+  
+  
 
 gameplay
   '/each faction has 5 small bases
@@ -50,12 +73,14 @@ gameplay
     faction encryption token
   planes can fly over water
   cant vote for the same action twice
-  what happens when all factories for a faction is destroyed
   fix flickering vote
   put bounds on view
   close menu on new round
   
 stats
+  add user details call
+    number of votes left
+    faction encryption token
   units youve participated in, howd they do
   percent owned by your faciton
   show replay of turns
@@ -71,6 +96,7 @@ stats
     votes cast
     rounds participated in
     damage done
+    resources mined
     distance moved
     units destroyed
     units created
@@ -78,24 +104,30 @@ stats
   add game stats breakdown (current score)
   randomize factionid
   
-janitorial
-  '/ cleanup view code
-  '/   maintain view position
+endgame
+  stress test
+  balance units
+  build bots  
+  what happens when all factories for a faction is destroyed
+  encrypt faction
+  mobile support
+  update images
+  migrate from s3
+  sell
+
+
+
+
+low priority
   unify tsconfig
-  cleanup gmae grid game logic bullshit 
-    remove grid
   make better use of caching in server
   implement tree shaking so server code doesnt make it to the client
-  
-endgame
-  '/ add analytics
-  '/ deploy api server
-  '/ deploy web
-  '/ better mobile support
-  balance units
-  add fling
+  update progress bar to be less realistic
+  show game under login/register screen
+  cleanup login screen
   compress the gamestatejson
   unfuck css
+  store game in mongo
   get more turns button
     watch ad
     microtransaction

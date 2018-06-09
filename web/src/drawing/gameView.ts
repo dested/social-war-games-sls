@@ -47,4 +47,10 @@ export class GameView {
         localStorage.setItem('view-x' + this.canvas.id, x.toString());
         localStorage.setItem('view-y' + this.canvas.id, y.toString());
     }
+    offsetPosition(x: number, y: number) {
+        this.x += x;
+        this.y += y;
+        localStorage.setItem('view-x' + this.canvas.id, x.toString());
+        localStorage.setItem('view-y' + this.canvas.id, y.toString());
+    }
 }

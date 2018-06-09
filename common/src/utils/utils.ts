@@ -9,6 +9,12 @@ export class Utils {
         );
     }
 
+    static mathSign(f: number) {
+        if (f < 0) return -1;
+        else if (f > 0) return 1;
+        return 0;
+    }
+
     static random(chance: number) {
         return Math.random() * 100 < chance;
     }

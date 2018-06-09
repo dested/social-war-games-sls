@@ -1,5 +1,5 @@
 export class HexConstants {
-    static isMobile =true ||  Math.min(window.innerWidth, window.innerHeight) < 500;
+    static isMobile = Math.min(window.innerWidth, window.innerHeight) < 500;
 
     static defaultWidth = 120;
     static defaultHeight = 140;
