@@ -1,24 +1,25 @@
 import {UIAction, UIActionOptions} from './actions';
 import {FactionStats} from '@swg-common/models/factionStats';
+import {FactionRoundStats} from '@swg-common/models/roundStats';
 
 const initialState: UIStore = {
-    showGenerationDetails: false,
+    showFactionRoundStats: false,
     showFactionDetails: false
 };
 
 export interface UIStore {
-    showGenerationDetails: boolean;
+    showFactionRoundStats: boolean;
     showFactionDetails: boolean;
     factionStats?: FactionStats;
-    generationStats?: any;
+    factionRoundStats?: FactionRoundStats;
 }
 
 export default function gameReducer(state: UIStore = initialState, action: UIAction): UIStore {
     switch (action.type) {
-        case UIActionOptions.ShowGenerationDetails: {
+        case UIActionOptions.ShowFactionRoundStats: {
             return {
                 ...state,
-                showGenerationDetails: action.showGenerationDetails
+                showFactionRoundStats: action.showFactionRoundStats
             };
         }
         case UIActionOptions.ShowFactionDetails: {
@@ -33,10 +34,10 @@ export default function gameReducer(state: UIStore = initialState, action: UIAct
                 factionStats: action.factionStats
             };
         }
-        case UIActionOptions.SetGenerationStats: {
+        case UIActionOptions.SetFactionRoundStats: {
             return {
                 ...state,
-                generationStats: action.generationStats
+                factionRoundStats: action.factionRoundStats
             };
         }
     }

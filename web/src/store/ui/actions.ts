@@ -1,16 +1,17 @@
 import {SwgStore} from '../reducers';
 import {FactionStats} from '@swg-common/models/factionStats';
+import {FactionRoundStats} from '@swg-common/models/roundStats';
 
 export enum UIActionOptions {
-    ShowGenerationDetails = 'ShowGenerationDetails',
+    ShowFactionRoundStats = 'ShowFactionRoundStats',
     ShowFactionDetails = 'ShowFactionDetails',
     SetFactionStats = 'SetFactionStats',
-    SetGenerationStats = 'SetGenerationStats'
+    SetFactionRoundStats = 'SetFactionRoundStats'
 }
 
-export interface ShowGenerationDetailsAction {
-    type: UIActionOptions.ShowGenerationDetails;
-    showGenerationDetails: boolean;
+export interface ShowFactionRoundStatsAction {
+    type: UIActionOptions.ShowFactionRoundStats;
+    showFactionRoundStats: boolean;
 }
 export interface ShowFactionDetailsAction {
     type: UIActionOptions.ShowFactionDetails;
@@ -21,22 +22,22 @@ export interface SetFactionStatsAction {
     type: UIActionOptions.SetFactionStats;
     factionStats: FactionStats;
 }
-export interface SetGenerationStatsAction {
-    type: UIActionOptions.SetGenerationStats;
-    generationStats: any;
+export interface SetFactionRoundStatsAction {
+    type: UIActionOptions.SetFactionRoundStats;
+    factionRoundStats: FactionRoundStats;
 }
 
 export type UIAction =
-    | ShowGenerationDetailsAction
+    | ShowFactionRoundStatsAction
     | ShowFactionDetailsAction
     | SetFactionStatsAction
-    | SetGenerationStatsAction;
+    | SetFactionRoundStatsAction;
 
 export class UIActions {
-    static showGenerationDetails(showGenerationDetails: boolean): ShowGenerationDetailsAction {
+    static showFactionRoundStats(showFactionRoundStats: boolean): ShowFactionRoundStatsAction {
         return {
-            type: UIActionOptions.ShowGenerationDetails,
-            showGenerationDetails
+            type: UIActionOptions.ShowFactionRoundStats,
+            showFactionRoundStats
         };
     }
     static showFactionDetails(showFactionDetails: boolean): ShowFactionDetailsAction {
@@ -45,10 +46,10 @@ export class UIActions {
             showFactionDetails
         };
     }
-    static setGenerationStats(generationStats: any): SetGenerationStatsAction {
+    static setFactionRoundStats(factionRoundStats: FactionRoundStats): SetFactionRoundStatsAction {
         return {
-            type: UIActionOptions.SetGenerationStats,
-            generationStats
+            type: UIActionOptions.SetFactionRoundStats,
+            factionRoundStats
         };
     }
 

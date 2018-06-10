@@ -1,3 +1,5 @@
+import {Utils} from '../utils/utils';
+
 export interface EntityDetail {
     type: EntityType;
     solid: boolean;
@@ -17,7 +19,16 @@ export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
 export type Faction = '0' | '9' | PlayableFactionId;
 export type PlayableFactionId = '1' | '2' | '3';
 
+export type OfFaction<T> = {[faction in PlayableFactionId]: T};
+
 export let Factions: PlayableFactionId[] = ['1', '2', '3'];
+export let FactionNames: OfFaction<string> = {'1': 'Red', '2': 'Green', '3': 'Blue'};
+export let EntityTypeNames: {[entity in EntityType]: string} = {
+    infantry: 'Infantry',
+    tank: 'Tank',
+    plane: 'Plane',
+    factory: 'Factory'
+};
 
 export type GameEntityBusyDetails = {
     ticks: number;

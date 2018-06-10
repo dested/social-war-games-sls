@@ -32,13 +32,14 @@ interface Props extends RouteComponentProps<{}> {
     updateGame: typeof GameActions.updateGame;
     updateUserDetails: typeof GameActions.updateUserDetails;
     startLoading: typeof GameThunks.startLoading;
+    setGameRenderer: typeof GameActions.setGameRenderer;
 
     setFactionStats: typeof UIActions.setFactionStats;
     selectEntity: typeof GameActions.selectEntity;
-    setGenerationStats: typeof UIActions.setGenerationStats;
+    setFactionRoundStats: typeof UIActions.setFactionRoundStats;
 
     showFactionDetails: boolean;
-    showGenerationDetails: boolean;
+    showFactionRoundStats: boolean;
 }
 
 interface State {
@@ -65,6 +66,8 @@ export class Component extends React.Component<Props, State> {
             return;
         }
         this.props.startLoading();
+
+        this.props.setGameRenderer(this.gameRenderer);
 
         this.layout = await DataService.getLayout();
         this.gameState = await DataService.getGameState(this.props.user.factionId);
@@ -99,10 +102,13 @@ export class Component extends React.Component<Props, State> {
                         const factionStats = await DataService.getFactionStats();
                         this.props.setFactionStats(factionStats);
                     }
-                    if (this.props.showGenerationDetails) {
-                        // this.props.setFactionStats(null);
-                        // const factionStats = await DataService.getFactionStats();
-                        // this.props.setFactionStats(factionStats);
+                    if (this.props.showFactionRoundStats) {
+                        this.props.setFactionRoundStats(null);
+                        const factionRoundStats = await DataService.getFactionRoundStats(
+                            this.props.game.generation,
+                            this.props.user.factionId
+                        );
+                        this.props.setFactionRoundStats(factionRoundStats);
                     }
                     shouldUpdate = true;
                 }
@@ -186,14 +192,15 @@ export let Game = connect(
         selectedEntity: state.gameState.selectedEntity,
         selectedResource: state.gameState.selectedResource,
         showFactionDetails: state.uiState.showFactionDetails,
-        showGenerationDetails: state.uiState.showGenerationDetails
+        showFactionRoundStats: state.uiState.showFactionRoundStats
     }),
     {
+        setGameRenderer: GameActions.setGameRenderer,
         updateGame: GameActions.updateGame,
         selectEntity: GameActions.selectEntity,
         startLoading: GameThunks.startLoading,
         updateUserDetails: GameActions.updateUserDetails,
         setFactionStats: UIActions.setFactionStats,
-        setGenerationStats: UIActions.setGenerationStats
+        setFactionRoundStats: UIActions.setFactionRoundStats
     }
 )(withRouter(Component));

@@ -34,12 +34,6 @@ export class GameRenderer {
 
         const viableHexIds: {[hexId: string]: boolean} = state.gameState.viableHexIds || {};
 
-        const startX = this.view.x;
-        const endX = this.view.x + (hexagon.center.x - (this.view.x + this.view.width * 0.7 / 2));
-
-        const startY = this.view.y;
-        const endY = this.view.y + (hexagon.center.y - (this.view.y + this.view.height / 2));
-
         let moveTo = false;
 
         if (viableHexIds && viableHexIds[hexagon.id]) {
@@ -63,24 +57,7 @@ export class GameRenderer {
         }
 
         if (moveTo) {
-            AnimationUtils.start({
-                start: 0,
-                finish: 1,
-                duration: 250,
-                easing: AnimationUtils.easings.easeInCubic,
-                callback: c => {
-                    this.view.setPosition(AnimationUtils.lerp(startX, endX, c), AnimationUtils.lerp(startY, endY, c));
-                }
-            });
-            AnimationUtils.start({
-                start: this.view.scale,
-                finish: 2,
-                duration: 250,
-                easing: AnimationUtils.easings.easeInCubic,
-                callback: c => {
-                    this.view.scale = c;
-                }
-            });
+            this.moveToHexagon(hexagon);
         } else {
             AnimationUtils.start({
                 start: this.view.scale,
@@ -92,6 +69,41 @@ export class GameRenderer {
                 }
             });
         }
+    }
+
+    public moveToHexagon(hexagon: GameHexagon) {
+        const startX = this.view.x;
+        const endX = this.view.x + (hexagon.center.x - (this.view.x + this.view.width / 2));
+
+        const startY = this.view.y;
+        const endY = this.view.y + (hexagon.center.y - (this.view.y + this.view.height / 2));
+
+        AnimationUtils.start({
+            start: 0,
+            finish: 1,
+            duration: 250,
+            easing: AnimationUtils.easings.easeInCubic,
+            callback: c => {
+                this.view.setPosition(AnimationUtils.lerp(startX, endX, c), AnimationUtils.lerp(startY, endY, c));
+            }
+        });
+        AnimationUtils.start({
+            start: this.view.scale,
+            finish: 2,
+            duration: 250,
+            easing: AnimationUtils.easings.easeInCubic,
+            callback: c => {
+                this.view.scale = c;
+            }
+        });
+    }
+
+    public moveToEntity(entity: GameEntity) {
+        const store = getStore();
+        const state = store.getState();
+
+        const {game} = state.gameState;
+        this.moveToHexagon(game.grid.getHexAt(entity));
     }
 
     start(canvas: HTMLCanvasElement) {

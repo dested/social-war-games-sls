@@ -20,6 +20,14 @@ import {Utils} from '../utils/utils';
 import {GameResource, ResourceDetails, ResourceType} from './gameResource';
 import {FactionDetail} from './factionDetail';
 
+export type ProcessedVote = {
+    entityId: string;
+    action: EntityAction;
+    factionId: PlayableFactionId;
+    hexId: string;
+    voteCount?: number;
+};
+
 export interface GameModel {
     factionDetails: {[key in PlayableFactionId]: FactionDetail};
     roundStart: number;
@@ -320,10 +328,7 @@ export class GameLogic {
         };
     }
 
-    static validateVote(
-        game: GameModel,
-        vote: {action: EntityAction; hexId: string; factionId?: PlayableFactionId; entityId: string}
-    ): VoteResult {
+    static validateVote(game: GameModel, vote: ProcessedVote): VoteResult {
         const fromEntity = game.entities.find(a => a.id === vote.entityId);
         if (!fromEntity) return VoteResult.EntityNotFound;
         if (fromEntity.busy) return VoteResult.EntityIsBusy;
@@ -423,11 +428,7 @@ export class GameLogic {
         return VoteResult.Success;
     }
 
-    static processVote(
-        game: GameModel,
-        vote: {action: EntityAction; hexId: string; factionId: PlayableFactionId; entityId: string},
-        fromBusy: boolean
-    ): VoteResult {
+    static processVote(game: GameModel, vote: ProcessedVote, fromBusy: boolean): VoteResult {
         const fromEntity = game.entities.find(a => a.id === vote.entityId);
         if (!fromEntity) return VoteResult.EntityNotFound;
 

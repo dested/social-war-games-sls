@@ -13,10 +13,12 @@ import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDe
 import {loadEntities} from '../../drawing/gameAssets';
 import {GameResource} from '@swg-common/game/gameResource';
 import {UserDetails} from '@swg-common/models/http/userDetails';
+import {GameRenderer} from '../../drawing/gameRenderer';
 
 export enum GameActionOptions {
     UpdateGame = 'UPDATE_GAME',
     UpdateUserDetails = 'UPDATE_USER_DETAILS',
+    SetGameRenderer = 'SetGameRenderer',
     SetImagesLoading = 'SET_IMAGES_LOADING',
     SelectEntity = 'SELECT_ENTITY',
     SelectResource = 'SELECT_RESOURCE',
@@ -41,6 +43,11 @@ export interface SelectEntityAction {
 export interface SelectResourceAction {
     type: GameActionOptions.SelectResource;
     resource: GameResource;
+}
+
+export interface SetGameRendererAction {
+    type: GameActionOptions.SetGameRenderer;
+    gameRenderer: GameRenderer;
 }
 
 export interface SetImagesLoadingAction {
@@ -76,6 +83,7 @@ export interface VotingAction {
 
 export type GameAction =
     | SelectEntityAction
+    | SetGameRendererAction
     | VotingAction
     | SetImagesLoadingAction
     | UpdateUserDetailsAction
@@ -90,6 +98,12 @@ export class GameActions {
         return {
             type: GameActionOptions.SelectEntity,
             entity
+        };
+    }
+    static setGameRenderer(gameRenderer: GameRenderer): SetGameRendererAction {
+        return {
+            type: GameActionOptions.SetGameRenderer,
+            gameRenderer
         };
     }
 

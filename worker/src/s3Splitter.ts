@@ -16,22 +16,22 @@ export class S3Splitter {
         roundState: RoundState,
         outputGameState: boolean
     ) {
-        // console.time('factionId split');
+        // console.time('faction split');
         const emptyEntityList = new HashArray<GameEntity, Point>(PointHashKey);
-        for (let i = 0; i < Factions.length; i++) {
-            const factionId = Factions[i];
+
+        for (const faction of Factions) {
             const visibleHexes = new HashArray<Point>(PointHashKey);
 
             for (let h = 0; h < layout.hexes.length; h++) {
                 const hex = layout.hexes[h];
-                if (factionId === GameLogic.getFactionId(gameState.factions, h)) {
+                if (faction === GameLogic.getFactionId(gameState.factions, h)) {
                     for (const gameHexagon of game.grid.getCircle(hex, 2)) {
                         visibleHexes.push(gameHexagon);
                     }
                 }
             }
 
-            const factionEntities = gameState.entities[factionId];
+            const factionEntities = gameState.entities[faction];
 
             for (let i = 0; i < factionEntities.length; i++) {
                 const entity = factionEntities[i];
@@ -49,17 +49,17 @@ export class S3Splitter {
                 layout,
                 gameState,
                 roundState,
-                factionId,
+                faction,
                 visibleHexes
             );
             const gameStateJson = JSON.stringify(factionGameState);
             const roundStateJson = JSON.stringify(factionRoundState);
             if (outputGameState) {
-                /*await*/ S3Manager.uploadJson(`game-state-${factionId}.json`, gameStateJson);
+                /*await*/ S3Manager.uploadJson(`game-state-${faction}.json`, gameStateJson);
             }
-            /*await*/ S3Manager.uploadJson(`round-state-${factionId}.json`, roundStateJson);
+            /*await*/ S3Manager.uploadJson(`round-state-${faction}.json`, roundStateJson);
         }
-        // console.timeEnd('factionId split');
+        // console.timeEnd('faction split');
     }
 
     private static filterItems(

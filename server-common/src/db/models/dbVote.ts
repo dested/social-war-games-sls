@@ -3,6 +3,7 @@ import {MongoDocument} from './mongoDocument';
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
 
 export type VoteCountResult = {_id: string; actions: {action: EntityAction; hexId: string; count: number}[]};
+export type RoundUserStats = {_id: {userId: string; factionId: PlayableFactionId}; count: number};
 
 export class DBVote extends MongoDocument {
     static collectionName = 'vote';
@@ -42,6 +43,22 @@ export class DBVote extends MongoDocument {
                             count: '$count'
                         }
                     }
+                }
+            }
+        ]);
+    }
+
+    static getRoundUserStats(generation: number): Promise<RoundUserStats[]> {
+        return this.db.aggregate([
+            {
+                $match: {
+                    generation
+                }
+            },
+            {
+                $group: {
+                    _id: {userId: '$userId', factionId: '$factionId'},
+                    count: {$sum: 1}
                 }
             }
         ]);

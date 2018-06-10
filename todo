@@ -51,17 +51,18 @@
 '/  cant vote for the same action twice
 '/ show votes on screen
 
-what happened in each round 
-  round-outcome-255-1.json
-    each vote outcome
-    top 10 hottest entities
-    how many players voted
-    notes[]
-      your base was attacked 
-      link to tap and go to that unit
-      mike was attacked
-      joe was moved
-    score
+'/ what happened in each round 
+'/   round-outcome-255-1.json
+'/     each vote outcome
+'/     top 10 hottest entities
+'/    how many players voted
+'/    notes[]
+'/      your base was attacked 
+'/      link to tap and go to that unit
+'/      mike was attacked
+'/      joe was moved
+'/    score
+'/ close menu on new round
 
 '/ current user details
   '/ votes ive cast
@@ -120,10 +121,10 @@ endgame
 low priority
   planes can fly over water
   put bounds on view
-  close menu on new round
   unify tsconfig
   make better use of caching in server
   implement tree shaking so server code doesnt make it to the client
+    except window shit
   update progress bar to be less realistic
   show game under login/register screen
   cleanup login screen
@@ -143,6 +144,8 @@ low priority
   encrypt faction
   mobile support
   move new generation to redux
+  move all of gamestatspanel to redux, round state, round faction stats
+ 
 
 
 write proper description of game for twitch

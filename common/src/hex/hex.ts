@@ -149,6 +149,20 @@ export class Grid<T extends Hexagon = Hexagon> {
         return (Math.abs(a.x - b.x) + Math.abs(a.x + a.y - b.x - b.y) + Math.abs(a.y - b.y)) / 2;
     }
 
+    getDirection(a: Point, b: Point) {
+        const difX = a.x - b.x;
+        const difY = a.y - b.y;
+
+        let xDirection = difX > 0 ? 'West' : difX < 0 ? 'East' : '';
+        let yDirection = difY > 0 ? 'North' : difY < 0 ? 'South' : '';
+
+        if (yDirection && xDirection) {
+            return yDirection + xDirection.toLowerCase();
+        }
+
+        return (yDirection + '' + xDirection);
+    }
+
     getThickLine(start: Axial, end: Axial, wd: number): T[] {
         let x0 = start.x;
         let y0 = start.y;

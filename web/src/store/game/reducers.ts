@@ -5,6 +5,7 @@ import {EntityAction, GameEntity} from '@swg-common/game/entityDetail';
 import {GameResource} from '@swg-common/game/gameResource';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResult} from '@swg-common/game/voteResult';
+import {GameRenderer} from '../../drawing/gameRenderer';
 
 const initialState: GameStore = {};
 
@@ -19,6 +20,7 @@ export interface GameStore {
     imagesLoading?: number;
     isVoting?: boolean;
     votingError?: VoteResult;
+    gameRenderer?: GameRenderer;
 }
 
 export default function gameReducer(state: GameStore = initialState, action: GameAction): GameStore {
@@ -37,6 +39,12 @@ export default function gameReducer(state: GameStore = initialState, action: Gam
                 ...state,
                 game: action.game,
                 roundState: action.roundState
+            };
+        }
+        case GameActionOptions.SetGameRenderer: {
+            return {
+                ...state,
+                gameRenderer: action.gameRenderer
             };
         }
         case GameActionOptions.UpdateUserDetails: {

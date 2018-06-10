@@ -9,6 +9,7 @@ import {VoteRequestResults} from '@swg-common/models/http/voteResults';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {FactionStats} from '@swg-common/models/factionStats';
+import {FactionRoundStats} from '@swg-common/models/roundStats';
 
 export class DataService {
     private static userServer: string = 'https://user.socialwargames.com';
@@ -133,5 +134,16 @@ export class DataService {
             }
         });
         return (await response.json()) as FactionStats;
+    }
+
+    static async getFactionRoundStats(generation: number, factionId: PlayableFactionId) {
+        let response = await fetch(`${this.s3Server}/round-outcomes/round-outcome-${generation}-${factionId}.json`, {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        return (await response.json()) as FactionRoundStats;
     }
 }

@@ -3,15 +3,28 @@ import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {GameState} from '@swg-common/models/gameState';
 import {Config} from '@swg-server-common/config';
 import {DataManager} from '@swg-server-common/db/dataManager';
-import {DBVote} from '@swg-server-common/db/models/dbVote';
+import {DBVote, VoteCountResult} from '@swg-server-common/db/models/dbVote';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {S3Splitter} from './s3Splitter';
 import {StateManager} from './stateManager';
-import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
+import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {EntityDetails, Factions, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {
+    EntityAction,
+    EntityDetails,
+    EntityTypeNames,
+    FactionNames,
+    Factions,
+    GameEntity,
+    OfFaction,
+    PlayableFactionId
+} from '@swg-common/game/entityDetail';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
+import {Utils} from '@swg-common/utils/utils';
+import {VoteNote} from '@swg-common/models/voteNote';
+import {GameResource} from '@swg-common/game/gameResource';
+import {FactionRoundStats, RoundStats} from '@swg-common/models/roundStats';
 
 export class Worker {
     private static redisManager: RedisManager;
@@ -63,6 +76,9 @@ export class Worker {
             let gameState = await this.redisManager.get<GameState>('game-state');
             const game = GameLogic.buildGameFromState(layout, gameState);
 
+            const preVoteEntities = JSON.parse(JSON.stringify(game.entities.array));
+            const preVoteResources = JSON.parse(JSON.stringify(game.resources.array));
+
             const voteCounts = (await DBVote.getVoteCount(generation)).sort(
                 (left, right) => _.sumBy(left.actions, a => a.count) - _.sumBy(right.actions, a => a.count)
             );
@@ -76,7 +92,8 @@ export class Worker {
                             factionId: gameEntity.factionId,
                             action: gameEntity.busy.action,
                             hexId: gameEntity.busy.hexId,
-                            entityId: gameEntity.id
+                            entityId: gameEntity.id,
+                            voteCount: 0
                         },
                         true
                     );
@@ -88,16 +105,17 @@ export class Worker {
                 }
             }
 
-            const winningVotes = [];
+            const winningVotes: ProcessedVote[] = [];
             for (const voteCount of voteCounts) {
                 const actions = _.orderBy(voteCount.actions, a => a.count, 'desc');
                 for (let index = 0; index < actions.length; index++) {
                     const action = actions[index];
-                    const vote = {
+                    const vote: ProcessedVote = {
                         entityId: voteCount._id,
                         action: action.action,
                         factionId: undefined as PlayableFactionId,
-                        hexId: action.hexId
+                        hexId: action.hexId,
+                        voteCount: action.count
                     };
 
                     let voteResult = GameLogic.validateVote(game, vote);
@@ -118,14 +136,24 @@ export class Worker {
             this.postVoteTasks(game);
 
             console.log('Executed Votes', winningVotes);
+
+            this.writeFactionStats(game);
+            const roundStats = await this.buildRoundStats(
+                game,
+                preVoteEntities,
+                preVoteResources,
+                winningVotes,
+                voteCounts
+            );
+
+            await this.splitRoundStats(roundStats, game.generation);
+
             game.generation++;
 
             gameState = StateManager.buildGameState(game);
             const roundState = StateManager.buildRoundState(game.generation, []);
             console.log(roundState);
             await S3Splitter.output(game, layout, gameState, roundState, true);
-
-            this.writeFactionStats(game);
 
             await this.redisManager.set('game-state', gameState);
             await this.redisManager.incr('game-generation');
@@ -228,17 +256,206 @@ export class Worker {
     }
 
     private static writeFactionStats(game: GameModel) {
-        const factionStats: FactionStats = {'1': null, '2': null, '3': null};
-        for (const faction of Factions) {
+        const factionStats: FactionStats = Utils.mapToObj(Factions, faction => {
             const factionHexes = game.grid.hexes.map(a => a.factionId);
             const hexCount = factionHexes.filter(a => a === faction).length;
-            factionStats[faction] = {
+            return {
                 hexCount,
                 hexPercent: hexCount / factionHexes.length,
                 resourceCount: game.factionDetails[faction].resourceCount,
                 score: GameLogic.calculateScore(game, faction)
             };
-        }
+        });
+
         S3Manager.uploadJson(`faction-stats.json`, JSON.stringify(factionStats));
+    }
+
+    private static async buildRoundStats(
+        game: GameModel,
+        preVoteEntities: GameEntity[],
+        preVoteResources: GameResource[],
+        winningVotes: ProcessedVote[],
+        voteCounts: VoteCountResult[]
+    ): Promise<RoundStats> {
+        const userStats = await DBVote.getRoundUserStats(game.generation);
+
+        const notes = Utils.mapMany(winningVotes, a => this.buildNote(a, game, preVoteEntities, preVoteResources));
+
+        const roundStats = {
+            generation: game.generation,
+            winningVotes: Utils.mapToObj(Factions, faction => winningVotes.filter(a => a.factionId === faction)),
+            playersVoted: Utils.groupByReduce(
+                userStats,
+                a => a._id.factionId,
+                a => Object.keys(Utils.groupBy(a, a => a._id.userId)).length
+            ),
+            scores: Utils.mapToObj(Factions, faction => GameLogic.calculateScore(game, faction)),
+            hotEntities: Utils.mapToObj(Factions, faction =>
+                voteCounts
+                    .filter(vote => preVoteEntities.find(ent => ent.id === vote._id).factionId === faction)
+                    .sort(
+                        (vote1, vote2) =>
+                            Utils.sum(vote1.actions, v => v.count) - Utils.sum(vote2.actions, v => v.count)
+                    )
+                    .map(vote => ({id: vote._id, count: Utils.sum(vote.actions, v => v.count)}))
+                    .slice(0, 10)
+            ),
+            notes: Utils.mapToObj(Factions, faction => notes.filter(a => a.factionId === faction))
+        };
+
+        return roundStats;
+    }
+
+    private static buildNote(
+        vote: ProcessedVote,
+        game: GameModel,
+        preVoteEntities: GameEntity[],
+        preVoteResources: GameResource[]
+    ): VoteNote[] {
+        const fromEntity = preVoteEntities.find(a => a.id === vote.entityId);
+        const fromHex = game.grid.hexes.get(fromEntity);
+        const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
+        switch (vote.action) {
+            case 'attack': {
+                const toEntity = preVoteEntities.find(a => a.x === toHex.x && a.y === toHex.y);
+                const toEntityResult = game.entities.find(a => a.id === toEntity.id);
+                const damage = toEntityResult ? toEntity.health - toEntityResult.health : toEntity.health;
+                const result = `for ${damage} damage` + (!toEntityResult ? ' and destroyed it.' : '');
+                return [
+                    {
+                        note:
+                            `Our {fromEntityId:${EntityTypeNames[fromEntity.entityType]}} attacked ` +
+                            `${FactionNames[toEntity.factionId]}'s ` +
+                            `{toEntityId:${EntityTypeNames[toEntity.entityType]}} ` +
+                            `(at {toHexId:${toHex.x},${toHex.y}}) ${result}. `,
+                        factionId: fromEntity.factionId,
+                        fromEntityId: fromEntity.id,
+                        toEntityId: toEntity.id,
+                        toHexId: toHex.id,
+                        fromHexId: fromHex.id,
+                        voteCount: vote.voteCount
+                    },
+
+                    {
+                        note:
+                            `${FactionNames[fromEntity.factionId]}'s ` +
+                            `{fromEntityId:${EntityTypeNames[fromEntity.entityType]}} ` +
+                            `attacked our {toEntityId:${EntityTypeNames[toEntity.entityType]}} ` +
+                            `(at {toHexId:${toHex.x},${toHex.y}}) ${result}. `,
+                        factionId: toEntity.factionId,
+                        fromEntityId: fromEntity.id,
+                        toEntityId: toEntity.id,
+                        toHexId: toHex.id,
+                        fromHexId: fromHex.id,
+                        voteCount: vote.voteCount
+                    }
+                ];
+            }
+
+            case 'move': {
+                const distance = game.grid.getDistance(fromHex, toHex);
+                const direction = game.grid.getDirection(fromHex, toHex);
+                return [
+                    {
+                        note:
+                            `Our {fromEntityId:${EntityTypeNames[fromEntity.entityType]}} ` +
+                            `moved ${distance} space${distance === 1 ? '' : 's'} ${direction}.`,
+                        factionId: fromEntity.factionId,
+                        fromEntityId: fromEntity.id,
+                        toEntityId: null,
+                        toHexId: toHex.id,
+                        fromHexId: fromHex.id,
+                        voteCount: vote.voteCount
+                    }
+                ];
+            }
+            case 'mine': {
+                const resource = preVoteResources.find(a => a.x === toHex.x && a.y === toHex.y);
+                const resourceResult = game.resources.find(a => a.x === toHex.x && a.y === toHex.y);
+                let resourceCount = 0;
+                switch (resource.resourceType) {
+                    case 'bronze':
+                        resourceCount = 1;
+                        break;
+                    case 'silver':
+                        resourceCount = 2;
+                        break;
+                    case 'gold':
+                        resourceCount = 3;
+                        break;
+                }
+
+                const remaining = resourceResult
+                    ? `It has ${resourceResult.currentCount} remaining. `
+                    : `It has been depleted. `;
+
+                return [
+                    {
+                        note: `We mined ${resourceCount} resource at {toHexId:${toHex.x},${toHex.y}}. ` + remaining,
+                        factionId: fromEntity.factionId,
+                        fromEntityId: fromEntity.id,
+                        toEntityId: null,
+                        toHexId: toHex.id,
+                        fromHexId: fromHex.id,
+                        voteCount: vote.voteCount
+                    }
+                ];
+            }
+
+            case 'spawn-infantry':
+            case 'spawn-tank':
+            case 'spawn-plane': {
+                let spawnName: string;
+                let turns: number;
+                switch (vote.action) {
+                    case 'spawn-infantry':
+                        spawnName = EntityTypeNames['infantry'];
+                        turns = EntityDetails['infantry'].ticksToSpawn;
+                        break;
+                    case 'spawn-tank':
+                        spawnName = EntityTypeNames['tank'];
+                        turns = EntityDetails['tank'].ticksToSpawn;
+                        break;
+                    case 'spawn-plane':
+                        spawnName = EntityTypeNames['plane'];
+                        turns = EntityDetails['plane'].ticksToSpawn;
+                        break;
+                }
+
+                return [
+                    {
+                        note:
+                            `Our {fromEntityId:${EntityTypeNames['factory']}} ` +
+                            `has begun constructing a new ${spawnName}. ` +
+                            `It will be ready in ${turns} rounds.`,
+                        factionId: fromEntity.factionId,
+                        fromEntityId: fromEntity.id,
+                        toEntityId: null,
+                        toHexId: toHex.id,
+                        fromHexId: fromHex.id,
+                        voteCount: vote.voteCount
+                    }
+                ];
+            }
+        }
+    }
+
+    private static splitRoundStats(roundStats: RoundStats, generation: number) {
+        for (const faction of Factions) {
+            const factionRoundStats: FactionRoundStats = {
+                totalPlayersVoted: Utils.sum(Factions, f => roundStats.playersVoted[f] || 0),
+                generation: roundStats.generation,
+                hotEntities: roundStats.hotEntities[faction],
+                winningVotes: roundStats.winningVotes[faction],
+                playersVoted: roundStats.playersVoted[faction] || 0,
+                score: roundStats.scores[faction],
+                notes: roundStats.notes[faction]
+            };
+
+            /*await*/ S3Manager.uploadJson(
+                `round-outcomes/round-outcome-${generation}-${faction}.json`,
+                JSON.stringify(factionRoundStats)
+            );
+        }
     }
 }
