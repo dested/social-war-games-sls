@@ -1,13 +1,15 @@
 import {GameAction, GameActionOptions} from './actions';
 import {RoundState} from '@swg-common/models/roundState';
-import {GameModel} from '@swg-common/game/gameLogic';
+import {GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {EntityAction, GameEntity} from '@swg-common/game/entityDetail';
 import {GameResource} from '@swg-common/game/gameResource';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {GameRenderer} from '../../drawing/gameRenderer';
 
-const initialState: GameStore = {};
+const initialState: GameStore = {
+    localVotes: []
+};
 
 export interface GameStore {
     game?: GameModel;
@@ -21,6 +23,7 @@ export interface GameStore {
     isVoting?: boolean;
     votingError?: VoteResult;
     gameRenderer?: GameRenderer;
+    localVotes: ProcessedVote[];
 }
 
 export default function gameReducer(state: GameStore = initialState, action: GameAction): GameStore {
@@ -45,6 +48,34 @@ export default function gameReducer(state: GameStore = initialState, action: Gam
             return {
                 ...state,
                 gameRenderer: action.gameRenderer
+            };
+        }
+        case GameActionOptions.AddLocalVote: {
+            return {
+                ...state,
+                localVotes: [...state.localVotes, action.vote]
+            };
+        }
+        case GameActionOptions.ResetLocalVotes: {
+            return {
+                ...state,
+                localVotes: []
+            };
+        }
+        case GameActionOptions.RemoveLocalVote: {
+            const localVotes = state.localVotes.slice();
+            localVotes.splice(
+                localVotes.findIndex(
+                    a =>
+                        a.hexId === action.vote.hexId &&
+                        a.entityId === action.vote.entityId &&
+                        a.action === action.vote.action
+                ),
+                1
+            );
+            return {
+                ...state,
+                localVotes: localVotes
             };
         }
         case GameActionOptions.UpdateUserDetails: {

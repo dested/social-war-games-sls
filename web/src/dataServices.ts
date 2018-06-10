@@ -60,7 +60,7 @@ export class DataService {
         action: EntityAction;
         generation: number;
         hexId: string;
-    }): Promise<{reason: VoteRequestResults; voteResult?: VoteResult; votesLeft: number}> {
+    }): Promise<{reason: VoteRequestResults; voteResult?: VoteResult; votesLeft: number; processedTime: number}> {
         const state = getStore().getState();
 
         let response = await fetch(this.voteServer + '/vote', {

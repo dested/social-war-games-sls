@@ -6,6 +6,8 @@ import {GameLayout} from '@swg-common/models/gameLayout';
 import {S3Splitter} from './s3Splitter';
 import {StateManager} from './stateManager';
 import {GameLogic} from '@swg-common/game/gameLogic';
+import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
+import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
 
 export class Setup {
     static start() {
@@ -24,7 +26,10 @@ export class Setup {
         await redisManager.flushAll();
         console.log('redis flush');
         await redisManager.set('stop', true);
+
         await DBVote.db.deleteMany({});
+        await DBUserRoundStats.db.deleteMany({});
+        await DBRoundStats.db.deleteMany({});
 
         let game = GameLogic.createGame();
         console.log('create game');

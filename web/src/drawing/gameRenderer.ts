@@ -372,25 +372,12 @@ export class GameRenderer {
         for (let i = 0; i < game.entities.length; i++) {
             const entity = game.entities.getIndex(i);
             const hex = grid.getHexAt(entity);
-            let voteRectX = hex.center.x + HexConstants.width / 6;
             let rectX = hex.center.x - HexConstants.width / 2;
             let rectY = hex.center.y;
-
-            const voteCount = roundState.entities[entity.id] && _.sum(roundState.entities[entity.id].map(a => a.count));
             context.drawImage(this.roundRect(rectWidth, rectHeight, 5, 'rgba(0,0,0,.6)'), rectX, rectY);
 
             context.fillStyle = 'white';
             context.fillText(entity.health.toString(), rectX + rectWidth / 2 - 1, rectY + rectHeight / 1.4, rectWidth);
-            if (voteCount > 0) {
-                context.drawImage(this.roundRect(rectWidth, rectHeight, 5, 'rgba(240,240,240,.6)'), voteRectX, rectY);
-                context.fillStyle = 'black';
-                context.fillText(
-                    voteCount.toString(),
-                    voteRectX + rectWidth / 2 - 1,
-                    rectY + rectHeight / 1.4,
-                    rectWidth
-                );
-            }
         }
 
         context.restore();

@@ -1,4 +1,5 @@
 import {HttpUser} from './httpUser';
+import {DBUserRoundStatDetails} from '../../../../server-common/src/db/models/dbUserRoundStats';
 
 export interface RegisterRequest {
     email: string;
@@ -19,5 +20,5 @@ export interface GetUserResponse {
 }
 
 export interface StatsResponse {
-    foo: boolean;
+    roundsParticipated: DBUserRoundStatDetails[];
 }

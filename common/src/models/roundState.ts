@@ -2,7 +2,8 @@ import {EntityAction} from '../game/entityDetail';
 
 export type RoundState = {
     hash: string;
-    nextUpdate:number;
+    nextUpdateTime:number;
+    thisUpdateTime:number;
     generation:number;
     entities: {[id: string]: RoundStateEntityVote[]};
 };

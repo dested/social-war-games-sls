@@ -6,11 +6,12 @@ import {JwtStrategy} from './auth/passport/jwtStragegy';
 import {CheckController} from './controllers/checkController';
 import {UserController} from './controllers/userController';
 import {CorsMiddleware} from '@nest-middlewares/cors';
+import {UserHistoryController} from './controllers/userHistoryController';
 
 @Module({
     modules: [],
     components: [AuthService, JwtStrategy],
-    controllers: [UserController, CheckController]
+    controllers: [UserController, UserHistoryController, CheckController]
 })
 export class ApplicationModule implements NestModule {
     configure(consumer: MiddlewaresConsumer): void {

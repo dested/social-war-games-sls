@@ -7,7 +7,7 @@ import {Point, PointHashKey} from '@swg-common/hex/hex';
 import {HashArray} from '@swg-common/utils/hashArray';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {HexagonTypes} from '@swg-common/game/hexagonTypes';
-import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
+import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
 import {loadEntities} from '../../drawing/gameAssets';
@@ -24,6 +24,9 @@ export enum GameActionOptions {
     SelectResource = 'SELECT_RESOURCE',
     SetEntityAction = 'SET_ENTITY_ACTION',
     SelectViableHex = 'SELECT_VIABLE_HEX',
+    AddLocalVote = 'AddLocalVote',
+    RemoveLocalVote = 'RemoveLocalVote',
+    ResetLocalVotes = 'ResetLocalVotes',
     Voting = 'VOTING',
     VotingError = 'VOTING_ERROR'
 }
@@ -38,6 +41,20 @@ export interface SetEntityActionAction {
 export interface SelectEntityAction {
     type: GameActionOptions.SelectEntity;
     entity: GameEntity;
+}
+
+export interface AddLocalVoteAction {
+    type: GameActionOptions.AddLocalVote;
+    vote: ProcessedVote & {processedTime: number};
+}
+
+export interface RemoveLocalVoteAction {
+    type: GameActionOptions.RemoveLocalVote;
+    vote: ProcessedVote;
+}
+
+export interface ResetLocalVotesAction {
+    type: GameActionOptions.ResetLocalVotes;
 }
 
 export interface SelectResourceAction {
@@ -85,6 +102,9 @@ export type GameAction =
     | SelectEntityAction
     | SetGameRendererAction
     | VotingAction
+    | AddLocalVoteAction
+    | RemoveLocalVoteAction
+    | ResetLocalVotesAction
     | SetImagesLoadingAction
     | UpdateUserDetailsAction
     | SetEntityActionAction
@@ -100,6 +120,27 @@ export class GameActions {
             entity
         };
     }
+
+    static addLocalVote(vote: ProcessedVote & {processedTime: number}): AddLocalVoteAction {
+        return {
+            type: GameActionOptions.AddLocalVote,
+            vote
+        };
+    }
+
+    static removeLocalVote(vote: ProcessedVote): RemoveLocalVoteAction {
+        return {
+            type: GameActionOptions.RemoveLocalVote,
+            vote
+        };
+    }
+
+    static resetLocalVotes(): ResetLocalVotesAction {
+        return {
+            type: GameActionOptions.ResetLocalVotes
+        };
+    }
+
     static setGameRenderer(gameRenderer: GameRenderer): SetGameRendererAction {
         return {
             type: GameActionOptions.SetGameRenderer,
@@ -164,55 +205,46 @@ export class GameActions {
 }
 
 export class GameThunks {
-    static vote(entityId: string, action: EntityAction, hexId: string) {
-        return async (dispatch: Dispatcher, getState: () => SwgStore) => {
-            const {gameState} = getState();
-            const {game, roundState} = gameState;
-
-            const newRoundState = {...roundState};
-            newRoundState.hash = newRoundState.hash + '1';
-            if (!newRoundState.entities[entityId]) {
-                newRoundState.entities[entityId] = [];
-            }
-            const vote = newRoundState.entities[entityId].find(a => a.hexId === hexId && a.action === a.action);
-            if (vote) {
-                vote.count++;
-            } else {
-                newRoundState.entities[entityId].push({
-                    action,
-                    count: 1,
-                    hexId
-                });
-            }
-
-            dispatch(GameActions.updateGame(game, newRoundState));
-        };
-    }
     static startLoading() {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             loadEntities();
             HexagonTypes.preloadTypes().map(a => HexImages.hexTypeToImage(a.type, a.subType));
         };
     }
+
+    static async newRound() {
+        return async (dispatch: Dispatcher, getState: () => SwgStore) => {
+            const {gameState, appState} = getState();
+            const {game} = gameState;
+            await dispatch(GameActions.resetLocalVotes());
+        };
+    }
+
     static sendVote(entityId: string, action: EntityAction, hexId: string) {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             const {gameState, appState} = getState();
             const {game} = gameState;
             dispatch(GameActions.selectEntity(null));
 
-            let voteResult = GameLogic.validateVote(game, {
+            const processedVote = {
                 entityId,
                 action,
                 hexId,
                 factionId: appState.user.factionId
-            });
+            };
+
+            let voteResult = GameLogic.validateVote(game, processedVote);
 
             if (voteResult !== VoteResult.Success) {
+                dispatch(GameActions.votingError(voteResult));
+                setTimeout(() => {
+                    dispatch(GameActions.votingError(null));
+                }, 2000);
                 return;
             }
 
             dispatch(GameActions.voting(true));
-            await dispatch(GameThunks.vote(entityId, action, hexId));
+            await dispatch(GameActions.addLocalVote({...processedVote, processedTime: Number.MAX_VALUE}));
 
             const generation = game.generation;
 
@@ -225,19 +257,43 @@ export class GameThunks {
                 });
 
                 if (serverVoteResult.reason !== 'ok') {
-                    dispatch(GameActions.voting(false));
                     dispatch(GameActions.votingError(serverVoteResult.voteResult || VoteResult.Error));
+                    dispatch(GameActions.removeLocalVote(processedVote));
+
                     setTimeout(() => {
                         dispatch(GameActions.votingError(null));
-                    }, 2000);
-                    return;
+                    }, 3000);
+                } else {
+                    await dispatch(GameActions.removeLocalVote(processedVote));
+                    await dispatch(
+                        GameActions.addLocalVote({...processedVote, processedTime: serverVoteResult.processedTime})
+                    );
+
+                    const roundState = gameState.roundState;
+                    if (!roundState.entities[processedVote.entityId]) {
+                        roundState.entities[processedVote.entityId] = [];
+                    }
+                    const vote = roundState.entities[processedVote.entityId].find(
+                        a => a.hexId === processedVote.hexId && a.action === a.action
+                    );
+                    if (vote) {
+                        vote.count++;
+                    } else {
+                        roundState.entities[processedVote.entityId].push({
+                            action: processedVote.action,
+                            count: 1,
+                            hexId: processedVote.hexId
+                        });
+                    }
+                    dispatch(GameActions.updateGame(gameState.game, roundState));
+
+                    dispatch(
+                        GameActions.updateUserDetails({
+                            ...gameState.userDetails,
+                            voteCount: gameState.userDetails.maxVotes - serverVoteResult.votesLeft
+                        })
+                    );
                 }
-                dispatch(
-                    GameActions.updateUserDetails({
-                        ...gameState.userDetails,
-                        voteCount: gameState.userDetails.maxVotes - serverVoteResult.votesLeft
-                    })
-                );
 
                 dispatch(GameActions.voting(false));
             } catch (ex) {

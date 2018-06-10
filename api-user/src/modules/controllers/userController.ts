@@ -53,12 +53,4 @@ export class UserController {
             user: httpUser
         };
     }
-
-    @UseGuards(AuthGuard)
-    @Get('/stats')
-    async getStats(@Req() req: HttpUser): Promise<StatsResponse> {
-        return {
-            foo: true
-        };
-    }
 }

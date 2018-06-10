@@ -81,14 +81,14 @@
   2 x number of tanks
   1 x number of infantry
   
-historical user details
-  votes cast
-  rounds participated in
-  damage done
-  resources mined
-  distance moved
-  units destroyed
-  units created
+'/ historical user details
+  '/ votes cast
+  '/ rounds participated in
+  '/ damage done
+  '/ resources mined
+  '/ distance moved
+  '/ units destroyed
+  '/ units created
 
 
 
@@ -97,14 +97,18 @@ gameplay
   fix flickering vote  
   units youve participated in, howd they do
   show replay of turns
- 
+  show selected entity
+  
+  show busy units
   hot units
     units that move all the time
   show user data in ladder
   how many players voted last round
   randomize factionid
-  
-  
+  fix -1 votes left
+  handle utc time
+    offset from server time?
+    
 endgame
   stress test
   balance units
@@ -137,6 +141,7 @@ low priority
     ad support
     payment processor support
   build bots  
+  make addUserRoundStat better
   out of sync/time clients
   figure out a way to prevent multiple accounts
     prevent fake email addresses

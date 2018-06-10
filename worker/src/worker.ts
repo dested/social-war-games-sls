@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import * as R from 'ramda';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {GameState} from '@swg-common/models/gameState';
 import {Config} from '@swg-server-common/config';
@@ -25,6 +26,8 @@ import {Utils} from '@swg-common/utils/utils';
 import {VoteNote} from '@swg-common/models/voteNote';
 import {GameResource} from '@swg-common/game/gameResource';
 import {FactionRoundStats, RoundStats} from '@swg-common/models/roundStats';
+import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
+import {DBUserRoundStatDetails, DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 
 export class Worker {
     private static redisManager: RedisManager;
@@ -110,10 +113,11 @@ export class Worker {
                 const actions = _.orderBy(voteCount.actions, a => a.count, 'desc');
                 for (let index = 0; index < actions.length; index++) {
                     const action = actions[index];
+                    const entity = game.entities.find(a => a.id === voteCount._id);
                     const vote: ProcessedVote = {
                         entityId: voteCount._id,
                         action: action.action,
-                        factionId: undefined as PlayableFactionId,
+                        factionId: entity.factionId,
                         hexId: action.hexId,
                         voteCount: action.count
                     };
@@ -138,15 +142,7 @@ export class Worker {
             console.log('Executed Votes', winningVotes);
 
             this.writeFactionStats(game);
-            const roundStats = await this.buildRoundStats(
-                game,
-                preVoteEntities,
-                preVoteResources,
-                winningVotes,
-                voteCounts
-            );
-
-            await this.splitRoundStats(roundStats, game.generation);
+            await this.buildRoundStats(game, preVoteEntities, preVoteResources, winningVotes, voteCounts);
 
             game.generation++;
 
@@ -276,19 +272,23 @@ export class Worker {
         preVoteResources: GameResource[],
         winningVotes: ProcessedVote[],
         voteCounts: VoteCountResult[]
-    ): Promise<RoundStats> {
+    ) {
         const userStats = await DBVote.getRoundUserStats(game.generation);
 
         const notes = Utils.mapMany(winningVotes, a => this.buildNote(a, game, preVoteEntities, preVoteResources));
 
-        const roundStats = {
+        const userStatsGrouped = Utils.arrayToDictionary(userStats, a => a._id.userId);
+
+        const playersVoted = Utils.groupByReduce(
+            userStats,
+            a => a._id.factionId,
+            a => Object.keys(Utils.groupBy(a, a => a._id.userId))
+        );
+
+        const roundStats: RoundStats = {
             generation: game.generation,
             winningVotes: Utils.mapToObj(Factions, faction => winningVotes.filter(a => a.factionId === faction)),
-            playersVoted: Utils.groupByReduce(
-                userStats,
-                a => a._id.factionId,
-                a => Object.keys(Utils.groupBy(a, a => a._id.userId)).length
-            ),
+            playersVoted: Utils.mapObjToObj(playersVoted, p => p.length),
             scores: Utils.mapToObj(Factions, faction => GameLogic.calculateScore(game, faction)),
             hotEntities: Utils.mapToObj(Factions, faction =>
                 voteCounts
@@ -303,7 +303,85 @@ export class Worker {
             notes: Utils.mapToObj(Factions, faction => notes.filter(a => a.factionId === faction))
         };
 
-        return roundStats;
+        const dbRoundStats = new DBRoundStats(roundStats);
+        /*await*/ DBRoundStats.db.insertDocument(dbRoundStats);
+
+        const players = Utils.flattenArray(Utils.mapObjToArray(playersVoted, (_, ar) => ar));
+
+        for (let i = 0; i < players.length; i++) {
+            const player = players[i];
+
+            const votesByUser = userStatsGrouped[player];
+
+            const votesCast = votesByUser ? votesByUser.count : 0;
+
+            const winningUserVotes = votesByUser.votes.filter(v =>
+                winningVotes.find(w => w.action === v.action && w.hexId === v.hexId && w.entityId === v.entityId)
+            );
+
+            const votesWon = winningUserVotes.length;
+            let damageDone = 0;
+            let unitsDestroyed = 0;
+            let unitsCreated = 0;
+            let resourcesMined = 0;
+            let distanceMoved = 0;
+
+            for (const winningUserVote of winningUserVotes) {
+                const fromEntity = preVoteEntities.find(a => a.id === winningUserVote.entityId);
+                const fromHex = game.grid.hexes.get(fromEntity);
+                const toHex = game.grid.hexes.find(a => a.id === winningUserVote.hexId);
+
+                switch (winningUserVote.action) {
+                    case 'attack': {
+                        const toEntity = preVoteEntities.find(a => a.x === toHex.x && a.y === toHex.y);
+                        const toEntityResult = game.entities.find(a => a.id === toEntity.id);
+                        damageDone += toEntityResult ? toEntity.health - toEntityResult.health : toEntity.health;
+                        unitsDestroyed += toEntityResult ? 0 : 1;
+                        break;
+                    }
+
+                    case 'move': {
+                        distanceMoved += game.grid.getDistance(fromHex, toHex);
+                        break;
+                    }
+                    case 'mine': {
+                        const resource = preVoteResources.find(a => a.x === toHex.x && a.y === toHex.y);
+                        let resourceCount = 0;
+                        switch (resource.resourceType) {
+                            case 'bronze':
+                                resourceCount = 1;
+                                break;
+                            case 'silver':
+                                resourceCount = 2;
+                                break;
+                            case 'gold':
+                                resourceCount = 3;
+                                break;
+                        }
+                        resourcesMined += resourceCount;
+                        break;
+                    }
+                    case 'spawn-plane':
+                    case 'spawn-infantry':
+                    case 'spawn-tank': {
+                        unitsCreated++;
+                    }
+                }
+            }
+
+            /*await*/ DBUserRoundStats.addUserRoundStat(player, {
+                generation: game.generation,
+                votesWon,
+                votesCast,
+                damageDone,
+                unitsDestroyed,
+                unitsCreated,
+                resourcesMined,
+                distanceMoved
+            });
+        }
+
+        await this.splitRoundStats(roundStats, game.generation);
     }
 
     private static buildNote(

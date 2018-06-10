@@ -13,7 +13,7 @@ import {GameRenderer} from '../drawing/gameRenderer';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {Drawing, DrawingOptions} from '../drawing/hexDrawing';
-import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
+import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {GameEntity} from '@swg-common/game/entityDetail';
 import {SmallGameRenderer} from '../drawing/smallGameRenderer';
 import {UIConstants} from '../utils/uiConstants';
@@ -28,7 +28,10 @@ interface Props extends RouteComponentProps<{}> {
     selectedResource?: GameResource;
     game?: GameModel;
     imagesLoading?: number;
+    localVotes?: (ProcessedVote & {processedTime: number})[];
     roundState?: RoundState;
+    resetLocalVotes: typeof GameActions.resetLocalVotes;
+
     updateGame: typeof GameActions.updateGame;
     updateUserDetails: typeof GameActions.updateUserDetails;
     startLoading: typeof GameThunks.startLoading;
@@ -51,6 +54,7 @@ export class Component extends React.Component<Props, State> {
     private miniGameRenderer: SmallGameRenderer;
     private layout: GameLayout;
     private gameState: GameState;
+    private game: GameModel;
     constructor(props: Props, context: any) {
         super(props, context);
         this.gameRenderer = new GameRenderer();
@@ -72,11 +76,11 @@ export class Component extends React.Component<Props, State> {
         this.layout = await DataService.getLayout();
         this.gameState = await DataService.getGameState(this.props.user.factionId);
         const roundState = await DataService.getRoundState(this.props.user.factionId);
-        let game = GameLogic.buildGameFromState(this.layout, this.gameState);
-        Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
-        this.props.updateGame(game, roundState);
+        this.game = GameLogic.buildGameFromState(this.layout, this.gameState);
+        Drawing.update(this.game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
+        this.props.updateGame(this.game, roundState);
         this.miniGameRenderer.forceRender();
-        this.getNewState(roundState.nextUpdate - +new Date());
+        this.getNewState(roundState.nextUpdateTime - +new Date());
         this.setState({ready: true});
         const userDetails = await DataService.currentUserDetails();
         this.props.updateUserDetails(userDetails);
@@ -86,14 +90,10 @@ export class Component extends React.Component<Props, State> {
         setTimeout(async () => {
             try {
                 const roundState = await DataService.getRoundState(this.props.user.factionId);
-                let shouldUpdate = true;
-                if (this.props.roundState.hash.indexOf(roundState.hash) === 0) {
-                    if (roundState.generation === this.props.game.generation) {
-                        shouldUpdate = false;
-                    }
-                }
+
                 if (roundState.generation !== this.props.game.generation) {
                     this.props.selectEntity(null);
+                    await this.props.resetLocalVotes();
                     this.gameState = await DataService.getGameState(this.props.user.factionId);
                     const userDetails = await DataService.currentUserDetails();
                     this.props.updateUserDetails(userDetails);
@@ -110,15 +110,15 @@ export class Component extends React.Component<Props, State> {
                         );
                         this.props.setFactionRoundStats(factionRoundStats);
                     }
-                    shouldUpdate = true;
+                    this.game = GameLogic.buildGameFromState(this.layout, this.gameState);
+                    Drawing.update(this.game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
                 }
-                if (shouldUpdate) {
-                    const game = GameLogic.buildGameFromState(this.layout, this.gameState);
-                    Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
-                    this.props.updateGame(game, roundState);
-                    this.miniGameRenderer.forceRender();
-                }
-                this.getNewState(roundState.nextUpdate - +new Date());
+
+
+                this.props.updateGame(this.game, roundState);
+                this.miniGameRenderer.forceRender();
+
+                this.getNewState(roundState.nextUpdateTime - +new Date());
             } catch (ex) {
                 console.error(ex);
                 this.getNewState(5000);
@@ -187,6 +187,7 @@ export let Game = connect(
     (state: SwgStore) => ({
         user: state.appState.user,
         imagesLoading: state.gameState.imagesLoading,
+        localVotes: state.gameState.localVotes,
         game: state.gameState.game,
         roundState: state.gameState.roundState,
         selectedEntity: state.gameState.selectedEntity,
@@ -196,6 +197,7 @@ export let Game = connect(
     }),
     {
         setGameRenderer: GameActions.setGameRenderer,
+        resetLocalVotes: GameActions.resetLocalVotes,
         updateGame: GameActions.updateGame,
         selectEntity: GameActions.selectEntity,
         startLoading: GameThunks.startLoading,

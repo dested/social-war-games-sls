@@ -22,6 +22,32 @@ export class Utils {
         );
     }
 
+    static mapObjToObj<TKey extends string, TBefore, TAfter>(
+        obj: {[key in TKey]: TBefore},
+        callback: (t: TKey, b: TBefore) => TAfter
+    ): {[key in TKey]: TAfter} {
+        const result: {[key in TKey]: TAfter} = {} as any;
+
+        for (const key in obj) {
+            result[key] = callback(key, obj[key]);
+        }
+        return result;
+    }
+
+    static mapObjToArray<TKey extends string, TBefore, TAfter>(
+        obj: {[key in TKey]: TBefore},
+        callback: (t: TKey, b: TBefore) => TAfter
+    ): TAfter[] {
+        const result: TAfter[] = [];
+        for (const key in obj) {
+            result.push(callback(key, obj[key]));
+        }
+        return result;
+    }
+    static flattenArray<T>(arrays: T[][]): T[] {
+        return Array.prototype.concat.apply([], arrays);
+    }
+
     static sum<T>(array: T[], callback: (t: T) => number): number {
         return array.reduce((a, b) => a + callback(b), 0);
     }

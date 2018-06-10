@@ -87,7 +87,8 @@ export const handler = async (event: Event<RequestBody>) => {
 
         return response('ok', {
             votesLeft: user.maxVotesPerRound - totalVotes,
-            duration: endTime - startTime
+            duration: endTime - startTime,
+            processedTime: endTime
         });
     } catch (ex) {
         console.log('er', ex);

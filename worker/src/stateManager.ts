@@ -9,7 +9,8 @@ export class StateManager {
         return {
             generation,
             hash: (Math.random() * 1000000).toString(),
-            nextUpdate: +new Date() + Config.roundUpdateDuration,
+            nextUpdateTime: +new Date() + Config.roundUpdateDuration,
+            thisUpdateTime: +new Date(),
             entities: voteCounts.reduce(
                 (entities, vote) => {
                     entities[vote._id] = vote.actions.map(a => ({
