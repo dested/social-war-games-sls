@@ -16,6 +16,7 @@ import {UIConstants} from '../utils/uiConstants';
 import {GameAssets} from './gameAssets';
 import {GameResource} from '@swg-common/game/gameResource';
 import {Utils} from '@swg-common/utils/utils';
+import {getHashes} from 'crypto';
 
 export class GameRenderer {
     private canvas: HTMLCanvasElement;
@@ -30,7 +31,7 @@ export class GameRenderer {
         const store = getStore();
         const state = store.getState();
 
-        const {game, roundState, selectedEntity} = state.gameState;
+        const {game, selectedEntity} = state.gameState;
 
         const viableHexIds: {[hexId: string]: boolean} = state.gameState.viableHexIds || {};
 
@@ -200,7 +201,7 @@ export class GameRenderer {
 
     private render(state: SwgStore, dispatch: Dispatcher) {
         const {canvas, context} = this;
-        const {game, roundState, selectedEntityAction, selectedEntity} = state.gameState;
+        const {game, localRoundState: roundState, selectedEntityAction, selectedEntity} = state.gameState;
         if (!game) return;
         const {grid} = game;
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -246,12 +247,12 @@ export class GameRenderer {
                 } else {
                     if (hexagon.factionId === '0') continue;
                     if (hasEntity) {
-                        context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '.8');
+                        context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', hasEntity === selectedEntity?'1':'.65');
                     } else {
                         context.fillStyle = HexColors.factionIdToColor(
                             hexagon.factionId,
                             '0',
-                            hexagon.factionDuration === 1 ? '.2' : '.5'
+                            hexagon.factionDuration === 1 ? '.15' : '.3'
                         );
                     }
                 }
@@ -309,6 +310,15 @@ export class GameRenderer {
                     } else if (count < 9) {
                         context.strokeStyle = '#602a13';
                     }
+                    context.stroke(hexagon.pointsSvg);
+                    context.restore();
+                    continue;
+                }
+
+                if(hasEntity.busy){
+                    context.save();
+                    context.lineWidth = 4;
+                    context.strokeStyle = '#CCCCCC';
                     context.stroke(hexagon.pointsSvg);
                     context.restore();
                     continue;

@@ -38,7 +38,7 @@ export const handler = async (event: Event<RequestBody>) => {
             await redisManager.expire(`user-${user.id}-${generation}-votes`, Config.gameDuration * 2);
         }
 
-        if (totalVotes > user.maxVotesPerRound) {
+        if (totalVotes >= user.maxVotesPerRound) {
             return response('max_votes');
         }
         await redisManager.incr(`user-${user.id}-${generation}-votes`);

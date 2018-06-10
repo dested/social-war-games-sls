@@ -1,4 +1,4 @@
-import {Dispatcher} from '../actions';
+import {AppActions, Dispatcher, UIActions} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
 import {RoundState} from '@swg-common/models/roundState';
@@ -14,8 +14,16 @@ import {loadEntities} from '../../drawing/gameAssets';
 import {GameResource} from '@swg-common/game/gameResource';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {GameRenderer} from '../../drawing/gameRenderer';
+import {Drawing, DrawingOptions} from '../../drawing/hexDrawing';
+import {SmallGameRenderer} from '../../drawing/smallGameRenderer';
+import {GameLayout} from '@swg-common/models/gameLayout';
+import {GameState} from '@swg-common/models/gameState';
 
 export enum GameActionOptions {
+    SetGameLayout = 'SetGameLayout',
+    SetGameState = 'SetGameState',
+    SetGameReady = 'SetGameReady',
+
     UpdateGame = 'UPDATE_GAME',
     UpdateUserDetails = 'UPDATE_USER_DETAILS',
     SetGameRenderer = 'SetGameRenderer',
@@ -43,6 +51,20 @@ export interface SelectEntityAction {
     entity: GameEntity;
 }
 
+export interface SetGameLayoutAction {
+    type: GameActionOptions.SetGameLayout;
+    layout: GameLayout;
+}
+
+export interface SetGameStateAction {
+    type: GameActionOptions.SetGameState;
+    gameState: GameState;
+}
+
+export interface SetGameReadyAction {
+    type: GameActionOptions.SetGameReady;
+}
+
 export interface AddLocalVoteAction {
     type: GameActionOptions.AddLocalVote;
     vote: ProcessedVote & {processedTime: number};
@@ -65,6 +87,7 @@ export interface SelectResourceAction {
 export interface SetGameRendererAction {
     type: GameActionOptions.SetGameRenderer;
     gameRenderer: GameRenderer;
+    smallGameRenderer: SmallGameRenderer;
 }
 
 export interface SetImagesLoadingAction {
@@ -86,6 +109,7 @@ export interface UpdateGameAction {
     type: GameActionOptions.UpdateGame;
     game: GameModel;
     roundState: RoundState;
+    localRoundState: RoundState;
 }
 
 export interface UpdateUserDetailsAction {
@@ -104,6 +128,9 @@ export type GameAction =
     | VotingAction
     | AddLocalVoteAction
     | RemoveLocalVoteAction
+    | SetGameLayoutAction
+    | SetGameReadyAction
+    | SetGameStateAction
     | ResetLocalVotesAction
     | SetImagesLoadingAction
     | UpdateUserDetailsAction
@@ -127,7 +154,23 @@ export class GameActions {
             vote
         };
     }
-
+    static setGameLayout(layout: GameLayout): SetGameLayoutAction {
+        return {
+            type: GameActionOptions.SetGameLayout,
+            layout
+        };
+    }
+    static setGameState(gameState: GameState): SetGameStateAction {
+        return {
+            type: GameActionOptions.SetGameState,
+            gameState
+        };
+    }
+    static setGameReady(): SetGameReadyAction {
+        return {
+            type: GameActionOptions.SetGameReady
+        };
+    }
     static removeLocalVote(vote: ProcessedVote): RemoveLocalVoteAction {
         return {
             type: GameActionOptions.RemoveLocalVote,
@@ -141,10 +184,11 @@ export class GameActions {
         };
     }
 
-    static setGameRenderer(gameRenderer: GameRenderer): SetGameRendererAction {
+    static setGameRenderer(gameRenderer: GameRenderer, smallGameRenderer: SmallGameRenderer): SetGameRendererAction {
         return {
             type: GameActionOptions.SetGameRenderer,
-            gameRenderer
+            gameRenderer,
+            smallGameRenderer
         };
     }
 
@@ -155,11 +199,12 @@ export class GameActions {
         };
     }
 
-    static updateGame(game: GameModel, roundState: RoundState): UpdateGameAction {
+    static updateGame(game: GameModel, roundState: RoundState, localRoundState: RoundState): UpdateGameAction {
         return {
             type: GameActionOptions.UpdateGame,
             game,
-            roundState
+            roundState,
+            localRoundState
         };
     }
 
@@ -205,6 +250,88 @@ export class GameActions {
 }
 
 export class GameThunks {
+    static processRoundState(game: GameModel, roundState: RoundState) {
+        return async (dispatch: Dispatcher, getState: () => SwgStore) => {
+            const {gameState} = getState();
+
+            const localRoundState: RoundState = JSON.parse(JSON.stringify(roundState));
+
+            for (const processedVote of gameState.localVotes) {
+                if (processedVote.processedTime < localRoundState.thisUpdateTime) continue;
+
+                if (!localRoundState.entities[processedVote.entityId]) {
+                    localRoundState.entities[processedVote.entityId] = [];
+                }
+                const vote = localRoundState.entities[processedVote.entityId].find(
+                    a => a.hexId === processedVote.hexId && a.action === a.action
+                );
+                if (vote) {
+                    vote.count++;
+                } else {
+                    localRoundState.entities[processedVote.entityId].push({
+                        action: processedVote.action,
+                        count: 1,
+                        hexId: processedVote.hexId
+                    });
+                }
+            }
+
+            dispatch(GameActions.updateGame(game, roundState, localRoundState));
+        };
+    }
+
+    static startGame() {
+        return async (dispatch: Dispatcher, getState: () => SwgStore) => {
+            const {gameState, appState} = getState();
+            dispatch(GameThunks.startLoading());
+
+            const layout = await DataService.getLayout();
+            dispatch(GameActions.setGameLayout(layout));
+            const localGameState = await DataService.getGameState(appState.user.factionId);
+            dispatch(GameActions.setGameState(localGameState));
+            const roundState = await DataService.getRoundState(appState.user.factionId);
+            const game = GameLogic.buildGameFromState(layout, localGameState);
+            Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
+            dispatch(GameThunks.processRoundState(game, roundState));
+
+            gameState.smallGameRenderer.forceRender();
+
+            GameThunks.getNewState(roundState.nextUpdateTime - +new Date(), dispatch, getState);
+            dispatch(GameActions.setGameReady());
+            const userDetails = await DataService.currentUserDetails();
+            dispatch(GameActions.updateUserDetails(userDetails));
+        };
+    }
+
+    private static getNewState(timeout: number, dispatch: Dispatcher, getState: () => SwgStore) {
+        setTimeout(async () => {
+            try {
+                const {gameState, uiState, appState} = getState();
+                const roundState = await DataService.getRoundState(appState.user.factionId);
+                let game = gameState.game;
+                if (roundState.generation !== gameState.game.generation) {
+                    dispatch(GameActions.selectEntity(null));
+                    dispatch(GameActions.resetLocalVotes());
+                    const localGameState = await DataService.getGameState(appState.user.factionId);
+                    const userDetails = await DataService.currentUserDetails();
+                    dispatch(GameActions.updateUserDetails(userDetails));
+
+                    game = GameLogic.buildGameFromState(gameState.layout, localGameState);
+                    Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
+                }
+
+                dispatch(GameThunks.processRoundState(game, roundState));
+
+                gameState.smallGameRenderer.forceRender();
+
+                GameThunks.getNewState(roundState.nextUpdateTime - +new Date(), dispatch, getState);
+            } catch (ex) {
+                console.error(ex);
+                this.getNewState(5000, dispatch, getState);
+            }
+        }, Math.max(timeout + 1000, 500));
+    }
+
     static startLoading() {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             loadEntities();
@@ -212,18 +339,10 @@ export class GameThunks {
         };
     }
 
-    static async newRound() {
-        return async (dispatch: Dispatcher, getState: () => SwgStore) => {
-            const {gameState, appState} = getState();
-            const {game} = gameState;
-            await dispatch(GameActions.resetLocalVotes());
-        };
-    }
-
     static sendVote(entityId: string, action: EntityAction, hexId: string) {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             const {gameState, appState} = getState();
-            const {game} = gameState;
+            const {game, roundState} = gameState;
             dispatch(GameActions.selectEntity(null));
 
             const processedVote = {
@@ -239,12 +358,13 @@ export class GameThunks {
                 dispatch(GameActions.votingError(voteResult));
                 setTimeout(() => {
                     dispatch(GameActions.votingError(null));
-                }, 2000);
+                }, 3000);
                 return;
             }
 
             dispatch(GameActions.voting(true));
             await dispatch(GameActions.addLocalVote({...processedVote, processedTime: Number.MAX_VALUE}));
+            dispatch(GameThunks.processRoundState(game, roundState));
 
             const generation = game.generation;
 
@@ -259,6 +379,7 @@ export class GameThunks {
                 if (serverVoteResult.reason !== 'ok') {
                     dispatch(GameActions.votingError(serverVoteResult.voteResult || VoteResult.Error));
                     dispatch(GameActions.removeLocalVote(processedVote));
+                    dispatch(GameThunks.processRoundState(game, roundState));
 
                     setTimeout(() => {
                         dispatch(GameActions.votingError(null));
@@ -268,24 +389,7 @@ export class GameThunks {
                     await dispatch(
                         GameActions.addLocalVote({...processedVote, processedTime: serverVoteResult.processedTime})
                     );
-
-                    const roundState = gameState.roundState;
-                    if (!roundState.entities[processedVote.entityId]) {
-                        roundState.entities[processedVote.entityId] = [];
-                    }
-                    const vote = roundState.entities[processedVote.entityId].find(
-                        a => a.hexId === processedVote.hexId && a.action === a.action
-                    );
-                    if (vote) {
-                        vote.count++;
-                    } else {
-                        roundState.entities[processedVote.entityId].push({
-                            action: processedVote.action,
-                            count: 1,
-                            hexId: processedVote.hexId
-                        });
-                    }
-                    dispatch(GameActions.updateGame(gameState.game, roundState));
+                    dispatch(GameThunks.processRoundState(game, roundState));
 
                     dispatch(
                         GameActions.updateUserDetails({
@@ -302,7 +406,7 @@ export class GameThunks {
                 dispatch(GameActions.votingError(VoteResult.Error));
                 setTimeout(() => {
                     dispatch(GameActions.votingError(null));
-                }, 2000);
+                }, 3000);
             }
         };
     }

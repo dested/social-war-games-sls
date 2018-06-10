@@ -6,6 +6,9 @@ import {GameResource} from '@swg-common/game/gameResource';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {GameRenderer} from '../../drawing/gameRenderer';
+import {SmallGameRenderer} from '../../drawing/smallGameRenderer';
+import {GameLayout} from '@swg-common/models/gameLayout';
+import {GameState} from '@swg-common/models/gameState';
 
 const initialState: GameStore = {
     localVotes: []
@@ -14,6 +17,7 @@ const initialState: GameStore = {
 export interface GameStore {
     game?: GameModel;
     roundState?: RoundState;
+    localRoundState?: RoundState;
     selectedResource?: GameResource;
     userDetails?: UserDetails;
     selectedEntity?: GameEntity;
@@ -23,7 +27,11 @@ export interface GameStore {
     isVoting?: boolean;
     votingError?: VoteResult;
     gameRenderer?: GameRenderer;
-    localVotes: ProcessedVote[];
+    smallGameRenderer?: SmallGameRenderer;
+    localVotes: (ProcessedVote & {processedTime: number})[];
+    gameState?: GameState;
+    gameReady?: boolean;
+    layout?: GameLayout;
 }
 
 export default function gameReducer(state: GameStore = initialState, action: GameAction): GameStore {
@@ -41,13 +49,15 @@ export default function gameReducer(state: GameStore = initialState, action: Gam
             return {
                 ...state,
                 game: action.game,
-                roundState: action.roundState
+                roundState: action.roundState,
+                localRoundState: action.localRoundState
             };
         }
         case GameActionOptions.SetGameRenderer: {
             return {
                 ...state,
-                gameRenderer: action.gameRenderer
+                gameRenderer: action.gameRenderer,
+                smallGameRenderer: action.smallGameRenderer
             };
         }
         case GameActionOptions.AddLocalVote: {
@@ -101,6 +111,24 @@ export default function gameReducer(state: GameStore = initialState, action: Gam
             return {
                 ...state,
                 votingError: action.votingError
+            };
+        }
+        case GameActionOptions.SetGameState: {
+            return {
+                ...state,
+                gameState: action.gameState
+            };
+        }
+        case GameActionOptions.SetGameReady: {
+            return {
+                ...state,
+                gameReady: true
+            };
+        }
+        case GameActionOptions.SetGameLayout: {
+            return {
+                ...state,
+                layout: action.layout
             };
         }
         case GameActionOptions.SetEntityAction: {

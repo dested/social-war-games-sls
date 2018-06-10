@@ -63,6 +63,10 @@
 '/      joe was moved
 '/    score
 '/ close menu on new round
+'/ fix flickering vote  
+'/  show selected entity
+'/  show busy units
+'/  fix -1 votes left
 
 '/ current user details
   '/ votes ive cast
@@ -94,18 +98,14 @@
 
 
 gameplay
-  fix flickering vote  
   units youve participated in, howd they do
   show replay of turns
-  show selected entity
   
-  show busy units
   hot units
     units that move all the time
   show user data in ladder
   how many players voted last round
   randomize factionid
-  fix -1 votes left
   handle utc time
     offset from server time?
     
@@ -123,7 +123,11 @@ endgame
 
 
 low priority
+  replace entitys.find with id lookup
+
   planes can fly over water
+  clean up contants
+    colors 
   put bounds on view
   unify tsconfig
   make better use of caching in server
