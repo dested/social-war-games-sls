@@ -23,6 +23,8 @@ export class UserController {
         user.maxVotesPerRound = 3;
         user.passwordHash = await bcrypt.hash(model.password, 10);
         user.factionId = FactionUtils.randomFaction();
+        user.createdDate = new Date();
+
         await DBUser.db.insertDocument(user);
 
         const httpUser = DBUser.map(user);

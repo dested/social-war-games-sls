@@ -3,15 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "node ./bin/server.js",
-    "start-ts": "node ./run.js",
     "start:watch": "nodemon",
     "test": "npx jest",
     "tsc": "npx tsc",
     "pretty": "npx prettier \"*/**/*.ts*\"  --config .prettierrc --write",
     "lint": "npx tslint -p tsconfig.json --fix",
     "pre": "npm run tsc & npm run pretty & npm run lint",
-    "common": "npm update swg-server-common && npm update swg-common",
     "build-worker": "cross-env NODE_ENV=production webpack --progress --hide-modules",
     "deploy": "cross-env NODE_ENV=production webpack --progress --hide-modules  --env=deploy",
     "watch-worker": "cross-env NODE_ENV=development webpack --progress --hide-modules --watch"

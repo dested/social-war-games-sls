@@ -32,8 +32,6 @@ class Component extends React.Component<Props, State> {
     private register = async (e: any) => {
         e.preventDefault();
         if (!this.state.email || !this.state.userName || !this.state.password) return;
-        
-
         try {
             const response = await DataService.register(this.state.email, this.state.userName, this.state.password);
             this.props.setJwt(response.jwt);

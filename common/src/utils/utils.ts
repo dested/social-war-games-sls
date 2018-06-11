@@ -137,4 +137,9 @@ export class Utils {
         }
         return result;
     }
+
+    static randomElement<T>(array: T[]) {
+        const number = Math.floor(Math.random() * (array.length - 1));
+        return array[number];
+    }
 }

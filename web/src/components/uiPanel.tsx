@@ -133,7 +133,7 @@ export class Component extends React.Component<Props, State> {
         const entityImage = {width: '50px'};
 
         return (
-            <div style={{display: 'flex'}}>
+            <div style={{display: 'flex', height: '100%'}}>
                 <div style={{flex: 2, display: 'flex', flexDirection: 'column'}}>
                     <div style={{display: 'flex', alignItems: 'center'}}>
                         <button onClick={() => this.updateRound(factionRoundStats.generation - 1)}>&lt;</button>
@@ -149,11 +149,12 @@ export class Component extends React.Component<Props, State> {
                     </span>
                     <span>Score: {factionRoundStats.score}</span>
                 </div>
-                <div style={{flex: 1}}>
+                <div style={{flex: 1, overflow: 'scroll'}}>
                     <span>Hot Units</span>
                     <div style={{display: 'flex', flexDirection: 'column', flexWrap: 'wrap'}}>
                         {factionRoundStats.hotEntities.map(e => {
                             const ent = this.props.game.entities.get2(e);
+                            if (!ent) return null;
                             let color: string;
                             if (e.count < 2) {
                                 color = '#284a2a';
@@ -178,7 +179,7 @@ export class Component extends React.Component<Props, State> {
                         })}
                     </div>
                 </div>
-                <div style={{flex: 2, display: 'flex', flexDirection: 'column'}}>
+                <div style={{flex: 2, overflow: 'scroll', display: 'flex', flexDirection: 'column'}}>
                     <span>Notes</span>
 
                     {factionRoundStats.notes.map(a => this.renderNote(a))}

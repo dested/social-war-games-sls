@@ -96,9 +96,14 @@
 
 '/ replace entitys.find with id lookup
 '/ show user data in ladder
+  '/ move new generation to redux
+  '/ move all of gamestatspanel to redux, round state, round faction stats
 
-
-
+fix players voted bug
+sort notes by attack
+add concept of dead entities/resources
+notes -1 attack damage destroyed it
+notes 100 resources left idk
 
 gameplay
   units youve participated in, howd they do
@@ -128,6 +133,7 @@ endgame
 
 
 low priority
+  figure out memory leak 
   prevote junk in gamelogic
   planes can fly over water
   clean up contants
@@ -156,8 +162,6 @@ low priority
     ip based?
   encrypt faction
   mobile support
-  move new generation to redux
-  move all of gamestatspanel to redux, round state, round faction stats
  
 
 

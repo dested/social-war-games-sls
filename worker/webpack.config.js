@@ -23,7 +23,7 @@ module.exports = env => {
         externals: {},
         plugins: [
             new webpack.IgnorePlugin(/hiredis/),
-            env === 'deploy' && new UglifyJsPlugin(),
+            // env === 'deploy' && new UglifyJsPlugin(),
             env === 'deploy' &&
                 new SshWebpackPlugin({
                     host: 'ec2-18-237-177-36.us-west-2.compute.amazonaws.com',

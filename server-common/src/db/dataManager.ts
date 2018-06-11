@@ -29,7 +29,6 @@ export class DocumentManager<T extends {_id:any}> {
     constructor(private collectionName: string) {}
 
     async insertDocument(document: T): Promise<T> {
-        console.log('inserting document');
         if (!DataManager.dbConnection) {
             console.log('db is closed, reopening');
             await DataManager.openDbConnection();

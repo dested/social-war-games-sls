@@ -9,12 +9,7 @@ import {S3Splitter} from './s3Splitter';
 import {StateManager} from './stateManager';
 import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {
-    EntityDetails,
-    EntityTypeNames,
-    FactionNames,
-    Factions,
-    GameEntity} from '@swg-common/game/entityDetail';
+import {EntityDetails, EntityTypeNames, FactionNames, Factions, GameEntity} from '@swg-common/game/entityDetail';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {Utils} from '@swg-common/utils/utils';
@@ -96,6 +91,10 @@ export class Worker {
                 for (let index = 0; index < actions.length; index++) {
                     const action = actions[index];
                     const entity = game.entities.get2({id: voteCount._id});
+                    if (!entity) {
+                        // TODO REPLACE WITH DEAD ENTITY
+                        continue;
+                    }
                     const vote: ProcessedVote = {
                         entityId: voteCount._id,
                         action: action.action,
@@ -121,7 +120,7 @@ export class Worker {
 
             this.postVoteTasks(game);
 
-            console.log('Executed Votes', winningVotes);
+            console.log('Executed Votes', winningVotes.length);
 
             this.writeFactionStats(game);
             await this.buildRoundStats(game, preVoteEntities, preVoteResources, winningVotes, voteCounts);

@@ -12,6 +12,7 @@ export class DBUser extends MongoDocument {
     passwordHash: string;
     maxVotesPerRound: number;
     factionId: PlayableFactionId;
+    createdDate: Date;
 
     static map(e: DBUser): HttpUser {
         return {

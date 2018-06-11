@@ -136,7 +136,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             new Axial(a.x + 1, a.y),
             new Axial(a.x, a.y + 1)
         ];
-        return (this.neighborCache[key] = directions.map(d => this.getHexAt(d)));
+        return (this.neighborCache[key] = directions.map(d => this.getHexAt(d)).filter(a=>a));
     }
 
     /**
