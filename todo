@@ -125,6 +125,7 @@ endgame
 
 
 low priority
+  prevote junk in gamelogic
   planes can fly over water
   clean up contants
     colors 

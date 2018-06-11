@@ -31,7 +31,6 @@ import {DBUserRoundStatDetails, DBUserRoundStats} from '@swg-server-common/db/mo
 
 export class Worker {
     private static redisManager: RedisManager;
-    private static update = 0;
 
     static start() {
         this.work().catch(er => {
@@ -47,19 +46,6 @@ export class Worker {
         console.log('connected to redis');
 
         await this.processNewRound();
-
-        setInterval(() => {
-            this.processNewRound();
-        }, Config.gameDuration);
-
-        this.update = 0;
-        setInterval(() => {
-            this.processRoundUpdate();
-        }, Config.roundUpdateDuration);
-
-        setInterval(() => {
-            this.cleanupVotes();
-        }, Config.gameDuration * 2);
 
         const stdin = process.openStdin();
 
@@ -113,7 +99,7 @@ export class Worker {
                 const actions = _.orderBy(voteCount.actions, a => a.count, 'desc');
                 for (let index = 0; index < actions.length; index++) {
                     const action = actions[index];
-                    const entity = game.entities.get2({id:voteCount._id});
+                    const entity = game.entities.get2({id: voteCount._id});
                     const vote: ProcessedVote = {
                         entityId: voteCount._id,
                         action: action.action,
@@ -154,7 +140,18 @@ export class Worker {
             await this.redisManager.set('game-state', gameState);
             await this.redisManager.incr('game-generation');
             await this.redisManager.set('stop', false);
+            setTimeout(() => {
+                this.processNewRound();
+            }, Config.gameDuration);
+
+            for (let roundUpdateTick = Config.roundUpdateDuration; roundUpdateTick < Config.gameDuration; roundUpdateTick += Config.roundUpdateDuration) {
+                setTimeout(() => {
+                    this.processRoundUpdate();
+                }, roundUpdateTick);
+            }
+
             console.timeEnd('round end');
+            this.cleanupVotes();
         } catch (ex) {
             console.error(ex);
         }
@@ -213,11 +210,7 @@ export class Worker {
     }
 
     private static async processRoundUpdate() {
-        this.update++;
-        if (this.update % (Config.gameDuration / Config.roundUpdateDuration) === 0) {
-            return;
-        }
-        try {
+           try {
             console.time('round update');
             console.log('update round state');
             const generation = await this.redisManager.get<number>('game-generation', 1);

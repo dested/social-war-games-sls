@@ -331,7 +331,7 @@ export class Component extends React.Component<Props, State> {
             }
             clean = clean.replace(
                 match[0],
-                `<button style="display:inline-block;" onClick="${linkTap}">${match[2]}</button>`
+                `<button style="display:inline-block; " onClick="${linkTap}">${match[2]}</button>`
             );
             match = noteParser.exec(note);
         }
