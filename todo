@@ -94,6 +94,8 @@
   '/ units destroyed
   '/ units created
 
+'/ replace entitys.find with id lookup
+
 
 
 
@@ -123,8 +125,6 @@ endgame
 
 
 low priority
-  replace entitys.find with id lookup
-
   planes can fly over water
   clean up contants
     colors 

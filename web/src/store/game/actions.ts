@@ -4,7 +4,7 @@ import {DataService} from '../../dataServices';
 import {RoundState} from '@swg-common/models/roundState';
 import {HexImages} from '../../utils/hexImages';
 import {Point, PointHashKey} from '@swg-common/hex/hex';
-import {HashArray} from '@swg-common/utils/hashArray';
+import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {HexagonTypes} from '@swg-common/game/hexagonTypes';
 import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
@@ -417,12 +417,12 @@ export class GameThunks {
             let radius = 0;
             const entityDetails = EntityDetails[entity.entityType];
             const entityHex = game.grid.hexes.get(entity);
-            let entityHash: HashArray<GameEntity, Point>;
+            let entityHash: DoubleHashArray<GameEntity, Point, {id: string}>;
 
             switch (action) {
                 case 'attack':
                     radius = entityDetails.attackRadius;
-                    entityHash = new HashArray<GameEntity, Point>(PointHashKey);
+                    entityHash = new DoubleHashArray<GameEntity, Point, {id: string}>(PointHashKey, e => e.id);
                     break;
                 case 'move':
                     radius = entityDetails.moveRadius;
@@ -449,15 +449,15 @@ export class GameThunks {
                     );*/
                     break;
                 case 'move':
-                    viableHexes = viableHexes.filter(a => !game.entities.find(e => e.x === a.x && e.y === a.y));
+                    viableHexes = viableHexes.filter(a => !game.entities.get1(a));
                     break;
                 case 'mine':
-                    viableHexes = viableHexes.filter(a => !game.entities.find(e => e.x === a.x && e.y === a.y));
+                    viableHexes = viableHexes.filter(a => !game.entities.get1(a));
                     break;
                 case 'spawn-infantry':
                 case 'spawn-tank':
                 case 'spawn-plane':
-                    viableHexes = viableHexes.filter(a => !game.entities.find(e => e.x === a.x && e.y === a.y));
+                    viableHexes = viableHexes.filter(a => !game.entities.get1(a));
                     break;
             }
 

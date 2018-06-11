@@ -46,6 +46,7 @@ export interface GameEntity {
     health: number;
     healthRegenStep: number;
 }
+
 export let EntityDetails: {[key in EntityType]: EntityDetail} = {
     ['factory']: {
         type: 'factory',

@@ -1,6 +1,6 @@
 // https://github.com/bodinaren/BHex.js
 
-import {HashArray} from '../utils/hashArray';
+import {DoubleHashArray, HashArray} from '../utils/hashArray';
 import {GameEntity} from '../game/entityDetail';
 
 /**
@@ -160,7 +160,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             return yDirection + xDirection.toLowerCase();
         }
 
-        return (yDirection + '' + xDirection);
+        return yDirection + '' + xDirection;
     }
 
     getThickLine(start: Axial, end: Axial, wd: number): T[] {
@@ -262,7 +262,7 @@ export class Grid<T extends Hexagon = Hexagon> {
         return line1.length > line2.length ? line1 : line2;
     }
 
-    getRange(start: T, movement: number, blockEntities: HashArray<GameEntity, Point>): T[] {
+    getRange(start: T, movement: number, blockEntities: DoubleHashArray<GameEntity, Point, {id: string}>): T[] {
         const grid = this;
         const openHeap = new BinaryHeap((node: Grid_Search_Node<T>) => node.F);
         const closedHexes: {[key: string]: T} = {};
@@ -285,7 +285,7 @@ export class Grid<T extends Hexagon = Hexagon> {
                 if (!n || n.blocked || closedHexes[n.getKey()]) continue;
 
                 // Get the total cost of going to this neighbor.
-                const g = current.G + n.cost + (blockEntities.exists(n) && 1000);
+                const g = current.G + n.cost + (blockEntities.exists1(n) && 1000);
 
                 const visited = visitedNodes[n.getKey()];
 
@@ -313,13 +313,7 @@ export class Grid<T extends Hexagon = Hexagon> {
         return arr;
     }
 
-    /**
-     * Get the shortest path from two axial positions, taking inertia (Hexagon.cost) into account.
-     * @param {Axial} start - The starting axial position.
-     * @param {Axial} end - The ending axial position.
-     * @returns {Hexagon[]} The path from the first hex to the last hex (excluding the starting position).
-     */
-    findPath(start: T, end: T, blockEntities: HashArray<GameEntity, Point>): T[] {
+    findPath(start: T, end: T, blockEntities: DoubleHashArray<GameEntity, Point, {id: string}>): T[] {
         const grid = this;
         const openHeap = new BinaryHeap<T>(node => node.F);
         const closedHexes: {[key: string]: Grid_Search_Node<T>} = {};
@@ -351,7 +345,7 @@ export class Grid<T extends Hexagon = Hexagon> {
                 if (n.blocked || closedHexes[n.getKey()]) continue;
 
                 // Get the total cost of going to this neighbor.
-                const g = current.G + n.cost + +(blockEntities.exists(n) && 1000);
+                const g = current.G + n.cost + +(blockEntities.exists1(n) && 1000);
 
                 const visited = visitedNodes[n.getKey()];
 

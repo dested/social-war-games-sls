@@ -40,7 +40,7 @@ export class GameRenderer {
         if (viableHexIds && viableHexIds[hexagon.id]) {
             this.selectedViableHex(hexagon);
         } else {
-            const tappedEntity = game.entities.get(hexagon);
+            const tappedEntity = game.entities.get1(hexagon);
             if (tappedEntity) {
                 this.selectEntity(tappedEntity);
                 moveTo = true;
@@ -236,7 +236,7 @@ export class GameRenderer {
         context.strokeStyle = HexColors.defaultBorder;
         for (const hexagon of hexes) {
             const isViableHex = viableHexIds[hexagon.id];
-            const hasEntity = game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
+            const hasEntity = game.entities.get1(hexagon);
             context.lineWidth = isViableHex ? 4 : 2;
 
             if (hexagon.factionId === '9') {
@@ -272,7 +272,7 @@ export class GameRenderer {
 
         for (const hexagon of hexes) {
             const isViableHex = viableHexIds[hexagon.id];
-            const hasEntity = game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
+            const hasEntity = game.entities.get1(hexagon);
 
             if (selectedVoteEntity && selectedVoteEntity.length > 0) {
                 if (isViableHex) {

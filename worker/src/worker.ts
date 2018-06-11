@@ -113,7 +113,7 @@ export class Worker {
                 const actions = _.orderBy(voteCount.actions, a => a.count, 'desc');
                 for (let index = 0; index < actions.length; index++) {
                     const action = actions[index];
-                    const entity = game.entities.find(a => a.id === voteCount._id);
+                    const entity = game.entities.get2({id:voteCount._id});
                     const vote: ProcessedVote = {
                         entityId: voteCount._id,
                         action: action.action,
@@ -334,7 +334,7 @@ export class Worker {
                 switch (winningUserVote.action) {
                     case 'attack': {
                         const toEntity = preVoteEntities.find(a => a.x === toHex.x && a.y === toHex.y);
-                        const toEntityResult = game.entities.find(a => a.id === toEntity.id);
+                        const toEntityResult = game.entities.get2(toEntity);
                         damageDone += toEntityResult ? toEntity.health - toEntityResult.health : toEntity.health;
                         unitsDestroyed += toEntityResult ? 0 : 1;
                         break;
@@ -396,7 +396,7 @@ export class Worker {
         switch (vote.action) {
             case 'attack': {
                 const toEntity = preVoteEntities.find(a => a.x === toHex.x && a.y === toHex.y);
-                const toEntityResult = game.entities.find(a => a.id === toEntity.id);
+                const toEntityResult = game.entities.get2(toEntity);
                 const damage = toEntityResult ? toEntity.health - toEntityResult.health : toEntity.health;
                 const result = `for ${damage} damage` + (!toEntityResult ? ' and destroyed it.' : '');
                 return [

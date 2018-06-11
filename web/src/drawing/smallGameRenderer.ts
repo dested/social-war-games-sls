@@ -134,7 +134,7 @@ export class SmallGameRenderer {
             );
         }
         for (const hexagon of hexes) {
-            const hasEntity = game.entities.find(a => a.x === hexagon.x && a.y === hexagon.y);
+            const hasEntity = game.entities.get1(hexagon);
 
             if (hexagon.factionId === '9') {
                 context.fillStyle = 'rgba(0,0,0,.6)';

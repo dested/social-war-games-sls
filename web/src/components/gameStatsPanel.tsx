@@ -146,7 +146,7 @@ export class Component extends React.Component<Props, State> {
                         <button onClick={this.hideHotUnits}>Back</button>
                         <div style={{display: 'flex', flexDirection: 'column', flexWrap: 'wrap'}}>
                             {factionRoundStats.hotEntities.map(e => {
-                                const ent = this.props.game.entities.find(a => a.id === e.id);
+                                const ent = this.props.game.entities.get2(e);
                                 let color: string;
                                 if (e.count < 2) {
                                     color = '#284a2a';
@@ -299,7 +299,7 @@ export class Component extends React.Component<Props, State> {
     }
 
     public goToEntity(entityId: string) {
-        const entity = this.props.game.entities.find(a => a.id === entityId);
+        const entity = this.props.game.entities.get2({id: entityId});
         if (entity) this.props.gameRenderer.moveToEntity(entity);
     }
 

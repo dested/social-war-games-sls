@@ -2,7 +2,7 @@ import {GameState, GameStateEntityMap, GameStateResource} from '@swg-common/mode
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {Grid, Point, PointHashKey} from '@swg-common/hex/hex';
-import {HashArray} from '@swg-common/utils/hashArray';
+import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {EntityDetails, Factions, GameEntity, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
@@ -17,7 +17,7 @@ export class S3Splitter {
         outputGameState: boolean
     ) {
         // console.time('faction split');
-        const emptyEntityList = new HashArray<GameEntity, Point>(PointHashKey);
+        const emptyEntityList = new DoubleHashArray<GameEntity, Point, {id: string}>(PointHashKey, e => e.id);
 
         for (const faction of Factions) {
             const visibleHexes = new HashArray<Point>(PointHashKey);
