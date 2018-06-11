@@ -24,7 +24,7 @@ export class DataManager {
     }
 }
 
-export class DocumentManager<T extends MongoDocument> {
+export class DocumentManager<T extends {_id:any}> {
     query = new QueryBuilder<T>();
 
     constructor(private collectionName: string) {}

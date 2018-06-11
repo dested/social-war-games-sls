@@ -7,11 +7,12 @@ import {CheckController} from './controllers/checkController';
 import {UserController} from './controllers/userController';
 import {CorsMiddleware} from '@nest-middlewares/cors';
 import {UserHistoryController} from './controllers/userHistoryController';
+import {LadderController} from './controllers/ladderController';
 
 @Module({
     modules: [],
     components: [AuthService, JwtStrategy],
-    controllers: [UserController, UserHistoryController, CheckController]
+    controllers: [UserController, UserHistoryController, LadderController, CheckController]
 })
 export class ApplicationModule implements NestModule {
     configure(consumer: MiddlewaresConsumer): void {

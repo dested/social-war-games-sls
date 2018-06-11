@@ -3,6 +3,7 @@ import {DBUserRoundStatDetails} from '../../../../server-common/src/db/models/db
 
 export interface RegisterRequest {
     email: string;
+    userName: string;
     password: string;
 }
 
@@ -21,4 +22,8 @@ export interface GetUserResponse {
 
 export interface StatsResponse {
     roundsParticipated: DBUserRoundStatDetails[];
+}
+
+export interface LadderResponse {
+    ladder: {rank: number; score: number; _id: string; userName: string}[];
 }

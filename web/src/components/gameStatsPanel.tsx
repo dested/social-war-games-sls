@@ -19,6 +19,7 @@ import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {GameAssets} from '../drawing/gameAssets';
 import {GameRenderer} from '../drawing/gameRenderer';
 import {VoteNote} from '@swg-common/models/voteNote';
+import {LadderResponse} from '@swg-common/models/http/userController';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -45,6 +46,8 @@ interface Props extends RouteComponentProps<{}> {
 interface State {
     viewHotUnits: boolean;
     viewRoundNotes: boolean;
+    viewLadder: boolean;
+    ladderResponse: LadderResponse;
 }
 
 export class Component extends React.Component<Props, State> {
@@ -53,7 +56,9 @@ export class Component extends React.Component<Props, State> {
         (window as any).gameStatsPanel = this;
         this.state = {
             viewHotUnits: false,
-            viewRoundNotes: false
+            viewRoundNotes: false,
+            viewLadder: false,
+            ladderResponse: null
         };
     }
 
@@ -85,6 +90,22 @@ export class Component extends React.Component<Props, State> {
                   alignItems: 'center',
                   flexDirection: 'column' as 'column'
               };
+        if (this.state.viewLadder) {
+            return (
+                <div style={sidePanelBox}>
+                    <button onClick={() => this.showLadder(false)}>Back</button>
+                    <div style={{display: 'flex', flexDirection: 'column'}}>
+                        {this.state.ladderResponse
+                            ? this.state.ladderResponse.ladder.map(l => (
+                                <span key={l._id}>
+                                          {l.rank+1}: {l.userName || l._id} - {l.score}
+                                      </span>
+                            ))
+                            : 'loading'}
+                    </div>
+                </div>
+            );
+        }
 
         if (this.props.showFactionDetails) {
             return (
@@ -217,6 +238,15 @@ export class Component extends React.Component<Props, State> {
                     >
                         Round {this.props.game.generation}
                     </button>
+                    <button
+                        style={{
+                            padding: 10,
+                            margin: 3
+                        }}
+                        onClick={() => this.showLadder(true)}
+                    >
+                        Ladder
+                    </button>
                     <span
                         style={{
                             padding: 10,
@@ -250,6 +280,13 @@ export class Component extends React.Component<Props, State> {
             );
         }
     }
+
+    private showLadder = async (show: boolean) => {
+        this.setState({viewLadder: show});
+        if (show) {
+            this.setState({ladderResponse: await DataService.getLadder()});
+        }
+    };
 
     private showRound = async (show: boolean) => {
         this.props.setFactionRoundStats(null);

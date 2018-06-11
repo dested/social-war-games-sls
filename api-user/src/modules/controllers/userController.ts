@@ -14,13 +14,16 @@ export class UserController {
 
     @Post('/register')
     async register(@Body() model: RegisterRequest): Promise<JwtGetUserResponse> {
-        const foundUsers = await DBUser.db.count(DBUser.db.query.parse((a, email) => a.email === email, model.email));
+        const foundUsers = await DBUser.db.count(
+            DBUser.db.query.parse((a, m) => a.email === m.email || a.userName === m.userName, model)
+        );
         if (foundUsers > 0) {
-            throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
+            throw new HttpException('Account already exists', HttpStatus.BAD_REQUEST);
         }
         const user = new DBUser();
         user.email = model.email;
-        user.maxVotesPerRound = 5;
+        user.userName = model.userName;
+        user.maxVotesPerRound = 3;
         user.passwordHash = await bcrypt.hash(model.password, 10);
         user.factionId = FactionUtils.randomFaction();
         await DBUser.db.insertDocument(user);

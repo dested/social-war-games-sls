@@ -8,6 +8,7 @@ export class DBUser extends MongoDocument {
     static db = new DocumentManager<DBUser>(DBUser.collectionName);
 
     email: string;
+    userName: string;
     passwordHash: string;
     maxVotesPerRound: number;
     factionId: PlayableFactionId;
@@ -16,6 +17,7 @@ export class DBUser extends MongoDocument {
         return {
             id: e._id.toHexString(),
             email: e.email,
+            userName: e.userName,
             factionId: e.factionId,
             maxVotesPerRound: e.maxVotesPerRound
         };

@@ -8,6 +8,7 @@ import {StateManager} from './stateManager';
 import {GameLogic} from '@swg-common/game/gameLogic';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
+import {DBLadder} from '@swg-server-common/db/models/dbLadder';
 
 export class Setup {
     static start() {
@@ -30,6 +31,7 @@ export class Setup {
         await DBVote.db.deleteMany({});
         await DBUserRoundStats.db.deleteMany({});
         await DBRoundStats.db.deleteMany({});
+        await DBLadder.db.deleteMany({});
 
         let game = GameLogic.createGame();
         console.log('create game');

@@ -1,4 +1,4 @@
-import {JwtGetUserResponse} from '@swg-common/models/http/userController';
+import {JwtGetUserResponse, LadderResponse} from '@swg-common/models/http/userController';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {RoundState} from '@swg-common/models/roundState';
@@ -123,6 +123,20 @@ export class DataService {
             }
         });
         return (await response.json()) as RoundState;
+    }
+
+    static async getLadder() {
+        const state = getStore().getState();
+
+        let response = await fetch(this.userServer + '/ladder', {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                ...(state.appState.jwt ? {Authorization: 'Bearer ' + state.appState.jwt} : {})
+            }
+        });
+        return (await response.json()) as LadderResponse;
     }
 
     static async getFactionStats() {

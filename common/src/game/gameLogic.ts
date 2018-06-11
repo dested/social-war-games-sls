@@ -19,6 +19,8 @@ import {VoteResult} from './voteResult';
 import {Utils} from '../utils/utils';
 import {GameResource, ResourceDetails, ResourceType} from './gameResource';
 import {FactionDetail} from './factionDetail';
+import {RoundUserStats} from '../../../server-common/src/db/models/dbVote';
+import {DBUserRoundStats} from '../../../server-common/src/db/models/dbUserRoundStats';
 
 export type ProcessedVote = {
     entityId: string;
@@ -55,6 +57,27 @@ export class GameLogic {
         score += 1 * entities.filter(a => a.entityType === 'infantry').length;
 
         return score;
+    }
+
+    static calculateUserScore(userStats: DBUserRoundStats, currentGeneration: number): number {
+        let score = 0;
+        const generationsPerDay = 24 * 60 * 60 / Config.gameDuration;
+        const valuableGenerations = generationsPerDay * 2.5;
+        for (const r of userStats.roundsParticipated) {
+            let roundScore = 0;
+            roundScore += r.votesCast * 0.1;
+            roundScore += r.votesWon * 0.5;
+            roundScore += r.damageDone * 3;
+            roundScore += r.unitsDestroyed * 6;
+            roundScore += r.unitsCreated * 4;
+            roundScore += r.resourcesMined * 3.5;
+            roundScore += r.distanceMoved * 1.2;
+
+            const genDiff = currentGeneration - r.generation;
+            const worth = (valuableGenerations - genDiff) / valuableGenerations;
+            score += roundScore / worth;
+        }
+        return Math.round(score);
     }
 
     static id = 0;
@@ -329,7 +352,7 @@ export class GameLogic {
     }
 
     static validateVote(game: GameModel, vote: ProcessedVote): VoteResult {
-        const fromEntity = game.entities.get2({id:vote.entityId});
+        const fromEntity = game.entities.get2({id: vote.entityId});
         if (!fromEntity) return VoteResult.EntityNotFound;
         if (fromEntity.busy) return VoteResult.EntityIsBusy;
         if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
@@ -429,7 +452,7 @@ export class GameLogic {
     }
 
     static processVote(game: GameModel, vote: ProcessedVote, fromBusy: boolean): VoteResult {
-        const fromEntity = game.entities.get2({id:vote.entityId});
+        const fromEntity = game.entities.get2({id: vote.entityId});
         if (!fromEntity) return VoteResult.EntityNotFound;
 
         if (!fromBusy && fromEntity.busy) return VoteResult.EntityIsBusy;

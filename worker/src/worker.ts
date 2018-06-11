@@ -43,6 +43,7 @@ export class Worker {
         console.log('booting');
         this.redisManager = await RedisManager.setup();
         await DataManager.openDbConnection();
+
         console.log('connected to redis');
 
         await this.processNewRound();
@@ -144,7 +145,11 @@ export class Worker {
                 this.processNewRound();
             }, Config.gameDuration);
 
-            for (let roundUpdateTick = Config.roundUpdateDuration; roundUpdateTick < Config.gameDuration; roundUpdateTick += Config.roundUpdateDuration) {
+            for (
+                let roundUpdateTick = Config.roundUpdateDuration;
+                roundUpdateTick < Config.gameDuration;
+                roundUpdateTick += Config.roundUpdateDuration
+            ) {
                 setTimeout(() => {
                     this.processRoundUpdate();
                 }, roundUpdateTick);
@@ -152,6 +157,7 @@ export class Worker {
 
             console.timeEnd('round end');
             this.cleanupVotes();
+            DBUserRoundStats.buildLadder(generation);
         } catch (ex) {
             console.error(ex);
         }
@@ -210,7 +216,7 @@ export class Worker {
     }
 
     private static async processRoundUpdate() {
-           try {
+        try {
             console.time('round update');
             console.log('update round state');
             const generation = await this.redisManager.get<number>('game-generation', 1);
@@ -374,7 +380,7 @@ export class Worker {
             });
         }
 
-        await this.splitRoundStats(roundStats, game.generation);
+        this.splitRoundStats(roundStats, game.generation);
     }
 
     private static buildNote(

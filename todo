@@ -95,6 +95,7 @@
   '/ units created
 
 '/ replace entitys.find with id lookup
+'/ show user data in ladder
 
 
 
@@ -105,7 +106,6 @@ gameplay
   
   hot units
     units that move all the time
-  show user data in ladder
   how many players voted last round
   randomize factionid
   handle utc time
@@ -114,7 +114,10 @@ gameplay
 endgame
   stress test
   balance units
-  build bots  
+  build bots    
+    bot flag in user
+    needs good name for ladder
+  add indexes to mongo
   what happens when all factories for a faction is destroyed
   encrypt faction
   mobile support
