@@ -1,49 +1,57 @@
 import {SwgStore} from '../reducers';
+import {Dispatcher} from '../actions';
+import {LadderResponse} from '@swg-common/models/http/userController';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {FactionRoundStats} from '@swg-common/models/roundStats';
+import {DataService} from '../../dataServices';
 
+export type UI = 'None' | 'FactionStats' | 'RoundStats' | 'Ladder';
 export enum UIActionOptions {
-    ShowFactionRoundStats = 'ShowFactionRoundStats',
-    ShowFactionDetails = 'ShowFactionDetails',
+    SetUI = 'SetUI',
+    SetLadder = 'SetLadder',
     SetFactionStats = 'SetFactionStats',
     SetFactionRoundStats = 'SetFactionRoundStats'
 }
 
-export interface ShowFactionRoundStatsAction {
-    type: UIActionOptions.ShowFactionRoundStats;
-    showFactionRoundStats: boolean;
+export interface SetUIAction {
+    type: UIActionOptions.SetUI;
+    ui: UI;
 }
-export interface ShowFactionDetailsAction {
-    type: UIActionOptions.ShowFactionDetails;
-    showFactionDetails: boolean;
+export interface SetLadderAction {
+    type: UIActionOptions.SetLadder;
+    ladder: LadderResponse;
 }
 
 export interface SetFactionStatsAction {
     type: UIActionOptions.SetFactionStats;
     factionStats: FactionStats;
 }
+
 export interface SetFactionRoundStatsAction {
     type: UIActionOptions.SetFactionRoundStats;
     factionRoundStats: FactionRoundStats;
 }
 
-export type UIAction =
-    | ShowFactionRoundStatsAction
-    | ShowFactionDetailsAction
-    | SetFactionStatsAction
-    | SetFactionRoundStatsAction;
+export type UIAction = SetUIAction | SetLadderAction | SetFactionStatsAction | SetFactionRoundStatsAction;
 
 export class UIActions {
-    static showFactionRoundStats(showFactionRoundStats: boolean): ShowFactionRoundStatsAction {
+    static setUI(ui: UI): SetUIAction {
         return {
-            type: UIActionOptions.ShowFactionRoundStats,
-            showFactionRoundStats
+            type: UIActionOptions.SetUI,
+            ui
         };
     }
-    static showFactionDetails(showFactionDetails: boolean): ShowFactionDetailsAction {
+
+    static setLadder(ladder: LadderResponse): SetLadderAction {
         return {
-            type: UIActionOptions.ShowFactionDetails,
-            showFactionDetails
+            type: UIActionOptions.SetLadder,
+            ladder
+        };
+    }
+    static setFactionStats(factionStats: FactionStats): SetFactionStatsAction {
+        return {
+            type: UIActionOptions.SetFactionStats,
+            factionStats
         };
     }
     static setFactionRoundStats(factionRoundStats: FactionRoundStats): SetFactionRoundStatsAction {
@@ -52,11 +60,55 @@ export class UIActions {
             factionRoundStats
         };
     }
+}
 
-    static setFactionStats(factionStats: FactionStats): SetFactionStatsAction {
-        return {
-            type: UIActionOptions.SetFactionStats,
-            factionStats
+export class UIThunks {
+    static setUI(ui: UI) {
+        return async (dispatch: Dispatcher, getState: () => SwgStore) => {
+            const {factionId} = getState().appState.user;
+            const {generation} = getState().gameState.game;
+
+            switch (ui) {
+                case 'FactionStats':
+                    dispatch(UIActions.setFactionStats(null));
+                    break;
+                case 'Ladder':
+                    dispatch(UIActions.setLadder(null));
+                    break;
+                case 'RoundStats':
+                    dispatch(UIActions.setFactionRoundStats(null));
+                    break;
+            }
+            dispatch(UIActions.setUI(ui));
+
+            switch (ui) {
+                case 'FactionStats':
+                    dispatch(UIActions.setFactionStats(await DataService.getFactionStats()));
+                    break;
+                case 'Ladder':
+                    dispatch(UIActions.setLadder(await DataService.getLadder()));
+                    break;
+                case 'RoundStats':
+                    dispatch(
+                        UIActions.setFactionRoundStats(
+                            await DataService.getFactionRoundStats(generation - 1, factionId)
+                        )
+                    );
+                    break;
+            }
+        };
+    }
+
+    static getFactionRoundStats(generation: number) {
+        return async (dispatch: Dispatcher, getState: () => SwgStore) => {
+            const {factionId} = getState().appState.user;
+
+            dispatch(UIActions.setFactionRoundStats(null));
+            try{
+                dispatch(UIActions.setFactionRoundStats(await DataService.getFactionRoundStats(generation, factionId)));
+            }catch(ex){
+                dispatch(UIActions.setFactionRoundStats(null));
+            }
         };
     }
 }

@@ -37,11 +37,12 @@ export class DataService {
         return json;
     }
 
-    static async register(email: string, password: string): Promise<JwtGetUserResponse> {
+    static async register(email: string, userName: string, password: string): Promise<JwtGetUserResponse> {
         let response = await fetch(this.userServer + '/user/register', {
             method: 'POST',
             body: JSON.stringify({
                 email,
+                userName,
                 password
             }),
             headers: {

@@ -1,37 +1,37 @@
-import {UIAction, UIActionOptions} from './actions';
+import {UI, UIAction, UIActionOptions} from './actions';
 import {FactionStats} from '@swg-common/models/factionStats';
+import {LadderResponse} from '@swg-common/models/http/userController';
 import {FactionRoundStats} from '@swg-common/models/roundStats';
 
 const initialState: UIStore = {
-    showFactionRoundStats: false,
-    showFactionDetails: false
+    ui: 'None'
 };
 
 export interface UIStore {
-    showFactionRoundStats: boolean;
-    showFactionDetails: boolean;
+    ui: UI;
     factionStats?: FactionStats;
+    ladder?: LadderResponse;
     factionRoundStats?: FactionRoundStats;
 }
 
-export default function gameReducer(state: UIStore = initialState, action: UIAction): UIStore {
+export default function uiReducer(state: UIStore = initialState, action: UIAction): UIStore {
     switch (action.type) {
-        case UIActionOptions.ShowFactionRoundStats: {
+        case UIActionOptions.SetUI: {
             return {
                 ...state,
-                showFactionRoundStats: action.showFactionRoundStats
-            };
-        }
-        case UIActionOptions.ShowFactionDetails: {
-            return {
-                ...state,
-                showFactionDetails: action.showFactionDetails
+                ui: action.ui
             };
         }
         case UIActionOptions.SetFactionStats: {
             return {
                 ...state,
                 factionStats: action.factionStats
+            };
+        }
+        case UIActionOptions.SetLadder: {
+            return {
+                ...state,
+                ladder: action.ladder
             };
         }
         case UIActionOptions.SetFactionRoundStats: {

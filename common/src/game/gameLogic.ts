@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import {Grid, Point, PointHashKey} from '../hex/hex';
 import {GameHexagon} from './gameHexagon';
 import {GameLayout} from '../models/gameLayout';
@@ -19,7 +18,6 @@ import {VoteResult} from './voteResult';
 import {Utils} from '../utils/utils';
 import {GameResource, ResourceDetails, ResourceType} from './gameResource';
 import {FactionDetail} from './factionDetail';
-import {RoundUserStats} from '../../../server-common/src/db/models/dbVote';
 import {DBUserRoundStats} from '../../../server-common/src/db/models/dbUserRoundStats';
 
 export type ProcessedVote = {

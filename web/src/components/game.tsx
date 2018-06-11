@@ -6,21 +6,15 @@ import {HttpUser} from '@swg-common/models/http/httpUser';
 import {SwgStore} from '../store/reducers';
 import {RouteComponentProps} from 'react-router';
 import {GameActions, GameThunks} from '../store/game/actions';
-import {DataService} from '../dataServices';
-import {RoundState} from '@swg-common/models/roundState';
 import {GameSidePanel} from './gameSidePanel';
 import {GameRenderer} from '../drawing/gameRenderer';
-import {GameLayout} from '@swg-common/models/gameLayout';
-import {GameState} from '@swg-common/models/gameState';
-import {Drawing, DrawingOptions} from '../drawing/hexDrawing';
-import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {GameEntity} from '@swg-common/game/entityDetail';
 import {SmallGameRenderer} from '../drawing/smallGameRenderer';
 import {UIConstants} from '../utils/uiConstants';
 import {GameResource} from '@swg-common/game/gameResource';
 import {HexConstants} from '../utils/hexConstants';
 import {GameStatsPanel} from './gameStatsPanel';
-import {UIActions} from '../store/ui/actions';
+import {UIPanel} from './uiPanel';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -106,7 +100,9 @@ export class Component extends React.Component<Props, State> {
                     />
                 )}
 
-                {this.props.selectedEntity || this.props.selectedResource ? <GameSidePanel /> : <GameStatsPanel />}
+                <UIPanel />
+                {(this.props.selectedEntity || this.props.selectedResource) && <GameSidePanel />}
+                <GameStatsPanel />
             </Fragment>
         );
     }

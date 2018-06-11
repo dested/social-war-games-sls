@@ -1,5 +1,3 @@
-import {Utils} from '../utils/utils';
-
 export interface EntityDetail {
     type: EntityType;
     solid: boolean;

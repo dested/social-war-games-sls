@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import * as R from 'ramda';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {GameState} from '@swg-common/models/gameState';
 import {Config} from '@swg-server-common/config';
@@ -11,15 +10,11 @@ import {StateManager} from './stateManager';
 import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {
-    EntityAction,
     EntityDetails,
     EntityTypeNames,
     FactionNames,
     Factions,
-    GameEntity,
-    OfFaction,
-    PlayableFactionId
-} from '@swg-common/game/entityDetail';
+    GameEntity} from '@swg-common/game/entityDetail';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {Utils} from '@swg-common/utils/utils';
@@ -27,7 +22,7 @@ import {VoteNote} from '@swg-common/models/voteNote';
 import {GameResource} from '@swg-common/game/gameResource';
 import {FactionRoundStats, RoundStats} from '@swg-common/models/roundStats';
 import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
-import {DBUserRoundStatDetails, DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
+import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 
 export class Worker {
     private static redisManager: RedisManager;

@@ -1,6 +1,6 @@
 import {DocumentManager} from '../dataManager';
 import {MongoDocument} from './mongoDocument';
-import {EntityAction, OfFaction, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {OfFaction} from '@swg-common/game/entityDetail';
 import {VoteNote} from '@swg-common/models/voteNote';
 import {ProcessedVote} from '@swg-common/game/gameLogic';
 import {RoundStats} from '@swg-common/models/roundStats';

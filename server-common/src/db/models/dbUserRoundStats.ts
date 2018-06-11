@@ -1,6 +1,5 @@
 import {DocumentManager} from '../dataManager';
 import {MongoDocument} from './mongoDocument';
-import {VoteCountResult} from './dbVote';
 import {Config} from '../../config';
 import {DBUser} from './dbUser';
 

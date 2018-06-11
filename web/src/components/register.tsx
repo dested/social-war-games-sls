@@ -15,6 +15,7 @@ interface Props extends RouteComponentProps<{}> {
 
 interface State {
     email: string;
+    userName: string;
     password: string;
 }
 
@@ -23,14 +24,18 @@ class Component extends React.Component<Props, State> {
         super(props, context);
         this.state = {
             email: '',
+            userName: '',
             password: ''
         };
     }
 
-    private register = async (e:any) => {
+    private register = async (e: any) => {
         e.preventDefault();
+        if (!this.state.email || !this.state.userName || !this.state.password) return;
+        
+
         try {
-            const response = await DataService.register(this.state.email, this.state.password);
+            const response = await DataService.register(this.state.email, this.state.userName, this.state.password);
             this.props.setJwt(response.jwt);
             this.props.setUser(response.user);
             this.props.history.push('/');
@@ -39,8 +44,9 @@ class Component extends React.Component<Props, State> {
         }
     };
 
-    private updateEmail = async (e:any) => this.setState({email: e.target.value});
-    private updatePassword = async (e:any) => this.setState({password: e.target.value});
+    private updateEmail = async (e: any) => this.setState({email: e.target.value});
+    private updateUserName = async (e: any) => this.setState({userName: e.target.value});
+    private updatePassword = async (e: any) => this.setState({password: e.target.value});
 
     render() {
         return (
@@ -67,6 +73,8 @@ class Component extends React.Component<Props, State> {
                 >
                     <span>Email</span>
                     <input onChange={this.updateEmail} value={this.state.email} type="email" />
+                    <span>Username</span>
+                    <input onChange={this.updateUserName} value={this.state.userName} />
                     <span>Password</span>
                     <input onChange={this.updatePassword} value={this.state.password} type="password" />
                     <button onSubmit={this.register}>Register</button>

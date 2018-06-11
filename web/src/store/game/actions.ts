@@ -1,10 +1,10 @@
-import {AppActions, Dispatcher, UIActions} from '../actions';
+import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
 import {RoundState} from '@swg-common/models/roundState';
 import {HexImages} from '../../utils/hexImages';
 import {Point, PointHashKey} from '@swg-common/hex/hex';
-import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
+import {DoubleHashArray} from '@swg-common/utils/hashArray';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {HexagonTypes} from '@swg-common/game/hexagonTypes';
 import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';

@@ -2,7 +2,6 @@ import {ObjectID} from 'bson';
 import {Db, IndexOptions, MongoClient} from 'mongodb';
 import {Config} from '../config';
 import {QueryBuilder} from '../utils/queryBuilder';
-import {MongoDocument} from './models/mongoDocument';
 
 export class DataManager {
     static dbConnection: Db;

@@ -1,6 +1,6 @@
 import {getStore} from '../store';
 import {SwgStore} from '../store/reducers';
-import {Dispatcher, GameActions, GameThunks} from '../store/actions';
+import {Dispatcher, GameActions, GameThunks, UIActions} from '../store/actions';
 import {Manager, Pan, Tap} from 'hammerjs';
 import {HexConstants} from '../utils/hexConstants';
 import * as _ from 'lodash';
@@ -16,7 +16,6 @@ import {UIConstants} from '../utils/uiConstants';
 import {GameAssets} from './gameAssets';
 import {GameResource} from '@swg-common/game/gameResource';
 import {Utils} from '@swg-common/utils/utils';
-import {getHashes} from 'crypto';
 
 export class GameRenderer {
     private canvas: HTMLCanvasElement;
@@ -108,6 +107,8 @@ export class GameRenderer {
     }
 
     start(canvas: HTMLCanvasElement) {
+        const store = getStore();
+
         if (this.canvas) return;
         this.canvas = canvas;
         this.context = this.canvas.getContext('2d');
@@ -131,6 +132,8 @@ export class GameRenderer {
         });
 
         manager.on('panstart', e => {
+            store.dispatch(UIActions.setUI('None'));
+
             swipeVelocity.x = swipeVelocity.y = 0;
             startX = e.center.x;
             startY = e.center.y;
@@ -140,13 +143,14 @@ export class GameRenderer {
         manager.on('panend', e => {});
 
         manager.on('swipe', (ev: {velocityX: number; velocityY: number}) => {
+            store.dispatch(UIActions.setUI('None'));
             swipeVelocity.x = ev.velocityX * 10;
             swipeVelocity.y = ev.velocityY * 10;
         });
 
         manager.on('tap', e => {
             swipeVelocity.x = swipeVelocity.y = 0;
-            const store = getStore();
+            store.dispatch(UIActions.setUI('None'));
             const state = store.getState();
             if (!state.gameState) return;
             const {game} = state.gameState;
@@ -247,7 +251,11 @@ export class GameRenderer {
                 } else {
                     if (hexagon.factionId === '0') continue;
                     if (hasEntity) {
-                        context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', hasEntity === selectedEntity?'1':'.65');
+                        context.fillStyle = HexColors.factionIdToColor(
+                            hexagon.factionId,
+                            '0',
+                            hasEntity === selectedEntity ? '1' : '.65'
+                        );
                     } else {
                         context.fillStyle = HexColors.factionIdToColor(
                             hexagon.factionId,
@@ -315,7 +323,7 @@ export class GameRenderer {
                     continue;
                 }
 
-                if(hasEntity.busy){
+                if (hasEntity.busy) {
                     context.save();
                     context.lineWidth = 4;
                     context.strokeStyle = '#CCCCCC';
