@@ -5,11 +5,12 @@ import {GameState, GameStateEntityMap} from '@swg-common/models/gameState';
 import {GameModel} from '@swg-common/../../common/src/game/gameLogic';
 
 export class StateManager {
-    static buildRoundState(generation: number, voteCounts: VoteCountResult[]): RoundState {
+    static buildRoundState(generation: number, nextGenerationTick: number, voteCounts: VoteCountResult[]): RoundState {
         return {
             generation,
             hash: (Math.random() * 1000000).toString(),
             nextUpdateTime: +new Date() + Config.roundUpdateDuration,
+            nextGenerationTick: nextGenerationTick,
             thisUpdateTime: +new Date(),
             entities: voteCounts.reduce(
                 (entities, vote) => {

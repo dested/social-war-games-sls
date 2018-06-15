@@ -1,3 +1,5 @@
+require('module-alias/register');
+
 import {NestFactory} from '@nestjs/core';
 import {DataManager} from '@swg-server-common/db/dataManager';
 import {ApplicationModule} from './modules/app.module';

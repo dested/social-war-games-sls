@@ -75,7 +75,12 @@ export class DataService {
             body: JSON.stringify(vote)
         });
         const body = await response.json();
-        return JSON.parse(body.body);
+        try {
+            return JSON.parse(body.body);
+        } catch (ex) {
+            console.log(body);
+            return null;
+        }
     }
 
     static async currentUserDetails(jwt: string): Promise<UserDetails> {

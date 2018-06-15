@@ -204,7 +204,7 @@ export class Component extends React.Component<Props, State> {
     private renderNote(a: VoteNote) {
         const note = a.note;
         let clean = a.note;
-        const noteParser = /{(\w*):([\w,]*)}/g;
+        const noteParser = /{(\w*):([-\w,]*)}/g;
         let match = noteParser.exec(note);
         while (match != null) {
             let linkTap: string;
@@ -225,12 +225,20 @@ export class Component extends React.Component<Props, State> {
             }
             clean = clean.replace(
                 match[0],
-                `<button style="display:inline-block; " onClick="${linkTap}">${match[2]}</button>`
+                `<a href="javascript:${linkTap}" style="display:inline-block;text-decoration: none; color:grey; ">${
+                    match[2]
+                }</a>`
             );
             match = noteParser.exec(note);
         }
 
-        return <span key={a.fromEntityId} dangerouslySetInnerHTML={{__html: clean}} />;
+        return (
+            <span
+                style={{margin: 15, textAlign: 'center'}}
+                key={a.fromEntityId}
+                dangerouslySetInnerHTML={{__html: clean}}
+            />
+        );
     }
 
     private updateRound(generation: number) {

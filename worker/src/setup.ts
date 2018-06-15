@@ -9,6 +9,7 @@ import {GameLogic} from '@swg-common/game/gameLogic';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
 import {DBLadder} from '@swg-server-common/db/models/dbLadder';
+import {Config} from '@swg-server-common/config';
 
 export class Setup {
     static start() {
@@ -51,7 +52,7 @@ export class Setup {
         };
 
         const gameState = StateManager.buildGameState(game);
-        const roundState = StateManager.buildRoundState(0, []);
+        const roundState = StateManager.buildRoundState(0, +new Date() + Config.gameDuration, []);
 
         console.log('built state');
 

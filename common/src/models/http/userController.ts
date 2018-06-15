@@ -18,6 +18,7 @@ export interface JwtGetUserResponse extends GetUserResponse {
 
 export interface GetUserResponse {
     user: HttpUser;
+    time: string;
 }
 
 export interface StatsResponse {

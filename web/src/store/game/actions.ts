@@ -304,6 +304,10 @@ export class GameThunks {
     }
 
     private static getNewState(timeout: number, dispatch: Dispatcher, getState: () => SwgStore) {
+        if(timeout<-1500){
+            console.log('fucko')
+            return;
+        }
         setTimeout(async () => {
             try {
                 const {gameState, uiState, appState} = getState();

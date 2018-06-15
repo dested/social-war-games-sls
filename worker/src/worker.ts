@@ -9,7 +9,14 @@ import {S3Splitter} from './s3Splitter';
 import {StateManager} from './stateManager';
 import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {EntityDetails, EntityTypeNames, FactionNames, Factions, GameEntity} from '@swg-common/game/entityDetail';
+import {
+    EntityAction,
+    EntityDetails,
+    EntityTypeNames,
+    FactionNames,
+    Factions,
+    GameEntity
+} from '@swg-common/game/entityDetail';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {Utils} from '@swg-common/utils/utils';
@@ -128,8 +135,9 @@ export class Worker {
             game.generation++;
 
             gameState = StateManager.buildGameState(game);
-            const roundState = StateManager.buildRoundState(game.generation, []);
-            console.log(roundState);
+            const roundState = StateManager.buildRoundState(game.generation, +new Date() + Config.gameDuration, []);
+            await this.redisManager.set<number>('nextGenerationUpdate', +new Date() + Config.gameDuration);
+            console.log('GENERATION' + roundState.generation);
             await S3Splitter.output(game, layout, gameState, roundState, true);
 
             await this.redisManager.set('game-state', gameState);
@@ -216,6 +224,7 @@ export class Worker {
             const generation = await this.redisManager.get<number>('game-generation', 1);
             const gameState = await this.redisManager.get<GameState>('game-state');
             const layout = await this.redisManager.get<GameLayout>('layout');
+            const nextGenerationUpdate = await this.redisManager.get<number>('nextGenerationUpdate');
             const game = GameLogic.buildGameFromState(layout, gameState);
 
             const voteCounts = await DBVote.getVoteCount(generation);
@@ -223,7 +232,7 @@ export class Worker {
                 game,
                 layout,
                 gameState,
-                StateManager.buildRoundState(generation, voteCounts),
+                StateManager.buildRoundState(generation, nextGenerationUpdate, voteCounts),
                 false
             );
             console.timeEnd('round update');
@@ -268,7 +277,28 @@ export class Worker {
     ) {
         const userStats = await DBVote.getRoundUserStats(game.generation);
 
-        const notes = Utils.mapMany(winningVotes, a => this.buildNote(a, game, preVoteEntities, preVoteResources));
+        const actionToWeight = (a: EntityAction) => {
+            switch (a) {
+                case 'attack':
+                    return 0;
+                case 'mine':
+                    return 1;
+                case 'spawn-plane':
+                    return 2;
+                case 'spawn-tank':
+                    return 3;
+                case 'spawn-infantry':
+                    return 4;
+                case 'move':
+                    return 5;
+            }
+            return 100;
+        };
+
+        const notes = Utils.mapMany(
+            winningVotes.sort((a, b) => actionToWeight(a.action) - actionToWeight(b.action)),
+            a => this.buildNote(a, game, preVoteEntities, preVoteResources)
+        );
 
         const userStatsGrouped = Utils.arrayToDictionary(userStats, a => a._id.userId);
 
@@ -281,7 +311,7 @@ export class Worker {
         const roundStats: RoundStats = {
             generation: game.generation,
             winningVotes: Utils.mapToObj(Factions, faction => winningVotes.filter(a => a.factionId === faction)),
-            playersVoted: Utils.mapObjToObj(playersVoted, p => p.length),
+            playersVoted: Utils.mapObjToObj(playersVoted, (_, p) => p.length),
             scores: Utils.mapToObj(Factions, faction => GameLogic.calculateScore(game, faction)),
             hotEntities: Utils.mapToObj(Factions, faction =>
                 voteCounts
@@ -391,7 +421,7 @@ export class Worker {
                 const toEntity = preVoteEntities.find(a => a.x === toHex.x && a.y === toHex.y);
                 const toEntityResult = game.entities.get2(toEntity);
                 const damage = toEntityResult ? toEntity.health - toEntityResult.health : toEntity.health;
-                const result = `for ${damage} damage` + (!toEntityResult ? ' and destroyed it.' : '');
+                const result = `for ${damage} damage` + (!toEntityResult ? ' and destroyed it' : '');
                 return [
                     {
                         note:

@@ -14,8 +14,29 @@ let startBot = async function(userResponse: JwtGetUserResponse) {
     let roundState = await DataService.getRoundState(userResponse.user.factionId);
 
     let game = GameLogic.buildGameFromState(layout, localGameState);
+    let userDetails = await DataService.currentUserDetails(userResponse.jwt);
+    let votesLeft = userDetails.maxVotes - userDetails.voteCount;
+    console.log(userDetails);
     while (true) {
+        if (votesLeft === 0) {
+            const next = roundState.nextGenerationTick - +new Date();
+            console.log('no votes left!');
+            await Utils.timeout(next + 5000);
+
+            localGameState = await DataService.getGameState(userResponse.user.factionId);
+            roundState = await DataService.getRoundState(userResponse.user.factionId);
+            game = GameLogic.buildGameFromState(layout, localGameState);
+
+            userDetails = await DataService.currentUserDetails(userResponse.jwt);
+            votesLeft = userDetails.maxVotes - userDetails.voteCount;
+        }
         const voteResult = await randomAction(game, userResponse.jwt, userResponse.user.factionId);
+        votesLeft--;
+        if (!voteResult) {
+            await Utils.timeout(Math.random() * 10000);
+            continue;
+        }
+
         console.log(voteResult.reason + ' ' + voteResult.voteResult, userResponse.user.email);
         switch (voteResult.reason) {
             case 'ok':
@@ -36,6 +57,7 @@ let startBot = async function(userResponse: JwtGetUserResponse) {
                 game = GameLogic.buildGameFromState(layout, localGameState);
                 break;
         }
+        await Utils.timeout(Math.random() * 10000);
     }
 };
 
@@ -55,8 +77,14 @@ async function register(ind: number) {
 }
 
 async function login(email: string, password: string) {
-    const userResponse = await DataService.login(email, password);
-    startBot(userResponse);
+    try {
+        console.log('logging in', email);
+        const userResponse = await DataService.login(email, password);
+        console.log('logged in', email, userResponse.time);
+        startBot(userResponse);
+    } catch (ex) {
+        console.error('login', ex);
+    }
 }
 
 async function randomAction(
