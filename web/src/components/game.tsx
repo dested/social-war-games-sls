@@ -15,6 +15,8 @@ import {GameResource} from '@swg-common/game/gameResource';
 import {HexConstants} from '../utils/hexConstants';
 import {GameStatsPanel} from './gameStatsPanel';
 import {UIPanel} from './uiPanel';
+import {Grid} from '@swg-common/hex/hex';
+import {GameHexagon} from '@swg-common/game/gameHexagon';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -89,10 +91,7 @@ export class Component extends React.Component<Props, State> {
                             position: 'absolute',
                             bottom: 0,
                             left: 0,
-                            borderTopRightRadius: '70%',
                             backgroundColor: 'black',
-                            borderTop: 'solid 5px black',
-                            borderRight: 'solid 5px black'
                         }}
                         ref={e => this.smallGameRenderer.start(e, this.gameRenderer)}
                         width={UIConstants.miniMapWidth}

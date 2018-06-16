@@ -10,11 +10,11 @@ import {HexColors} from '../utils/hexColors';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {AnimationUtils} from '../utils/animationUtils';
 import {GameRenderer} from './gameRenderer';
+import {UIConstants} from '../utils/uiConstants';
 
 export class SmallGameRenderer {
     private canvas: HTMLCanvasElement;
     private context: CanvasRenderingContext2D;
-    private view: GameView;
     private gameRenderer: GameRenderer;
 
     tapHex(hexagon: GameHexagon) {
@@ -47,29 +47,8 @@ export class SmallGameRenderer {
         this.context = this.canvas.getContext('2d');
 
         const manager = new Manager(this.canvas); // const swipe = new Swipe();
-        manager.add(new Pan({direction: Hammer.DIRECTION_ALL, threshold: 5}));
         manager.add(new Hammer.Tap({taps: 1}));
 
-        let startX = 0;
-        let startY = 0;
-        let startViewX = 0;
-        let startViewY = 0;
-
-        this.view = new GameView(this.canvas);
-
-        manager.on('panmove', e => {
-            if (e.velocity === 0) return;
-            this.view.setPosition(startViewX + (startX - e.center.x), startViewY + (startY - e.center.y));
-            this.forceRender();
-        });
-
-        manager.on('panstart', e => {
-            startX = e.center.x;
-            startY = e.center.y;
-            startViewX = this.view.x;
-            startViewY = this.view.y;
-        });
-        manager.on('panend', e => {});
         manager.on('tap', e => {
             const store = getStore();
             const state = store.getState();
@@ -77,8 +56,8 @@ export class SmallGameRenderer {
             const {game} = state.gameState;
             const hex = Drawing.getHexAt(
                 {
-                    x: this.view.x + (e.center.x - e.target.offsetLeft),
-                    y: this.view.y + (e.center.y - e.target.offsetTop)
+                    x: e.center.x - e.target.offsetLeft,
+                    y: e.center.y - e.target.offsetTop
                 },
                 game.grid,
                 DrawingOptions.defaultSmall
@@ -106,25 +85,44 @@ export class SmallGameRenderer {
         const {game, roundState} = state.gameState;
         if (!game) return;
         const {grid} = game;
+
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.save();
-        context.translate(-this.view.x, -this.view.y);
 
-        const vx = this.view.xSlop;
-        const vy = this.view.ySlop;
-
-        const vwidth = this.view.widthSlop;
-        const vheight = this.view.heightSlop;
-
-        const hexes = grid.hexes.filter(
-            hexagon =>
-                hexagon.smallCenter.x > vx &&
-                hexagon.smallCenter.x < vx + vwidth &&
-                hexagon.smallCenter.y > vy &&
-                hexagon.smallCenter.y < vy + vheight
-        );
+        const hexes = grid.hexes;
 
         for (const hexagon of hexes) {
+            const hasEntity = game.entities.get1(hexagon);
+
+            context.fillStyle = hexagon.tileType.color;
+            context.fillRect(
+                hexagon.smallCenter.x - HexConstants.smallWidth / 2,
+                hexagon.smallCenter.y - HexConstants.smallHeight / 2,
+                HexConstants.smallWidth,
+                HexConstants.smallHeight
+            );
+
+
+            if (hexagon.factionId === '9') {
+                context.fillStyle = 'rgba(0,0,0,.6)';
+            } else {
+                if (hexagon.factionId === '0') {
+continue;                }
+                if (hasEntity) {
+                    context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '1');
+                } else {
+                    context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '.3');
+                }
+            }
+
+            context.fillRect(
+                hexagon.smallCenter.x - HexConstants.smallWidth / 2,
+                hexagon.smallCenter.y - HexConstants.smallHeight / 2,
+                HexConstants.smallWidth,
+                HexConstants.smallHeight
+            );
+
+            /*
             context.drawImage(
                 HexImages.hexTypeToImage(hexagon.tileType.type, hexagon.tileType.subType),
                 hexagon.smallCenter.x - HexConstants.smallWidth / 2,
@@ -132,21 +130,7 @@ export class SmallGameRenderer {
                 HexConstants.smallWidth,
                 HexConstants.smallHeight
             );
-        }
-        for (const hexagon of hexes) {
-            const hasEntity = game.entities.get1(hexagon);
-
-            if (hexagon.factionId === '9') {
-                context.fillStyle = 'rgba(0,0,0,.6)';
-            } else {
-                if (hexagon.factionId === '0') continue;
-                if (hasEntity) {
-                    context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '1');
-                } else {
-                    context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '.3');
-                }
-            }
-            context.fill(hexagon.smallPointsSvg);
+*/
         }
 
         context.restore();

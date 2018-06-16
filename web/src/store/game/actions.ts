@@ -18,6 +18,8 @@ import {Drawing, DrawingOptions} from '../../drawing/hexDrawing';
 import {SmallGameRenderer} from '../../drawing/smallGameRenderer';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
+import {HexConstants} from '../../utils/hexConstants';
+import {UIConstants} from '../../utils/uiConstants';
 
 export enum GameActionOptions {
     SetGameLayout = 'SetGameLayout',
@@ -291,23 +293,59 @@ export class GameThunks {
             dispatch(GameActions.setGameState(localGameState));
             const roundState = await DataService.getRoundState(appState.user.factionId);
             const game = GameLogic.buildGameFromState(layout, localGameState);
+            debugger;
+            HexConstants.smallHeight = UIConstants.miniMapHeight / game.grid.boundsHeight *2.5;
+            HexConstants.smallWidth = UIConstants.miniMapWidth / game.grid.boundsWidth;
+
+            DrawingOptions.defaultSmall = new DrawingOptions(
+                HexConstants.smallHeight / 2 - 1,
+                Drawing.Orientation.PointyTop
+            );
+
             Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
             dispatch(GameThunks.processRoundState(game, roundState));
 
             gameState.smallGameRenderer.forceRender();
 
-            GameThunks.getNewState(roundState.nextUpdateTime - +new Date(), dispatch, getState);
+            GameThunks.getNewState(
+                roundState.nextUpdateTime - +new Date(),
+                roundState.nextGenerationTick - +new Date(),
+                dispatch,
+                getState
+            );
             dispatch(GameActions.setGameReady());
             const userDetails = await DataService.currentUserDetails();
             dispatch(GameActions.updateUserDetails(userDetails));
         };
     }
 
-    private static getNewState(timeout: number, dispatch: Dispatcher, getState: () => SwgStore) {
-        if(timeout<-1500){
-            console.log('fucko')
-            return;
+    private static getNewState(
+        nextUpdateTime: number,
+        nextGenerationTick: number,
+        dispatch: Dispatcher,
+        getState: () => SwgStore
+    ) {
+        console.log('------------');
+        let when = 0;
+        console.log('a',nextUpdateTime,nextGenerationTick);
+        if (nextUpdateTime < 0) {
+            console.log('b');
+            if (nextGenerationTick < -2000) {
+                console.log('c');
+                when = 10000;
+            } else {
+                console.log('d');
+                when = 2000;
+            }
+        } else {
+            console.log('e');
+            when = nextUpdateTime;
         }
+
+        console.log('f',when);
+        when = Math.max(when + 1000, 500);
+        console.log('g',when);
+
         setTimeout(async () => {
             try {
                 const {gameState, uiState, appState} = getState();
@@ -328,12 +366,17 @@ export class GameThunks {
 
                 gameState.smallGameRenderer.forceRender();
 
-                GameThunks.getNewState(roundState.nextUpdateTime - +new Date(), dispatch, getState);
+                GameThunks.getNewState(
+                    roundState.nextUpdateTime - +new Date(),
+                    roundState.nextGenerationTick - +new Date(),
+                    dispatch,
+                    getState
+                );
             } catch (ex) {
                 console.error(ex);
-                this.getNewState(5000, dispatch, getState);
+                this.getNewState(5000, 5000, dispatch, getState);
             }
-        }, Math.max(timeout + 1000, 500));
+        }, when);
     }
 
     static startLoading() {

@@ -95,20 +95,19 @@ export class GameLogic {
             EntityDetails['tank'],
             EntityDetails['tank'],
             EntityDetails['tank'],
-            EntityDetails['infantry'],
+            EntityDetails['tank'],
             EntityDetails['infantry'],
             EntityDetails['infantry'],
             EntityDetails['infantry'],
             EntityDetails['infantry'],
             EntityDetails['infantry'],
             EntityDetails['plane'],
-            EntityDetails['plane']
         ];
 
         const baseRadius = 5;
-        const numberOfBasesPerFaction = 5;
-        const boardWidth = 110;
-        const boardHeight = 110;
+        const numberOfBasesPerFaction = 9;
+        const boardWidth = 200;
+        const boardHeight = 200;
 
         const grid = new Grid<GameHexagon>(0, 0, boardWidth, boardHeight);
 

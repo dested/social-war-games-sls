@@ -6,6 +6,7 @@ export type TileSubType = '1' | '2' | '3' | '4' | '5';
 export interface HexagonTileType {
     type: TileType;
     subType: TileSubType;
+    color: string;
     cost: number;
     blocked: boolean;
 }
@@ -43,6 +44,7 @@ export class HexagonTypes {
 
     static dirt: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Dirt',
+        color: '#BB8044',
         subType,
         cost: 1,
         blocked: false
@@ -50,6 +52,7 @@ export class HexagonTypes {
 
     static grass: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Grass',
+        color: '#27AE60',
         subType,
         cost: 1,
         blocked: false
@@ -57,6 +60,7 @@ export class HexagonTypes {
 
     static clay: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Clay',
+        color: '#E5D5B2',
         subType,
         cost: 2,
         blocked: false
@@ -64,6 +68,7 @@ export class HexagonTypes {
 
     static stone: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Stone',
+        color: '#A4AFAF',
         subType,
         cost: 2,
         blocked: false
@@ -71,6 +76,7 @@ export class HexagonTypes {
 
     static water: (subType: TileSubType) => HexagonTileType = (subType: TileSubType) => ({
         type: 'Water',
+        color: '#6afffd',
         subType,
         cost: 0,
         blocked: true

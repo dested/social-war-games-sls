@@ -23,11 +23,8 @@ export class Drawing {
         hex.smallCenter = hex.smallCenter || Drawing.getCenter(hex, smallOptions);
 
         hex.points = hex.points || Drawing.getCorners(hex.center, options);
-        hex.smallPoints = hex.smallPoints || Drawing.getCorners(hex.smallCenter, smallOptions);
 
         hex.pointsSvg = hex.pointsSvg || new Path2D('M' + hex.points.map(a => `${a.x},${a.y}`).join(' ') + 'Z');
-        hex.smallPointsSvg =
-            hex.smallPointsSvg || new Path2D('M' + hex.smallPoints.map(a => `${a.x},${a.y}`).join(' ') + 'Z');
 
         const neighbor = grid.getNeighbors(hex);
         hex.lines = [];

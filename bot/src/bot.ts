@@ -18,46 +18,50 @@ let startBot = async function(userResponse: JwtGetUserResponse) {
     let votesLeft = userDetails.maxVotes - userDetails.voteCount;
     console.log(userDetails);
     while (true) {
-        if (votesLeft === 0) {
-            const next = roundState.nextGenerationTick - +new Date();
-            console.log('no votes left!');
-            await Utils.timeout(next + 5000);
+        try {
+            if (votesLeft === 0) {
+                const next = roundState.nextGenerationTick - +new Date();
+                console.log('no votes left!');
+                await Utils.timeout(next + 5000);
 
-            localGameState = await DataService.getGameState(userResponse.user.factionId);
-            roundState = await DataService.getRoundState(userResponse.user.factionId);
-            game = GameLogic.buildGameFromState(layout, localGameState);
+                localGameState = await DataService.getGameState(userResponse.user.factionId);
+                roundState = await DataService.getRoundState(userResponse.user.factionId);
+                game = GameLogic.buildGameFromState(layout, localGameState);
 
-            userDetails = await DataService.currentUserDetails(userResponse.jwt);
-            votesLeft = userDetails.maxVotes - userDetails.voteCount;
-        }
-        const voteResult = await randomAction(game, userResponse.jwt, userResponse.user.factionId);
-        votesLeft--;
-        if (!voteResult) {
-            await Utils.timeout(Math.random() * 10000);
-            continue;
-        }
-
-        console.log(voteResult.reason + ' ' + voteResult.voteResult, userResponse.user.email);
-        switch (voteResult.reason) {
-            case 'ok':
-                await Utils.timeout(Math.random() * 500);
+                userDetails = await DataService.currentUserDetails(userResponse.jwt);
+                votesLeft = userDetails.maxVotes - userDetails.voteCount;
+            }
+            const voteResult = await randomAction(game, userResponse.jwt, userResponse.user.factionId);
+            votesLeft--;
+            if (!voteResult) {
+                await Utils.timeout(Math.random() * 10000);
                 continue;
-            case 'max_votes':
-                await Utils.timeout(10000);
-                break;
-            case 'stopped':
-                await Utils.timeout(1000);
-                localGameState = await DataService.getGameState(userResponse.user.factionId);
-                roundState = await DataService.getRoundState(userResponse.user.factionId);
-                game = GameLogic.buildGameFromState(layout, localGameState);
-                break;
-            case 'bad_generation':
-                localGameState = await DataService.getGameState(userResponse.user.factionId);
-                roundState = await DataService.getRoundState(userResponse.user.factionId);
-                game = GameLogic.buildGameFromState(layout, localGameState);
-                break;
+            }
+
+            console.log(voteResult.reason + ' ' + voteResult.voteResult, userResponse.user.email);
+            switch (voteResult.reason) {
+                case 'ok':
+                    await Utils.timeout(Math.random() * 500);
+                    continue;
+                case 'max_votes':
+                    await Utils.timeout(10000);
+                    break;
+                case 'stopped':
+                    await Utils.timeout(1000);
+                    localGameState = await DataService.getGameState(userResponse.user.factionId);
+                    roundState = await DataService.getRoundState(userResponse.user.factionId);
+                    game = GameLogic.buildGameFromState(layout, localGameState);
+                    break;
+                case 'bad_generation':
+                    localGameState = await DataService.getGameState(userResponse.user.factionId);
+                    roundState = await DataService.getRoundState(userResponse.user.factionId);
+                    game = GameLogic.buildGameFromState(layout, localGameState);
+                    break;
+            }
+            await Utils.timeout(Math.random() * 10000);
+        } catch (ex) {
+            console.error(ex);
         }
-        await Utils.timeout(Math.random() * 10000);
     }
 };
 
@@ -66,14 +70,12 @@ async function register(ind: number) {
     const password = `test`;
     const userName = `Test ${ind}`;
 
-    console.time('register ' + ind);
-
     try {
         const userResponse = await DataService.register(email, userName, password);
+        startBot(userResponse);
     } catch (ex) {
         console.error(ex);
     }
-    console.timeEnd('register ' + ind);
 }
 
 async function login(email: string, password: string) {
