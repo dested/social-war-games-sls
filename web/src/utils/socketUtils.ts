@@ -1,6 +1,7 @@
 import * as AWS from 'aws-sdk/global';
 import * as AWSMqtt from 'aws-mqtt';
 import {RoundState} from '@swg-common/models/roundState';
+import {RoundStateParser} from '@swg-common/utils/RoundStateParser';
 AWS.config.region = 'us-west-2';
 
 AWS.config.credentials = new AWS.CognitoIdentityCredentials({
@@ -24,10 +25,11 @@ export class SocketUtils {
             console.log('connected');
             this.client.subscribe(`round-state-${factionToken}`);
         });
-        this.client.on('message', (topic: string, jsonMessage: Uint8Array) => {
-            const text = JSON.parse(new TextDecoder('utf-8').decode(jsonMessage));
-            console.log(text);
-            onMessage(text);
+        this.client.on('message', (topic: string, buffer: Uint8Array) => {
+            const text = new TextDecoder('utf-8').decode(buffer);
+            const round = RoundStateParser.toRoundState(text);
+            console.log(buffer.length,text);
+            onMessage(round);
         });
         this.client.on('close', (err: string) => {
             console.log('Closed  :-(', err);

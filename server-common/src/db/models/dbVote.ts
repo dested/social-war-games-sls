@@ -2,11 +2,11 @@ import {DocumentManager} from '../dataManager';
 import {MongoDocument} from './mongoDocument';
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
 
-export type VoteCountResult = {_id: string; actions: {action: EntityAction; hexId: string; count: number}[]};
+export type VoteCountResult = {_id: number; actions: {action: EntityAction; hexId: string; count: number}[]};
 export type RoundUserStats = {
     _id: {userId: string; factionId: PlayableFactionId};
     count: number;
-    votes: {action: EntityAction; hexId: string; entityId: string}[];
+    votes: {action: EntityAction; hexId: string; entityId: number}[];
 };
 
 export class DBVote extends MongoDocument {
@@ -15,7 +15,7 @@ export class DBVote extends MongoDocument {
 
     userId: string;
     generation: number;
-    entityId: string;
+    entityId: number;
     action: EntityAction;
     hexId: string;
     factionId: PlayableFactionId;

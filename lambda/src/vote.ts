@@ -106,7 +106,7 @@ function response(reason: VoteRequestResults, body: any = {}) {
 }
 
 interface RequestBody {
-    entityId: string;
+    entityId: number;
     action: EntityAction;
     generation: number;
     hexId: string;

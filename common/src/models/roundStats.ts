@@ -7,7 +7,7 @@ export interface RoundStats {
     winningVotes: OfFaction<ProcessedVote[]>;
     playersVoted: OfFaction<number>;
     scores: OfFaction<number>;
-    hotEntities: OfFaction<{id: string; count: number}[]>;
+    hotEntities: OfFaction<{id: number; count: number}[]>;
     notes: OfFaction<VoteNote[]>;
 }
 export interface FactionRoundStats {
@@ -16,6 +16,6 @@ export interface FactionRoundStats {
     totalPlayersVoted: number;
     playersVoted: number;
     score: number;
-    hotEntities: {id: string; count: number}[];
+    hotEntities: {id: number; count: number}[];
     notes: VoteNote[];
 }

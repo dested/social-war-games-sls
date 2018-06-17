@@ -21,7 +21,7 @@ export type GameStateEntityMap = {[faction in PlayableFactionId]: GameStateEntit
 export type GameStateEntity = {
     x: number;
     y: number;
-    id: string;
+    id: number;
     busy: GameStateGameEntityBusyDetails;
     entityType: EntityType;
     health: number;

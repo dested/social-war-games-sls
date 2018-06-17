@@ -23,6 +23,6 @@ export class DBRoundStats extends MongoDocument {
     winningVotes: OfFaction<ProcessedVote[]>;
     playersVoted: OfFaction<number>;
     scores: OfFaction<number>;
-    hotEntities: OfFaction<{id: string; count: number}[]>;
+    hotEntities: OfFaction<{id: number; count: number}[]>;
     notes: OfFaction<VoteNote[]>;
 }

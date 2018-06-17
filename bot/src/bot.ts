@@ -50,6 +50,7 @@ let startBot = async function(userResponse: JwtGetUserResponse) {
                     game = GameLogic.buildGameFromState(layout, localGameState);
                     break;
                 case 'bad_generation':
+                    await Utils.timeout(1000);
                     localGameState = await DataService.getGameState(userResponse.user.factionId);
                     game = GameLogic.buildGameFromState(layout, localGameState);
                     break;
@@ -262,12 +263,12 @@ function getViableHexes(game: GameModel, entity: GameEntity, action: EntityActio
     let radius = 0;
     const entityDetails = EntityDetails[entity.entityType];
     const entityHex = game.grid.hexes.get(entity);
-    let entityHash: DoubleHashArray<GameEntity, Point, {id: string}>;
+    let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
 
     switch (action) {
         case 'attack':
             radius = entityDetails.attackRadius;
-            entityHash = new DoubleHashArray<GameEntity, Point, {id: string}>(PointHashKey, e => e.id);
+            entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
             break;
         case 'move':
             radius = entityDetails.moveRadius;

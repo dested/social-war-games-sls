@@ -349,7 +349,7 @@ export class GameThunks {
         };
     }
 
-    static sendVote(entityId: string, action: EntityAction, hexId: string) {
+    static sendVote(entityId: number, action: EntityAction, hexId: string) {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             const {gameState, appState} = getState();
             const {game, roundState} = gameState;
@@ -427,12 +427,12 @@ export class GameThunks {
             let radius = 0;
             const entityDetails = EntityDetails[entity.entityType];
             const entityHex = game.grid.hexes.get(entity);
-            let entityHash: DoubleHashArray<GameEntity, Point, {id: string}>;
+            let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
 
             switch (action) {
                 case 'attack':
                     radius = entityDetails.attackRadius;
-                    entityHash = new DoubleHashArray<GameEntity, Point, {id: string}>(PointHashKey, e => e.id);
+                    entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
                     break;
                 case 'move':
                     radius = entityDetails.moveRadius;

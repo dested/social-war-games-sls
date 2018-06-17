@@ -3,7 +3,7 @@ import {EntityAction} from '../game/entityDetail';
 export type RoundState = {
     thisUpdateTime: number;
     generation: number;
-    entities: {[id: string]: RoundStateEntityVote[]};
+    entities: {[id: number]: RoundStateEntityVote[]};
 };
 export type RoundStateEntityVote = {
     action: EntityAction;

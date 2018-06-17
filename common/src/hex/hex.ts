@@ -262,7 +262,7 @@ export class Grid<T extends Hexagon = Hexagon> {
         return line1.length > line2.length ? line1 : line2;
     }
 
-    getRange(start: T, movement: number, blockEntities: DoubleHashArray<GameEntity, Point, {id: string}>): T[] {
+    getRange(start: T, movement: number, blockEntities: DoubleHashArray<GameEntity, Point, {id: number}>): T[] {
         const grid = this;
         const openHeap = new BinaryHeap((node: Grid_Search_Node<T>) => node.F);
         const closedHexes: {[key: string]: T} = {};
@@ -313,7 +313,7 @@ export class Grid<T extends Hexagon = Hexagon> {
         return arr;
     }
 
-    findPath(start: T, end: T, blockEntities: DoubleHashArray<GameEntity, Point, {id: string}>): T[] {
+    findPath(start: T, end: T, blockEntities: DoubleHashArray<GameEntity, Point, {id: number}>): T[] {
         const grid = this;
         const openHeap = new BinaryHeap<T>(node => node.F);
         const closedHexes: {[key: string]: Grid_Search_Node<T>} = {};

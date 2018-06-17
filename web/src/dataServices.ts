@@ -57,7 +57,7 @@ export class DataService {
     }
 
     static async vote(vote: {
-        entityId: string;
+        entityId: number;
         action: EntityAction;
         generation: number;
         hexId: string;

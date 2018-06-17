@@ -1,8 +1,8 @@
 export interface VoteNote {
     note: string;
-    fromEntityId: string;
+    fromEntityId: number;
     factionId: string;
-    toEntityId: string;
+    toEntityId: number;
     toHexId: string;
     fromHexId: string;
     voteCount: number;

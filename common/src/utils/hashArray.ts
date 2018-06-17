@@ -80,14 +80,14 @@ export class DoubleHashArray<T extends TKey1 & TKey2, TKey1 = T, TKey2 = T> {
         return this.array[Symbol.iterator]();
     }
 
-    constructor(public getKey1: (t: TKey1) => string, public getKey2: (t: TKey2) => string) {
+    constructor(public getKey1: (t: TKey1) => string, public getKey2: (t: TKey2) => number) {
         this.hash1 = {};
         this.hash2 = {};
         this.array = [];
     }
 
     hash1: {[key: string]: T};
-    hash2: {[key: string]: T};
+    hash2: {[key: number]: T};
     array: T[];
 
     get length() {
@@ -161,7 +161,7 @@ export class DoubleHashArray<T extends TKey1 & TKey2, TKey1 = T, TKey2 = T> {
     static create<T extends TKey1 & TKey2, TKey1, TKey2>(
         items: T[],
         getKey1: (t: TKey1) => string,
-        getKey2: (t: TKey2) => string
+        getKey2: (t: TKey2) => number
     ) {
         const hashArray = new DoubleHashArray<T, TKey1, TKey2>(getKey1, getKey2);
         hashArray.pushRange(items);

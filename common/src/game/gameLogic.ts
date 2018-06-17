@@ -21,7 +21,7 @@ import {FactionDetail} from './factionDetail';
 import {DBUserRoundStats} from '../../../server-common/src/db/models/dbUserRoundStats';
 
 export type ProcessedVote = {
-    entityId: string;
+    entityId: number;
     action: EntityAction;
     factionId: PlayableFactionId;
     hexId: string;
@@ -35,7 +35,7 @@ export interface GameModel {
     roundDuration: number;
     grid: Grid<GameHexagon>;
     resources: HashArray<GameResource, Point>;
-    entities: DoubleHashArray<GameEntity, Point, {id: string}>;
+    entities: DoubleHashArray<GameEntity, Point, {id: number}>;
     generation: number;
 }
 
@@ -80,9 +80,9 @@ export class GameLogic {
 
     static id = 0;
 
-    static nextId(entities: GameEntity[]): string {
+    static nextId(entities: GameEntity[]): number {
         while (true) {
-            const random = Math.floor(Math.random() * 10000).toString();
+            const random = Math.floor(Math.random() * 10000);
             if (!entities.find(a => a.id === random)) {
                 return random;
             }
@@ -237,7 +237,7 @@ export class GameLogic {
             const far = grid.getRange(
                 grid.getHexAt(start),
                 Math.floor(Math.random() * 80) + 30,
-                new DoubleHashArray<GameEntity, Point, {id: string}>(PointHashKey, e => e.id)
+                new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id)
             );
 
             const number = Math.floor(far.length / 4 * 3 + far.length / 4 * Math.random());
@@ -360,11 +360,11 @@ export class GameLogic {
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
         if (!toHex) return VoteResult.ToHexNotFound;
 
-        let entityHash: DoubleHashArray<GameEntity, Point, {id: string}>;
+        let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
 
         switch (vote.action) {
             case 'attack':
-                entityHash = new DoubleHashArray<GameEntity, Point, {id: string}>(PointHashKey, e => e.id);
+                entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
                 break;
             case 'move':
                 entityHash = game.entities;
@@ -461,11 +461,11 @@ export class GameLogic {
 
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
         if (!toHex) return VoteResult.ToHexNotFound;
-        let entityHash: DoubleHashArray<GameEntity, Point, {id: string}>;
+        let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
 
         switch (vote.action) {
             case 'attack':
-                entityHash = new DoubleHashArray<GameEntity, Point, {id: string}>(PointHashKey, e => e.id);
+                entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
                 break;
             case 'move':
                 entityHash = game.entities;

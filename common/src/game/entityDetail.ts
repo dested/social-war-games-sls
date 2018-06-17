@@ -35,7 +35,7 @@ export type GameEntityBusyDetails = {
 };
 
 export interface GameEntity {
-    id: string;
+    id: number;
     x: number;
     y: number;
     factionId: PlayableFactionId;

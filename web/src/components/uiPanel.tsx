@@ -192,7 +192,7 @@ export class Component extends React.Component<Props, State> {
         this.props.gameRenderer.moveToEntity(ent);
     }
 
-    public goToEntity(entityId: string) {
+    public goToEntity(entityId: number) {
         const entity = this.props.game.entities.get2({id: entityId});
         if (entity) this.props.gameRenderer.moveToEntity(entity);
     }
