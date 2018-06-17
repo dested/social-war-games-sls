@@ -21,6 +21,7 @@ module.exports = env => {
             }
         },
         externals: {},
+        mode: 'development',
         plugins: [
             new webpack.IgnorePlugin(/hiredis/),
             // env === 'deploy' && new UglifyJsPlugin(),
@@ -36,8 +37,7 @@ module.exports = env => {
                 })
         ].filter(a => a),
         module: {
-            loaders: [
-                // loaders will work with webpack 1 or 2; but will be renamed "rules" in future
+            rules: [
                 // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
                 {
                     test: /\.tsx?$/,
