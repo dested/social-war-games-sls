@@ -59,7 +59,8 @@ export const handler = async (event: Event<RequestBody>) => {
 
         if (body.generation !== generation) {
             return response('bad_generation', {
-                votesLeft: user.maxVotesPerRound - totalVotes
+                votesLeft: user.maxVotesPerRound - totalVotes,
+                generation
             });
         }
 

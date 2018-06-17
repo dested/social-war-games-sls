@@ -12,23 +12,20 @@ let params = {
     WebSocket: (window as any).WebSocket,
     credentials: AWS.config.credentials,
     region: 'us-west-2',
-    clientId: 'mqtt-client-' + Math.floor(Math.random() * 100000 + 1),
     endpoint: 'a11r7webls2miq.iot.us-west-2.amazonaws.com'
 };
 
 export class SocketUtils {
     private static client: any;
 
-    static connect(factionToken: string, onMessage: (roundState: RoundState) => void) {
-        this.client = AWSMqtt.connect(params);
+    static connect(clientId: string, factionToken: string, onMessage: (roundState: RoundState) => void) {
+        this.client = AWSMqtt.connect({...params, clientId});
         this.client.on('connect', () => {
             console.log('connected');
             this.client.subscribe(`round-state-${factionToken}`);
         });
         this.client.on('message', (topic: string, buffer: Uint8Array) => {
-            const text = new TextDecoder('utf-8').decode(buffer);
-            const round = RoundStateParser.toRoundState(text);
-            console.log(buffer.length,text);
+            const round = RoundStateParser.toRoundState(buffer);
             onMessage(round);
         });
         this.client.on('close', (err: string) => {

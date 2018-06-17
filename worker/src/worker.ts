@@ -60,10 +60,12 @@ export class Worker {
             console.log('round end');
             await this.redisManager.set('stop', true);
             const generation = await this.redisManager.get<number>('game-generation');
+            console.log('gen gen ' + generation);
 
-            const layout = await this.redisManager.get<GameLayout>('layout');
-            let gameState = await this.redisManager.get<GameState>('game-state');
-            const game = GameLogic.buildGameFromState(layout, gameState);
+            const game = GameLogic.buildGameFromState(
+                await this.redisManager.get<GameLayout>('layout'),
+                await this.redisManager.get<GameState>('game-state')
+            );
 
             const preVoteEntities = JSON.parse(JSON.stringify(game.entities.array));
             const preVoteResources = JSON.parse(JSON.stringify(game.resources.array));
@@ -134,20 +136,26 @@ export class Worker {
             this.writeFactionStats(game);
             await this.buildRoundStats(game, preVoteEntities, preVoteResources, winningVotes, voteCounts);
 
-            game.generation++;
+            console.log('gen gen1 ' + (await this.redisManager.get<number>('game-generation')) + ' ' + game.generation);
 
-            gameState = StateManager.buildGameState(game);
+            game.generation++;
+            await this.redisManager.incr('game-generation');
+
+            const newGameState = StateManager.buildGameState(game);
+
             const roundState = StateManager.buildRoundState(game.generation, +new Date() + Config.gameDuration, []);
             await this.redisManager.set<number>('nextGenerationUpdate', +new Date() + Config.gameDuration);
-            console.log('GENERATION' + roundState.generation);
-            await S3Splitter.output(game, layout, gameState, roundState, true);
+            console.log(`GENERATION ${game.generation}`);
+            await S3Splitter.output(game, game.layout, newGameState, roundState, true);
 
-            await this.redisManager.set('game-state', gameState);
-            await this.redisManager.incr('game-generation');
+            await this.redisManager.set('game-state', newGameState);
             await this.redisManager.set('stop', false);
-            setTimeout(() => {
-                this.processNewRound();
-            }, Config.gameDuration);
+
+            if (game.generation < 10000000) {
+                setTimeout(() => {
+                    this.processNewRound();
+                }, Config.gameDuration);
+            }
 
             for (
                 let roundUpdateTick = Config.roundUpdateDuration;

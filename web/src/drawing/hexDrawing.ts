@@ -31,6 +31,8 @@ export class Drawing {
         for (let i = 0; i < hex.points.length; i++) {
             const p1 = hex.points[i];
             const p2 = hex.points[(i + 1) % 6];
+            if (!p1 || !p2) continue;
+
             if (!neighbor[i] || neighbor[i].factionId !== hex.factionId) {
                 if (hex.factionId === '9' || (neighbor[i] && neighbor[i].factionId === '9')) continue;
                 const color = HexColors.factionIdToColor(

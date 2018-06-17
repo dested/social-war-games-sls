@@ -98,17 +98,18 @@
 '/ show user data in ladder
   '/ move new generation to redux
   '/ move all of gamestatspanel to redux, round state, round faction stats
+'/ lines get weird near the borders
+'/ show tab for all the bases, quickly navigate to them
+'/ dont show enemy busy
+'/ notes -1 attack damage destroyed it
+'/ <= 0 health guy
+
+
 
 fix players voted bug
-sort notes by attack
-add concept of dead entities/resources
-notes -1 attack damage destroyed it
+make entities different colors per factory
 notes 100 resources left idk
-<= 0 health guy
-lines get weird near the borders
-dont show enemy busy
-
-show tab for all the bases, quickly anvigate to them
+better bases tab
 better colors scale for vote
 emoji for hold the fort, attack west, need resrouces
 

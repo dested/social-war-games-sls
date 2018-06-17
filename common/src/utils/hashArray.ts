@@ -111,9 +111,10 @@ export class DoubleHashArray<T extends TKey1 & TKey2, TKey1 = T, TKey2 = T> {
         const key1 = this.getKey1(item);
         if (!this.hash1[key1]) return;
         const hashedItem = this.hash1[key1];
+        const key2 = this.getKey2(item);
 
         delete this.hash1[key1];
-        delete this.hash2[this.getKey2(item)];
+        delete this.hash2[key2];
 
         this.array.splice(this.array.indexOf(hashedItem), 1);
     }
@@ -166,5 +167,10 @@ export class DoubleHashArray<T extends TKey1 & TKey2, TKey1 = T, TKey2 = T> {
         const hashArray = new DoubleHashArray<T, TKey1, TKey2>(getKey1, getKey2);
         hashArray.pushRange(items);
         return hashArray;
+    }
+
+    moveKey1(e: T, fromT1: TKey1, toT1: TKey1) {
+        delete this.hash1[this.getKey1(fromT1)];
+        this.hash1[this.getKey1(toT1)] = e;
     }
 }

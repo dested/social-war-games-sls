@@ -30,6 +30,7 @@ export class GameRenderer {
         const store = getStore();
         const state = store.getState();
 
+        console.log(hexagon.x, hexagon.y);
         const {game, selectedEntity} = state.gameState;
 
         const viableHexIds: {[hexId: string]: boolean} = state.gameState.viableHexIds || {};

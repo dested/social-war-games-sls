@@ -9,11 +9,12 @@ export class SocketManager {
         this.iotData = new AWS.IotData({
             endpoint: `a11r7webls2miq.iot.us-west-2.amazonaws.com`,
             credentials: new AWS.CognitoIdentityCredentials({
-                IdentityPoolId: 'us-west-2:d4f63ed5-7b82-4389-b987-1f8bb7b6ed97'
-            })
+                IdentityPoolId: 'us-west-2:d4f63ed5-7b82-4389-b987-1f8bb7b6ed97',
+            }),
+
         });
     }
-    static publish(topic: string, payload: string) {
+    static publish(topic: string, payload: Buffer | string) {
         return new Promise((res, rej) => {
             this.iotData.publish(
                 {

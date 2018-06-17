@@ -53,6 +53,7 @@ export class S3Splitter {
                 faction,
                 visibleHexes
             );
+
             const gameStateJson = JSON.stringify(factionGameState);
             const roundStateJson = RoundStateParser.fromRoundState(factionRoundState);
             if (outputGameState) {
@@ -99,8 +100,13 @@ export class S3Splitter {
             const faction = Factions[i];
             for (let i = 0; i < entities[faction].length; i++) {
                 const entity = entities[faction][i];
+
                 if (visibleHexes.exists(entity)) {
-                    visibleEntities[faction].push(entity);
+                    if (faction !== factionId) {
+                        visibleEntities[faction].push({...entity, busy: null});
+                    } else {
+                        visibleEntities[faction].push(entity);
+                    }
                 }
 
                 if (faction === factionId) {

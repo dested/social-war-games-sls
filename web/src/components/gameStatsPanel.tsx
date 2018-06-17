@@ -54,6 +54,9 @@ export class Component extends React.Component<Props, State> {
                 >
                     Round Stats
                 </div>
+                <div onClick={() => this.setUI('Bases')} style={{padding: 10, height: 40, backgroundColor: '#7971f3'}}>
+                    Bases
+                </div>
                 <div onClick={() => this.setUI('Ladder')} style={{padding: 10, height: 40, backgroundColor: '#f0c2f3'}}>
                     Ladder
                 </div>

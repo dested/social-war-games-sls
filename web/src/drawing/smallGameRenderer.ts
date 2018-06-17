@@ -54,14 +54,21 @@ export class SmallGameRenderer {
             const state = store.getState();
             if (!state.gameState) return;
             const {game} = state.gameState;
-            const hex = Drawing.getHexAt(
-                {
-                    x: e.center.x - e.target.offsetLeft,
-                    y: e.center.y - e.target.offsetTop
-                },
-                game.grid,
-                DrawingOptions.defaultSmall
-            );
+            const position = {
+                x: e.center.x - e.target.offsetLeft,
+                y: e.center.y - e.target.offsetTop
+            };
+
+            const distances = game.grid.hexes.array.map(h => ({
+                h,
+                distance: Math.sqrt(
+                    (position.x - h.smallCenter.x) * (position.x - h.smallCenter.x) +
+                        (position.y - h.smallCenter.y) * (position.y - h.smallCenter.y)
+                )
+            }));
+            distances.sort((a, b) => a.distance - b.distance);
+            const hex = distances[0].h;
+
             if (hex) {
                 this.tapHex(hex);
             }
@@ -102,12 +109,12 @@ export class SmallGameRenderer {
                 HexConstants.smallHeight
             );
 
-
             if (hexagon.factionId === '9') {
                 context.fillStyle = 'rgba(0,0,0,.6)';
             } else {
                 if (hexagon.factionId === '0') {
-continue;                }
+                    continue;
+                }
                 if (hasEntity) {
                     context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '1');
                 } else {

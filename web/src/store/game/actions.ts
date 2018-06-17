@@ -292,18 +292,21 @@ export class GameThunks {
             dispatch(GameActions.setGameLayout(layout));
             const localGameState = await DataService.getGameState(appState.user.factionId);
             dispatch(GameActions.setGameState(localGameState));
-            SocketUtils.connect(appState.user.factionId, roundState => {
+            SocketUtils.connect(appState.user.id, appState.user.factionId, roundState => {
                 GameThunks.getNewState(roundState, dispatch, getState).catch(ex => console.error(ex));
             });
             // const roundState = await DataService.getRoundState(appState.user.factionId);
             const game = GameLogic.buildGameFromState(layout, localGameState);
-            HexConstants.smallHeight = UIConstants.miniMapHeight / game.grid.boundsHeight * 2.5;
+
+            HexConstants.smallHeight = UIConstants.miniMapHeight / game.grid.boundsHeight*1.3384;
             HexConstants.smallWidth = UIConstants.miniMapWidth / game.grid.boundsWidth;
 
-            DrawingOptions.defaultSmall = new DrawingOptions(
-                HexConstants.smallHeight / 2 - 1,
-                Drawing.Orientation.PointyTop
-            );
+            DrawingOptions.defaultSmall = {
+                width: HexConstants.smallWidth,
+                height: HexConstants.smallHeight,
+                size: HexConstants.smallHeight / 2-1,
+                orientation: Drawing.Orientation.PointyTop
+            };
 
             Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
             const emptyRoundState = {

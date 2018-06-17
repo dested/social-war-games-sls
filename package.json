@@ -5,6 +5,7 @@
   "author": "Salvatore <dested@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "tsc": "cd common && tsc && cd ../server-common && tsc && cd ../api-user && tsc && cd ../web && tsc && cd ../worker && tsc && cd ../lambda && tsc"
+    "tsc":
+      "cd common && tsc && cd ../server-common && tsc && cd ../api-user && tsc && cd ../web && tsc && cd ../worker && tsc && cd ../lambda && tsc"
   }
 }

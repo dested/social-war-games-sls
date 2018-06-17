@@ -136,7 +136,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             new Axial(a.x + 1, a.y),
             new Axial(a.x, a.y + 1)
         ];
-        return (this.neighborCache[key] = directions.map(d => this.getHexAt(d)).filter(a=>a));
+        return (this.neighborCache[key] = directions.map(d => this.getHexAt(d)));
     }
 
     /**
@@ -342,7 +342,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             const neighbors = grid.getNeighbors(current.hex);
             for (const n of neighbors) {
                 // Make sure the neighbor is not blocked and that we haven't already processed it.
-                if (n.blocked || closedHexes[n.getKey()]) continue;
+                if (!n || n.blocked || closedHexes[n.getKey()]) continue;
 
                 // Get the total cost of going to this neighbor.
                 const g = current.G + n.cost + +(blockEntities.exists1(n) && 1000);

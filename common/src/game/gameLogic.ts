@@ -32,6 +32,7 @@ export interface GameModel {
     factionDetails: {[key in PlayableFactionId]: FactionDetail};
     roundStart: number;
     roundEnd: number;
+    layout: GameLayout;
     roundDuration: number;
     grid: Grid<GameHexagon>;
     resources: HashArray<GameResource, Point>;
@@ -89,6 +90,136 @@ export class GameLogic {
         }
     }
 
+    static createDebugGame(): GameModel {
+        const entitiesPerBase = [
+            EntityDetails['factory'],
+            EntityDetails['tank'],
+            EntityDetails['tank'],
+            EntityDetails['tank'],
+            EntityDetails['tank'],
+            EntityDetails['tank'],
+            EntityDetails['tank'],
+            EntityDetails['tank'],
+            EntityDetails['infantry'],
+            EntityDetails['infantry'],
+            EntityDetails['infantry'],
+            EntityDetails['infantry'],
+            EntityDetails['infantry'],
+            EntityDetails['infantry'],
+            EntityDetails['infantry'],
+            EntityDetails['infantry'],
+            EntityDetails['plane'],
+            EntityDetails['plane'],
+            EntityDetails['plane'],
+            EntityDetails['plane']
+        ];
+
+        const baseRadius = 5;
+        const numberOfBasesPerFaction = 15;
+        const boardWidth = 200;
+        const boardHeight = 200;
+
+        const grid = new Grid<GameHexagon>(0, 0, boardWidth, boardHeight);
+
+        const entities: GameEntity[] = [];
+
+        for (let y = 0; y < grid.boundsHeight; y++) {
+            for (let x = -Math.floor(y / 2); x < grid.boundsWidth - Math.floor(y / 2); x++) {
+                grid.hexes.push(new GameHexagon(HexagonTypes.dirt(HexagonTypes.randomSubType()), `${x}-${y}`, x, y));
+            }
+        }
+
+        for (let i = 0; i < Factions.length; i++) {
+            let faction = Factions[i];
+
+            for (let base = 0; base < numberOfBasesPerFaction; base++) {
+                const x = Math.round(Math.random() * (grid.boundsWidth - 14) + 7);
+                const y = Math.round(Math.random() * (grid.boundsHeight - 14) + 7);
+                const center = grid.easyBounds(x, y);
+                const baseHexes = grid.getCircle(center, baseRadius);
+                for (const hex of baseHexes) {
+                    hex.setFactionId(faction, 3);
+                }
+                const innerBaseHexes = grid.getCircle(center, baseRadius - 1);
+
+                entities.push({
+                    id: this.nextId(entities),
+                    factionId: faction,
+                    health: 1,
+                    x: center.x,
+                    y: center.y,
+                    entityType: entitiesPerBase[0].type,
+                    healthRegenStep: entitiesPerBase[0].healthRegenRate
+                });
+
+                for (let i = 1; i < entitiesPerBase.length; i++) {
+                    const hex = innerBaseHexes[Math.floor(Math.random() * innerBaseHexes.length)];
+                    if (entities.find(a => a.x === hex.x && a.y === hex.y)) {
+                        i--;
+                        continue;
+                    }
+                    entities.push({
+                        id: this.nextId(entities),
+                        factionId: faction,
+                        health: 1,
+                        x: hex.x,
+                        y: hex.y,
+                        entityType: entitiesPerBase[i].type,
+                        healthRegenStep: 0
+                    });
+                }
+            }
+        }
+
+        const resourceLimits: {type: ResourceType; count: number}[] = [
+            {type: 'bronze', count: 80},
+            {type: 'silver', count: 40},
+            {type: 'gold', count: 20}
+        ];
+
+        const resources: GameResource[] = [];
+
+        for (const resource of resourceLimits) {
+            for (let i = 0; i < resource.count; i++) {
+                const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
+
+                const resourceDetail = ResourceDetails[resource.type];
+                const gameResource: GameResource = {
+                    x: center.x,
+                    y: center.y,
+                    resourceType: resource.type,
+                    currentCount: resourceDetail.startingCount
+                };
+                center.setTileType(HexagonTypes.get(center.tileType.type, '1'));
+                resources.push(gameResource);
+            }
+        }
+
+        const factionDetails = {
+            '1': {
+                resourceCount: 10
+            },
+            '2': {
+                resourceCount: 10
+            },
+            '3': {
+                resourceCount: 10
+            }
+        };
+
+        return {
+            roundDuration: Config.gameDuration,
+            roundStart: +new Date(),
+            roundEnd: +new Date() + Config.gameDuration,
+            generation: 10000001,
+            resources: HashArray.create(resources, PointHashKey),
+            entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
+            factionDetails,
+            layout: null,
+            grid
+        };
+    }
+
     static createGame(): GameModel {
         const entitiesPerBase = [
             EntityDetails['factory'],
@@ -101,7 +232,7 @@ export class GameLogic {
             EntityDetails['infantry'],
             EntityDetails['infantry'],
             EntityDetails['infantry'],
-            EntityDetails['plane'],
+            EntityDetails['plane']
         ];
 
         const baseRadius = 5;
@@ -277,6 +408,7 @@ export class GameLogic {
             resources: HashArray.create(resources, PointHashKey),
             entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
             factionDetails,
+            layout: null,
             grid
         };
     }
@@ -344,6 +476,7 @@ export class GameLogic {
             factionDetails: gameState.factionDetails,
             resources: HashArray.create(resources, PointHashKey),
             entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
+            layout,
             grid
         };
     }
@@ -531,8 +664,12 @@ export class GameLogic {
                         gameHexagon.setFactionId(fromEntity.factionId, 3);
                     }
                 }
+
+                game.entities.moveKey1(fromEntity, fromEntity, toHex);
+
                 fromEntity.x = toHex.x;
                 fromEntity.y = toHex.y;
+
                 break;
             case 'mine':
                 if (toEntity) return VoteResult.MoveSpotNotEmpty;

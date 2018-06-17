@@ -3,7 +3,7 @@ import {EntityAction} from '../game/entityDetail';
 import {Utils} from './utils';
 
 export class RoundStateParser {
-    static fromRoundState(roundState: RoundState): string {
+    static fromRoundState(roundState: RoundState): Buffer {
         const hexIdParse = /(-?\d*)-(-?\d*)/;
         const buff = new ArrayBufferBuilder();
 
@@ -28,7 +28,7 @@ export class RoundStateParser {
         return buff.buildBuffer();
     }
 
-    static toRoundState(buffer: string): RoundState {
+    static toRoundState(buffer: Uint8Array): RoundState {
         const reader = new ArrayBufferReader(buffer);
         const generation = reader.readInt32();
         const thisUpdateTime = reader.readFloat64();
@@ -52,11 +52,13 @@ export class RoundStateParser {
             }
             entities[entityId] = votes;
         }
-        return {
+        const roundState = {
             generation,
             thisUpdateTime,
             entities
         };
+        console.log(JSON.stringify(roundState).length, buffer.length);
+        return roundState;
     }
 
     private static actionToInt(action: EntityAction): number {
@@ -131,7 +133,7 @@ export class ArrayBufferBuilder {
         });
     }
 
-    buildBuffer(): string {
+    buildBuffer(): Buffer {
         const size = Utils.sum(this.array, a => a.size / 8);
         const buffer = new ArrayBuffer(size);
         const view = new DataView(buffer);
@@ -165,16 +167,15 @@ export class ArrayBufferBuilder {
                 }
             }
         }
-        return new Uint8Array(buffer).join(',');
+        return Buffer.from(buffer);
     }
 }
 
 export class ArrayBufferReader {
     private index: number;
     private dv: DataView;
-    constructor(private bufferStr: string) {
-        const buffer = new Uint8Array(bufferStr.split(',').map(a => parseInt(a)));
-        this.dv = new DataView(buffer.buffer);
+    constructor(private buffer: Uint8Array) {
+        this.dv = new DataView(new Uint8Array(buffer).buffer);
         this.index = 0;
     }
 

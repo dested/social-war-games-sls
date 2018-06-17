@@ -5,7 +5,7 @@ import {FactionStats} from '@swg-common/models/factionStats';
 import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {DataService} from '../../dataServices';
 
-export type UI = 'None' | 'FactionStats' | 'RoundStats' | 'Ladder';
+export type UI = 'None' | 'FactionStats' | 'RoundStats' | 'Ladder' | 'Bases';
 export enum UIActionOptions {
     SetUI = 'SetUI',
     SetLadder = 'SetLadder',
@@ -104,9 +104,9 @@ export class UIThunks {
             const {factionId} = getState().appState.user;
 
             dispatch(UIActions.setFactionRoundStats(null));
-            try{
+            try {
                 dispatch(UIActions.setFactionRoundStats(await DataService.getFactionRoundStats(generation, factionId)));
-            }catch(ex){
+            } catch (ex) {
                 dispatch(UIActions.setFactionRoundStats(null));
             }
         };

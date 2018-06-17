@@ -69,6 +69,7 @@ export class Component extends React.Component<Props, State> {
             <div style={box}>
                 {(this.props.ui === 'Ladder' && this.renderLadder()) ||
                     (this.props.ui === 'FactionStats' && this.renderFactionStats()) ||
+                    (this.props.ui === 'Bases' && this.renderBases()) ||
                     (this.props.ui === 'RoundStats' && this.renderRoundStats())}
             </div>
         );
@@ -114,6 +115,39 @@ export class Component extends React.Component<Props, State> {
             );
         });
     }
+
+    private renderBases() {
+        const entityCircle = {
+            borderRadius: '50%',
+            width: '60px',
+            height: '60px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            margin: '10px'
+        };
+
+        const entityImage = {width: '50px'};
+
+        return this.props.game.entities.array
+            .filter(a => a.factionId === this.props.user.factionId && a.entityType === 'factory')
+            .map(factory => {
+                return (
+                    <div
+                        key={factory.id}
+                        onClick={() => this.navigateToEntity(factory)}
+                        style={{
+                            ...entityCircle,
+                            cursor: 'hand',
+                            backgroundColor: HexColors.factionIdToColor(factory.factionId, '0', '.8')
+                        }}
+                    >
+                        <img src={GameAssets[factory.entityType].imageUrl} style={entityImage} />
+                    </div>
+                );
+            });
+    }
+
     private renderRoundStats() {
         const factionRoundStats = this.props.factionRoundStats;
         if (!factionRoundStats) {
