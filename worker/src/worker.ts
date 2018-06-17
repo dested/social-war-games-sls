@@ -25,6 +25,7 @@ import {GameResource} from '@swg-common/game/gameResource';
 import {FactionRoundStats, RoundStats} from '@swg-common/models/roundStats';
 import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
+import {SocketManager} from './socketManager';
 
 export class Worker {
     private static redisManager: RedisManager;
@@ -40,6 +41,7 @@ export class Worker {
         console.log('booting');
         this.redisManager = await RedisManager.setup();
         await DataManager.openDbConnection();
+        await SocketManager.open();
 
         console.log('connected to redis');
 

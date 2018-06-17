@@ -8,9 +8,6 @@ export class StateManager {
     static buildRoundState(generation: number, nextGenerationTick: number, voteCounts: VoteCountResult[]): RoundState {
         return {
             generation,
-            hash: (Math.random() * 1000000).toString(),
-            nextUpdateTime: +new Date() + Config.roundUpdateDuration,
-            nextGenerationTick: nextGenerationTick,
             thisUpdateTime: +new Date(),
             entities: voteCounts.reduce(
                 (entities, vote) => {

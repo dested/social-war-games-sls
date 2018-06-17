@@ -10,6 +10,7 @@ import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
 import {DBLadder} from '@swg-server-common/db/models/dbLadder';
 import {Config} from '@swg-server-common/config';
+import {SocketManager} from './socketManager';
 
 export class Setup {
     static start() {
@@ -25,6 +26,7 @@ export class Setup {
         const redisManager = await RedisManager.setup();
         console.log('redis connected');
         await DataManager.openDbConnection();
+        await SocketManager.open();
         await redisManager.flushAll();
         console.log('redis flush');
         await redisManager.set('stop', true);

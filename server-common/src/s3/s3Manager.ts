@@ -1,15 +1,13 @@
 import {config, S3} from 'aws-sdk';
 import {Config} from '../config';
 
-config.region = Config.awsRegion;
-config.update({
-    accessKeyId: Config.awsAccessKeyId,
-    secretAccessKey: Config.awsSecretAccessKey
-});
-
 export class S3Manager {
     static async uploadJson(key: string, content: string) {
-        const s3 = new S3();
+        const s3 = new S3({
+            region: Config.awsRegion,
+            accessKeyId: Config.awsAccessKeyId,
+            secretAccessKey: Config.awsSecretAccessKey
+        });
         const bucket = Config.awsContentBucket;
         await s3
             .putObject({
@@ -17,7 +15,7 @@ export class S3Manager {
                 Key: key,
                 Body: content,
                 ACL: 'public-read',
-                ContentType:'application/json'
+                ContentType: 'application/json'
             })
             .promise();
 

@@ -1,12 +1,6 @@
 import {config} from 'aws-sdk';
 import {Config} from '../config';
 
-config.region = Config.awsRegion;
-config.update({
-    accessKeyId: Config.awsAccessKeyId,
-    secretAccessKey: Config.awsSecretAccessKey
-});
-
 export class AwsUtils {
 /*
     static async uploadImage(base64: string, fileType: string) {

@@ -104,7 +104,7 @@ sort notes by attack
 add concept of dead entities/resources
 notes -1 attack damage destroyed it
 notes 100 resources left idk
-0 health guy
+<= 0 health guy
 lines get weird near the borders
 dont show enemy busy
 

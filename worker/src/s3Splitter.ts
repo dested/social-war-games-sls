@@ -6,6 +6,7 @@ import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {EntityDetails, Factions, GameEntity, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {GameLayout} from '@swg-common/models/gameLayout';
+import {SocketManager} from './socketManager';
 
 export class S3Splitter {
     static async output(
@@ -54,9 +55,10 @@ export class S3Splitter {
             const gameStateJson = JSON.stringify(factionGameState);
             const roundStateJson = JSON.stringify(factionRoundState);
             if (outputGameState) {
-                /*await*/ S3Manager.uploadJson(`game-state-${faction}.json`, gameStateJson);
+                await S3Manager.uploadJson(`game-state-${faction}.json`, gameStateJson);
             }
-            /*await*/ S3Manager.uploadJson(`round-state-${faction}.json`, roundStateJson);
+            /*await*/ SocketManager.publish(`round-state-${faction}`, roundStateJson);
+            // /*await*/ S3Manager.uploadJson(`round-state-${faction}.json`, roundStateJson);
         }
         // console.timeEnd('faction split');
     }

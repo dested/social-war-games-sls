@@ -1,7 +1,7 @@
 import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 import {DataService} from '../../dataServices';
-import {RoundState} from '@swg-common/models/roundState';
+import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {HexImages} from '../../utils/hexImages';
 import {Point, PointHashKey} from '@swg-common/hex/hex';
 import {DoubleHashArray} from '@swg-common/utils/hashArray';
@@ -20,6 +20,7 @@ import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {HexConstants} from '../../utils/hexConstants';
 import {UIConstants} from '../../utils/uiConstants';
+import {SocketUtils} from '../../utils/socketUtils';
 
 export enum GameActionOptions {
     SetGameLayout = 'SetGameLayout',
@@ -291,10 +292,12 @@ export class GameThunks {
             dispatch(GameActions.setGameLayout(layout));
             const localGameState = await DataService.getGameState(appState.user.factionId);
             dispatch(GameActions.setGameState(localGameState));
-            const roundState = await DataService.getRoundState(appState.user.factionId);
+            SocketUtils.connect(appState.user.factionId, roundState => {
+                GameThunks.getNewState(roundState, dispatch, getState).catch(ex => console.error(ex));
+            });
+            // const roundState = await DataService.getRoundState(appState.user.factionId);
             const game = GameLogic.buildGameFromState(layout, localGameState);
-            debugger;
-            HexConstants.smallHeight = UIConstants.miniMapHeight / game.grid.boundsHeight *2.5;
+            HexConstants.smallHeight = UIConstants.miniMapHeight / game.grid.boundsHeight * 2.5;
             HexConstants.smallWidth = UIConstants.miniMapWidth / game.grid.boundsWidth;
 
             DrawingOptions.defaultSmall = new DrawingOptions(
@@ -303,80 +306,40 @@ export class GameThunks {
             );
 
             Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
-            dispatch(GameThunks.processRoundState(game, roundState));
+            const emptyRoundState = {
+                nextUpdateTime: 0,
+                nextGenerationTick: game.roundEnd,
+                thisUpdateTime: 0,
+                generation: game.generation,
+                entities: {}
+            };
+            dispatch(GameActions.updateGame(game, emptyRoundState, emptyRoundState));
 
             gameState.smallGameRenderer.forceRender();
 
-            GameThunks.getNewState(
-                roundState.nextUpdateTime - +new Date(),
-                roundState.nextGenerationTick - +new Date(),
-                dispatch,
-                getState
-            );
             dispatch(GameActions.setGameReady());
             const userDetails = await DataService.currentUserDetails();
             dispatch(GameActions.updateUserDetails(userDetails));
         };
     }
 
-    private static getNewState(
-        nextUpdateTime: number,
-        nextGenerationTick: number,
-        dispatch: Dispatcher,
-        getState: () => SwgStore
-    ) {
-        console.log('------------');
-        let when = 0;
-        console.log('a',nextUpdateTime,nextGenerationTick);
-        if (nextUpdateTime < 0) {
-            console.log('b');
-            if (nextGenerationTick < -2000) {
-                console.log('c');
-                when = 10000;
-            } else {
-                console.log('d');
-                when = 2000;
-            }
-        } else {
-            console.log('e');
-            when = nextUpdateTime;
+    private static async getNewState(roundState: RoundState, dispatch: Dispatcher, getState: () => SwgStore) {
+        const {gameState, uiState, appState} = getState();
+        let game = gameState.game;
+        if (roundState.generation !== gameState.game.generation) {
+            dispatch(GameActions.selectEntity(null));
+            dispatch(GameActions.resetLocalVotes());
+            const localGameState = await DataService.getGameState(appState.user.factionId);
+            const userDetails = await DataService.currentUserDetails();
+            dispatch(GameActions.updateUserDetails(userDetails));
+
+            game = GameLogic.buildGameFromState(gameState.layout, localGameState);
+            Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
         }
 
-        console.log('f',when);
-        when = Math.max(when + 1000, 500);
-        console.log('g',when);
+        dispatch(GameThunks.processRoundState(game, roundState));
 
-        setTimeout(async () => {
-            try {
-                const {gameState, uiState, appState} = getState();
-                const roundState = await DataService.getRoundState(appState.user.factionId);
-                let game = gameState.game;
-                if (roundState.generation !== gameState.game.generation) {
-                    dispatch(GameActions.selectEntity(null));
-                    dispatch(GameActions.resetLocalVotes());
-                    const localGameState = await DataService.getGameState(appState.user.factionId);
-                    const userDetails = await DataService.currentUserDetails();
-                    dispatch(GameActions.updateUserDetails(userDetails));
-
-                    game = GameLogic.buildGameFromState(gameState.layout, localGameState);
-                    Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
-                }
-
-                dispatch(GameThunks.processRoundState(game, roundState));
-
-                gameState.smallGameRenderer.forceRender();
-
-                GameThunks.getNewState(
-                    roundState.nextUpdateTime - +new Date(),
-                    roundState.nextGenerationTick - +new Date(),
-                    dispatch,
-                    getState
-                );
-            } catch (ex) {
-                console.error(ex);
-                this.getNewState(5000, 5000, dispatch, getState);
-            }
-        }, when);
+        gameState.smallGameRenderer.forceRender();
     }
 
     static startLoading() {

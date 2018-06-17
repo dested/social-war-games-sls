@@ -11,7 +11,6 @@ import {VoteRequestResults} from '@swg-common/models/http/voteResults';
 let startBot = async function(userResponse: JwtGetUserResponse) {
     const layout = await DataService.getLayout();
     let localGameState = await DataService.getGameState(userResponse.user.factionId);
-    let roundState = await DataService.getRoundState(userResponse.user.factionId);
 
     let game = GameLogic.buildGameFromState(layout, localGameState);
     let userDetails = await DataService.currentUserDetails(userResponse.jwt);
@@ -20,12 +19,11 @@ let startBot = async function(userResponse: JwtGetUserResponse) {
     while (true) {
         try {
             if (votesLeft === 0) {
-                const next = roundState.nextGenerationTick - +new Date();
+                const next = localGameState.roundEnd - +new Date();
                 console.log('no votes left!');
                 await Utils.timeout(next + 5000);
 
                 localGameState = await DataService.getGameState(userResponse.user.factionId);
-                roundState = await DataService.getRoundState(userResponse.user.factionId);
                 game = GameLogic.buildGameFromState(layout, localGameState);
 
                 userDetails = await DataService.currentUserDetails(userResponse.jwt);
@@ -49,12 +47,10 @@ let startBot = async function(userResponse: JwtGetUserResponse) {
                 case 'stopped':
                     await Utils.timeout(1000);
                     localGameState = await DataService.getGameState(userResponse.user.factionId);
-                    roundState = await DataService.getRoundState(userResponse.user.factionId);
                     game = GameLogic.buildGameFromState(layout, localGameState);
                     break;
                 case 'bad_generation':
                     localGameState = await DataService.getGameState(userResponse.user.factionId);
-                    roundState = await DataService.getRoundState(userResponse.user.factionId);
                     game = GameLogic.buildGameFromState(layout, localGameState);
                     break;
             }

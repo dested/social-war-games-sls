@@ -115,17 +115,6 @@ export class DataService {
         return (await response.json()) as GameState;
     }
 
-    static async getRoundState(factionId: PlayableFactionId): Promise<RoundState> {
-        let response = await fetch(`${this.s3Server}/round-state-${factionId}.json?bust=${+new Date()}`, {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-        return (await response.json()) as RoundState;
-    }
-
     static async getLadder() {
         const state = getStore().getState();
 

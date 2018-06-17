@@ -77,7 +77,7 @@ export class Component extends React.Component<Props, State> {
                             bottom: 0,
                             left: 0,
                             right: 0,
-                            backgroundColor: 'black',
+                            backgroundColor: '#454545',
                             borderTop: 'solid 5px black'
                         }}
                         ref={e => this.smallGameRenderer.start(e, this.gameRenderer)}
