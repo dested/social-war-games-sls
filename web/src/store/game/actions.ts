@@ -309,6 +309,7 @@ export class GameThunks {
             };
 
             Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
+
             const emptyRoundState = {
                 nextUpdateTime: 0,
                 nextGenerationTick: game.roundEnd,

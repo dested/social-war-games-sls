@@ -54,7 +54,7 @@ export class Setup {
         };
 
         const gameState = StateManager.buildGameState(game);
-        const roundState = StateManager.buildRoundState(0, +new Date() + Config.gameDuration, []);
+        const roundState = StateManager.buildRoundState(0, []);
 
         console.log('built state');
 

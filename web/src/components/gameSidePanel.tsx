@@ -14,6 +14,8 @@ import {ColorUtils} from '../utils/colorUtils';
 import {GameAssets} from '../drawing/gameAssets';
 import {GameResource, ResourceDetails} from '@swg-common/game/gameResource';
 import {HexConstants} from '../utils/hexConstants';
+import {SFC} from 'react';
+import {Utils} from '@swg-common/utils/utils';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -252,6 +254,7 @@ export class Component extends React.Component<Props, State> {
             ? {
                   width: 50,
                   margin: 10,
+                  position: 'relative' as any,
                   borderRadius: 10,
                   alignItems: 'center',
                   height: 35,
@@ -262,6 +265,7 @@ export class Component extends React.Component<Props, State> {
             : {
                   width: 100,
                   margin: 10,
+                  position: 'relative' as any,
                   borderRadius: 10,
                   alignItems: 'center',
                   height: 100,
@@ -290,6 +294,14 @@ export class Component extends React.Component<Props, State> {
                   border: 'solid 5px black'
               };
 
+        const attackCount = this.getActionCount(entity, 'attack');
+        const moveCount = this.getActionCount(entity, 'move');
+        const mineCount = this.getActionCount(entity, 'mine');
+        const spawnInfantryCount = this.getActionCount(entity, 'spawn-infantry');
+        const spawnTankCount = this.getActionCount(entity, 'spawn-tank');
+        const spawnPlaneCount = this.getActionCount(entity, 'spawn-plane');
+
+        console.log(moveCount);
         switch (entity.entityType) {
             case 'infantry':
                 return (
@@ -303,6 +315,7 @@ export class Component extends React.Component<Props, State> {
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
                         >
                             <span>Attack</span>
+                            {attackCount > 0 && <Badge count={attackCount} />}
                         </div>
                         <div
                             style={{
@@ -313,6 +326,7 @@ export class Component extends React.Component<Props, State> {
                             onClick={() => this.props.startEntityAction(entity, 'mine')}
                         >
                             <span>Mine</span>
+                            {mineCount > 0 && <Badge count={mineCount} />}
                         </div>
                         <div
                             style={{
@@ -323,6 +337,7 @@ export class Component extends React.Component<Props, State> {
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
                             <span>Move</span>
+                            {moveCount > 0 && <Badge count={moveCount} />}
                         </div>
                     </div>
                 );
@@ -338,6 +353,7 @@ export class Component extends React.Component<Props, State> {
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
                         >
                             <span>Attack</span>
+                            {attackCount > 0 && <Badge count={attackCount} />}
                         </div>
                         <div
                             style={{
@@ -348,6 +364,7 @@ export class Component extends React.Component<Props, State> {
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
                             <span>Move</span>
+                            {moveCount > 0 && <Badge count={moveCount} />}
                         </div>
                     </div>
                 );
@@ -363,6 +380,7 @@ export class Component extends React.Component<Props, State> {
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
                         >
                             <span>Attack</span>
+                            {attackCount > 0 && <Badge count={attackCount} />}
                         </div>
                         <div
                             style={{
@@ -373,6 +391,7 @@ export class Component extends React.Component<Props, State> {
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
                             <span>Move</span>
+                            {moveCount > 0 && <Badge count={moveCount} />}
                         </div>
                     </div>
                 );
@@ -387,7 +406,8 @@ export class Component extends React.Component<Props, State> {
                             }}
                             onClick={() => this.props.startEntityAction(entity, 'spawn-infantry')}
                         >
-                            <span>Spawn Infantry ({EntityDetails.infantry.spawnCost})₽</span>
+                            <span style={{fontSize: 17}}>Spawn Infantry ({EntityDetails.infantry.spawnCost})</span>
+                            {spawnInfantryCount > 0 && <Badge count={spawnInfantryCount} />}
                         </div>
                         <div
                             style={{
@@ -397,7 +417,8 @@ export class Component extends React.Component<Props, State> {
                             }}
                             onClick={() => this.props.startEntityAction(entity, 'spawn-tank')}
                         >
-                            <span>Spawn Tank ({EntityDetails.tank.spawnCost})₽</span>
+                            <span style={{fontSize: 17}}>Spawn Tank ({EntityDetails.tank.spawnCost})₽</span>
+                            {spawnTankCount > 0 && <Badge count={spawnTankCount} />}
                         </div>
                         <div
                             style={{
@@ -407,19 +428,45 @@ export class Component extends React.Component<Props, State> {
                             }}
                             onClick={() => this.props.startEntityAction(entity, 'spawn-plane')}
                         >
-                            <span>Spawn Plane ({EntityDetails.plane.spawnCost})₽</span>
+                            <span style={{fontSize: 17}}>Spawn Plane ({EntityDetails.plane.spawnCost})₽</span>
+                            {spawnPlaneCount > 0 && <Badge count={spawnPlaneCount} />}
                         </div>
                     </div>
                 );
         }
     }
+
+    private getActionCount(entity: GameEntity, action: EntityAction) {
+        return this.props.roundState.entities[entity.id]
+            ? Utils.sum(this.props.roundState.entities[entity.id].filter(a => a.action === action), a => a.count)
+            : 0;
+    }
 }
+
+export let Badge: SFC<{count: number}> = ({count}) => {
+    return (
+        <span
+            style={{
+                position: 'absolute',
+                borderRadius: '50%',
+                background: '#9b2d2d',
+                top: '-.5em',
+                right: '-.5em',
+                padding: '.5em',
+                fontSize: '16px',
+                fontWeight: 'bold'
+            }}
+        >
+            {count}
+        </span>
+    );
+};
 
 export let GameSidePanel = connect(
     (state: SwgStore) => ({
         user: state.appState.user,
         game: state.gameState.game,
-        roundState: state.gameState.roundState,
+        roundState: state.gameState.localRoundState,
         selectedEntity: state.gameState.selectedEntity,
         selectedResource: state.gameState.selectedResource,
         selectedEntityAction: state.gameState.selectedEntityAction

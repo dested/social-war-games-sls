@@ -92,6 +92,9 @@ export class Component extends React.Component<Props, State> {
                             bottom: 0,
                             left: 0,
                             backgroundColor: 'black',
+                            borderTop: 'solid 3px black',
+                            borderRight: 'solid 3px black',
+                            borderTopRightRadius: 25
                         }}
                         ref={e => this.smallGameRenderer.start(e, this.gameRenderer)}
                         width={UIConstants.miniMapWidth}

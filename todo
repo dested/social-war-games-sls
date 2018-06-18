@@ -103,15 +103,9 @@
 '/ dont show enemy busy
 '/ notes -1 attack damage destroyed it
 '/ <= 0 health guy
+'/ fix players voted bug
+'/ show count on entities on tap
 
-
-
-fix players voted bug
-make entities different colors per factory
-notes 100 resources left idk
-better bases tab
-better colors scale for vote
-emoji for hold the fort, attack west, need resrouces
 
 
 gameplay
@@ -124,7 +118,12 @@ gameplay
   randomize factionid
   handle utc time
     offset from server time?
-    
+
+  better bases tab
+  better colors scale for vote
+  emoji for hold the fort, attack west, need resrouces
+  trend of faction stats
+
 endgame
   stress test
   balance units
@@ -142,7 +141,8 @@ endgame
 
 
 low priority
-  figure out memory leak 
+  make entities different colors per factory
+  figure out memory leak
   prevote junk in gamelogic
   planes can fly over water
   clean up contants

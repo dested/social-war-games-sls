@@ -25,12 +25,15 @@ export class GameRenderer {
     selectEntity = (entity: GameEntity) => getStore().dispatch(GameActions.selectEntity(entity));
     selectResource = (resource: GameResource) => getStore().dispatch(GameActions.selectResource(resource));
     selectedViableHex = (hex: GameHexagon) => getStore().dispatch(GameThunks.selectViableHex(hex));
+    swipeVelocity: {x: number; y: number};
 
     tapHex(hexagon: GameHexagon) {
         const store = getStore();
         const state = store.getState();
 
-        console.log(hexagon.x, hexagon.y);
+        this.swipeVelocity.x = 0;
+        this.swipeVelocity.y = 0;
+
         const {game, selectedEntity} = state.gameState;
 
         const viableHexIds: {[hexId: string]: boolean} = state.gameState.viableHexIds || {};
@@ -124,7 +127,7 @@ export class GameRenderer {
         let startY = 0;
         let startViewX = 0;
         let startViewY = 0;
-        let swipeVelocity = {x: 0, y: 0};
+        this.swipeVelocity = {x: 0, y: 0};
         this.view = new GameView(this.canvas);
 
         manager.on('panmove', e => {
@@ -135,7 +138,7 @@ export class GameRenderer {
         manager.on('panstart', e => {
             store.dispatch(UIActions.setUI('None'));
 
-            swipeVelocity.x = swipeVelocity.y = 0;
+            this.swipeVelocity.x = this.swipeVelocity.y = 0;
             startX = e.center.x;
             startY = e.center.y;
             startViewX = this.view.x;
@@ -145,12 +148,12 @@ export class GameRenderer {
 
         manager.on('swipe', (ev: {velocityX: number; velocityY: number}) => {
             store.dispatch(UIActions.setUI('None'));
-            swipeVelocity.x = ev.velocityX * 10;
-            swipeVelocity.y = ev.velocityY * 10;
+            this.swipeVelocity.x = ev.velocityX * 10;
+            this.swipeVelocity.y = ev.velocityY * 10;
         });
 
         manager.on('tap', e => {
-            swipeVelocity.x = swipeVelocity.y = 0;
+            this.swipeVelocity.x = this.swipeVelocity.y = 0;
             store.dispatch(UIActions.setUI('None'));
             const state = store.getState();
             if (!state.gameState) return;
@@ -169,23 +172,23 @@ export class GameRenderer {
         });
 
         setInterval(() => {
-            if (Math.abs(swipeVelocity.x) > 0) {
-                let sign = Utils.mathSign(swipeVelocity.x);
-                swipeVelocity.x += 0.7 * -sign;
-                if (Utils.mathSign(swipeVelocity.x) != sign) {
-                    swipeVelocity.x = 0;
+            if (Math.abs(this.swipeVelocity.x) > 0) {
+                let sign = Utils.mathSign(this.swipeVelocity.x);
+                this.swipeVelocity.x += 0.7 * -sign;
+                if (Utils.mathSign(this.swipeVelocity.x) != sign) {
+                    this.swipeVelocity.x = 0;
                 }
             }
 
-            if (Math.abs(swipeVelocity.y) > 0) {
-                let sign = Utils.mathSign(swipeVelocity.y);
-                swipeVelocity.y += 0.7 * -sign;
-                if (Utils.mathSign(swipeVelocity.y) != sign) {
-                    swipeVelocity.y = 0;
+            if (Math.abs(this.swipeVelocity.y) > 0) {
+                let sign = Utils.mathSign(this.swipeVelocity.y);
+                this.swipeVelocity.y += 0.7 * -sign;
+                if (Utils.mathSign(this.swipeVelocity.y) != sign) {
+                    this.swipeVelocity.y = 0;
                 }
             }
-            if (Math.abs(swipeVelocity.x) > 0 || Math.abs(swipeVelocity.y) > 0) {
-                this.view.offsetPosition(-swipeVelocity.x, -swipeVelocity.y);
+            if (Math.abs(this.swipeVelocity.x) > 0 || Math.abs(this.swipeVelocity.y) > 0) {
+                this.view.offsetPosition(-this.swipeVelocity.x, -this.swipeVelocity.y);
             }
         }, 1000 / 60);
 
@@ -248,20 +251,20 @@ export class GameRenderer {
                 context.fillStyle = 'rgba(0,0,0,.6)';
             } else {
                 if (isViableHex) {
-                    context.fillStyle = 'rgba(128,52,230,.25)';
+                    context.fillStyle = 'rgba(226,238,54,.25)';
                 } else {
                     if (hexagon.factionId === '0') continue;
                     if (hasEntity) {
-                        context.fillStyle = HexColors.factionIdToColor(
-                            hexagon.factionId,
-                            '0',
-                            hasEntity === selectedEntity ? '1' : '.65'
-                        );
+                        if (hasEntity === selectedEntity) {
+                            context.fillStyle = '#f1f1f1';
+                        } else {
+                            context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '1');
+                        }
                     } else {
                         context.fillStyle = HexColors.factionIdToColor(
                             hexagon.factionId,
                             '0',
-                            hexagon.factionDuration === 1 ? '.15' : '.3'
+                            hexagon.factionDuration === 1 ? '.3' : '.8'
                         );
                     }
                 }

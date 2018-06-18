@@ -26,6 +26,9 @@ export class SmallGameRenderer {
         const startY = gameRendererView.y;
         const endY = gameRendererView.y + (hexagon.center.y - (gameRendererView.y + gameRendererView.height / 2));
 
+        this.gameRenderer.swipeVelocity.x = 0;
+        this.gameRenderer.swipeVelocity.y = 0;
+
         AnimationUtils.start({
             start: 0,
             finish: 1,

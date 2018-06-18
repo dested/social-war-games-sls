@@ -60,7 +60,6 @@ export class Worker {
             console.log('round end');
             await this.redisManager.set('stop', true);
             const generation = await this.redisManager.get<number>('game-generation');
-            console.log('gen gen ' + generation);
 
             const game = GameLogic.buildGameFromState(
                 await this.redisManager.get<GameLayout>('layout'),
@@ -136,22 +135,20 @@ export class Worker {
             this.writeFactionStats(game);
             await this.buildRoundStats(game, preVoteEntities, preVoteResources, winningVotes, voteCounts);
 
-            console.log('gen gen1 ' + (await this.redisManager.get<number>('game-generation')) + ' ' + game.generation);
-
             game.generation++;
             await this.redisManager.incr('game-generation');
 
             const newGameState = StateManager.buildGameState(game);
 
-            const roundState = StateManager.buildRoundState(game.generation, +new Date() + Config.gameDuration, []);
-            await this.redisManager.set<number>('nextGenerationUpdate', +new Date() + Config.gameDuration);
-            console.log(`GENERATION ${game.generation}`);
+            const roundState = StateManager.buildRoundState(game.generation, []);
+            console.log(`GENERATION ${game.generation} ${newGameState.generation} ${await this.redisManager.get('game-generation')}`);
             await S3Splitter.output(game, game.layout, newGameState, roundState, true);
 
             await this.redisManager.set('game-state', newGameState);
             await this.redisManager.set('stop', false);
 
             if (game.generation < 10000000) {
+                // for debugging
                 setTimeout(() => {
                     this.processNewRound();
                 }, Config.gameDuration);
@@ -231,18 +228,17 @@ export class Worker {
         try {
             console.time('round update');
             console.log('update round state');
-            const generation = await this.redisManager.get<number>('game-generation', 1);
             const gameState = await this.redisManager.get<GameState>('game-state');
             const layout = await this.redisManager.get<GameLayout>('layout');
-            const nextGenerationUpdate = await this.redisManager.get<number>('nextGenerationUpdate');
+
             const game = GameLogic.buildGameFromState(layout, gameState);
 
-            const voteCounts = await DBVote.getVoteCount(generation);
+            const voteCounts = await DBVote.getVoteCount(gameState.generation);
             await S3Splitter.output(
                 game,
                 layout,
                 gameState,
-                StateManager.buildRoundState(generation, nextGenerationUpdate, voteCounts),
+                StateManager.buildRoundState(gameState.generation, voteCounts),
                 false
             );
             console.timeEnd('round update');
@@ -328,7 +324,7 @@ export class Worker {
                     .filter(vote => preVoteEntities.find(ent => ent.id === vote._id).factionId === faction)
                     .sort(
                         (vote1, vote2) =>
-                            Utils.sum(vote1.actions, v => v.count) - Utils.sum(vote2.actions, v => v.count)
+                            Utils.sum(vote2.actions, v => v.count) - Utils.sum(vote1.actions, v => v.count)
                     )
                     .map(vote => ({id: vote._id, count: Utils.sum(vote.actions, v => v.count)}))
                     .slice(0, 10)

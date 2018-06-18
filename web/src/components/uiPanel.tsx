@@ -284,7 +284,7 @@ export let UIPanel = connect(
     (state: SwgStore) => ({
         user: state.appState.user,
         game: state.gameState.game,
-        roundState: state.gameState.roundState,
+        roundState: state.gameState.localRoundState,
         userDetails: state.gameState.userDetails,
         gameRenderer: state.gameState.gameRenderer,
 
