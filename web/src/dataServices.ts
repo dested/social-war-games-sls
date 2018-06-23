@@ -129,15 +129,15 @@ export class DataService {
         return (await response.json()) as LadderResponse;
     }
 
-    static async getFactionStats() {
-        let response = await fetch(`${this.s3Server}/faction-stats.json?bust=${+new Date()}`, {
+    static async getFactionStats(generation: number): Promise<FactionStats[]> {
+        let response = await fetch(`${this.s3Server}/faction-stats.json?bust=${generation}`, {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json'
             }
         });
-        return (await response.json()) as FactionStats;
+        return await response.json();
     }
 
     static async getFactionRoundStats(generation: number, factionId: PlayableFactionId) {

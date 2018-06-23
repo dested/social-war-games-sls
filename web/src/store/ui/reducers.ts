@@ -9,7 +9,7 @@ const initialState: UIStore = {
 
 export interface UIStore {
     ui: UI;
-    factionStats?: FactionStats;
+    factionStats?: FactionStats[];
     ladder?: LadderResponse;
     factionRoundStats?: FactionRoundStats;
 }

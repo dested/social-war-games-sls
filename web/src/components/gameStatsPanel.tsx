@@ -37,62 +37,78 @@ export class Component extends React.Component<Props, State> {
             <div
                 style={{
                     position: 'absolute',
-                    left: UIConstants.miniMapWidth + 5,
+                    left: UIConstants.miniMapWidth + 3,
                     bottom: UIConstants.progressBarHeight,
                     display: 'flex'
                 }}
             >
                 <div
                     onClick={() => this.setUI('FactionStats')}
-                    style={{padding: 10, height: 40, backgroundColor: '#59ccf3'}}
+                    className={'bottom-button'}
+                    style={{backgroundColor: '#f3ecea'}}
                 >
                     Factions Stats
                 </div>
                 <div
                     onClick={() => this.setUI('RoundStats')}
-                    style={{padding: 10, height: 40, backgroundColor: '#c0f353'}}
+                    className={'bottom-button'}
+                    style={{backgroundColor: '#f3ecea'}}
                 >
                     Round Stats
                 </div>
-                <div onClick={() => this.setUI('Bases')} style={{padding: 10, height: 40, backgroundColor: '#7971f3'}}>
+                <div
+                    onClick={() => this.setUI('Bases')}
+                    className={'bottom-button'}
+                    style={{backgroundColor: '#f3ecea'}}
+                >
                     Bases
                 </div>
-                <div onClick={() => this.setUI('Ladder')} style={{padding: 10, height: 40, backgroundColor: '#f0c2f3'}}>
+                <div
+                    onClick={() => this.setUI('Ladder')}
+                    className={'bottom-button'}
+                    style={{backgroundColor: '#f3ecea'}}
+                >
                     Ladder
                 </div>
-                {this.props.userDetails && (
-                    <>
-                        <span
-                            style={{
-                                backgroundColor: '#3b75f3',
-                                padding: 10
-                            }}
-                        >
-                            {(this.props.userDetails.maxVotes - this.props.userDetails.voteCount).toString()} Votes Left
-                        </span>
-                        {this.props.isVoting && (
-                            <span
-                                style={{
-                                    backgroundColor: '#3b75f3',
-                                    padding: 10
-                                }}
-                            >
-                                Vote Processing...
-                            </span>
-                        )}
-                        {this.props.votingError && (
-                            <span
-                                style={{
-                                    backgroundColor: '#3b75f3',
-                                    padding: 10
-                                }}
-                            >
-                                Sorry, your vote could not be processed.
-                            </span>
-                        )}
-                    </>
-                )}
+                {this.props.userDetails && this.renderVoteDetails()}
             </div>
+        );
+    }
+
+    private renderVoteDetails() {
+        const votesLeft = this.props.userDetails.maxVotes - this.props.userDetails.voteCount;
+
+        return (
+            <>
+                <span
+                    className={'bottom-button'}
+                    style={{
+                        backgroundColor: '#89bbff'
+                    }}
+                >
+                    {`${votesLeft} Vote${votesLeft === 1 ? '' : 's'} Left`}
+                </span>
+                {this.props.isVoting && (
+                    <span
+                        className={'bottom-button'}
+                        style={{
+                            backgroundColor: '#f3f1a0'
+                        }}
+                    >
+                        Vote Processing...
+                    </span>
+                )}
+                {this.props.votingError && (
+                    <span
+                        style={{
+                            backgroundColor: '#f37d87',
+                            padding: 10
+                        }}
+                    >
+                        Sorry, your vote could not be processed.
+                    </span>
+                )}
+            </>
         );
     }
 

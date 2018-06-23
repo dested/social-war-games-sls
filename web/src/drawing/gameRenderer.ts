@@ -128,7 +128,9 @@ export class GameRenderer {
         let startViewX = 0;
         let startViewY = 0;
         this.swipeVelocity = {x: 0, y: 0};
-        this.view = new GameView(this.canvas);
+        const gameState = store.getState().gameState;
+
+        this.view = new GameView(this.canvas, gameState.game);
 
         manager.on('panmove', e => {
             if (e.velocity === 0) return;
@@ -314,13 +316,13 @@ export class GameRenderer {
                 if (voteEntities && voteEntities.length > 0) {
                     context.save();
                     const count = _.sum(voteEntities.map(a => a.count));
-                    context.lineWidth = 6;
+                    context.strokeStyle = '#dfdfdf';
                     if (count < 2) {
-                        context.strokeStyle = '#284a2a';
+                        context.lineWidth = 2;
                     } else if (count < 6) {
-                        context.strokeStyle = '#4e4d23';
+                        context.lineWidth = 4;
                     } else if (count < 9) {
-                        context.strokeStyle = '#602a13';
+                        context.lineWidth = 6;
                     }
                     context.stroke(hexagon.pointsSvg);
                     context.restore();
@@ -329,8 +331,8 @@ export class GameRenderer {
 
                 if (hasEntity.busy) {
                     context.save();
-                    context.lineWidth = 4;
-                    context.strokeStyle = '#CCCCCC';
+                    context.lineWidth = 5;
+                    context.strokeStyle = '#9a9a9a';
                     context.stroke(hexagon.pointsSvg);
                     context.restore();
                     continue;
@@ -404,8 +406,9 @@ export class GameRenderer {
 
         context.restore();
 
+        const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
+
         if (HexConstants.isMobile) {
-            const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
             context.fillStyle = 'grey';
             context.fillRect(
                 0,
@@ -421,7 +424,6 @@ export class GameRenderer {
                 UIConstants.progressBarHeight
             );
         } else {
-            const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
             context.fillStyle = 'grey';
             context.fillRect(
                 UIConstants.miniMapWidth,

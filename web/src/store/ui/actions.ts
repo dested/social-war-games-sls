@@ -24,7 +24,7 @@ export interface SetLadderAction {
 
 export interface SetFactionStatsAction {
     type: UIActionOptions.SetFactionStats;
-    factionStats: FactionStats;
+    factionStats: FactionStats[];
 }
 
 export interface SetFactionRoundStatsAction {
@@ -48,7 +48,7 @@ export class UIActions {
             ladder
         };
     }
-    static setFactionStats(factionStats: FactionStats): SetFactionStatsAction {
+    static setFactionStats(factionStats: FactionStats[]): SetFactionStatsAction {
         return {
             type: UIActionOptions.SetFactionStats,
             factionStats
@@ -83,7 +83,7 @@ export class UIThunks {
 
             switch (ui) {
                 case 'FactionStats':
-                    dispatch(UIActions.setFactionStats(await DataService.getFactionStats()));
+                    dispatch(UIActions.setFactionStats(await DataService.getFactionStats(generation)));
                     break;
                 case 'Ladder':
                     dispatch(UIActions.setLadder(await DataService.getLadder()));

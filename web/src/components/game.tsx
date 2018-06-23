@@ -17,6 +17,7 @@ import {GameStatsPanel} from './gameStatsPanel';
 import {UIPanel} from './uiPanel';
 import {Grid} from '@swg-common/hex/hex';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
+import {DrawingOptions} from '../drawing/hexDrawing';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;

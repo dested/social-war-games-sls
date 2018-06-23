@@ -1,4 +1,16 @@
 export class Utils {
+    static sort<T>(array: T[], callback: (t: T) => number): T[] {
+        const sorted = [...array];
+        sorted.sort((a, b) => callback(a) - callback(b));
+        return sorted;
+    }
+
+    static sortDesc<T>(array: T[], callback: (t: T) => number): T[] {
+        const sorted = [...array];
+        sorted.sort((a, b) => callback(b) - callback(a));
+        return sorted;
+    }
+
     static arrayToDictionary<T>(array: T[], callback: (t: T) => string | number): {[key: string]: T} {
         return array.reduce(
             (a, b) => {
@@ -129,10 +141,10 @@ export class Utils {
         return maps;
     }
 
-    static mapMany<T, T2>(winningVotes: T[], callback: (a: T) => T2[]): T2[] {
+    static mapMany<T, T2>(array: T[], callback: (a: T) => T2[]): T2[] {
         const result: T2[] = [];
-        for (let i = 0; i < winningVotes.length; i++) {
-            const winningVote = winningVotes[i];
+        for (let i = 0; i < array.length; i++) {
+            const winningVote = array[i];
             result.push(...callback(winningVote));
         }
         return result;

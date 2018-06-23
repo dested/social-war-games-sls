@@ -26,6 +26,7 @@ export class Setup {
         const redisManager = await RedisManager.setup();
         console.log('redis connected');
         await DataManager.openDbConnection();
+
         await SocketManager.open();
         await redisManager.flushAll();
         console.log('redis flush');
@@ -65,6 +66,7 @@ export class Setup {
         await redisManager.set('layout', gameLayout);
         await redisManager.set('game-state', gameState);
         console.log('set redis');
+        await S3Manager.uploadJson(`faction-stats.json`, JSON.stringify([]));
 
         await redisManager.set('stop', false);
         console.timeEnd('setup');

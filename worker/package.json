@@ -2,7 +2,7 @@
   "name": "swg-worker",
   "version": "1.0.0",
   "description": "",
-  "sideEffects":false,
+  "sideEffects": false,
   "scripts": {
     "start:watch": "nodemon",
     "test": "npx jest",
@@ -28,9 +28,11 @@
     "reflect-metadata": "^0.1.12",
     "rxjs": "^5.5.8",
     "typescript": "^2.8.3",
+    "node-fetch": "^2.1.2",
     "uuid": "^3.2.1"
   },
   "devDependencies": {
+    "@types/node-fetch": "^2.1.1",
     "@types/bcryptjs": "^2.4.1",
     "@types/esprima": "^4.0.1",
     "@types/jest": "^22.2.3",

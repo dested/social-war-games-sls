@@ -1,5 +1,5 @@
 export class HexColors {
-    public static factionIdToColor(factionId: string, neighborFactionId: string, transparency: string) {
+    public static factionIdToColor(factionId: string, neighborFactionId: string = '0', transparency: string = '1') {
         switch (factionId) {
             case '0':
                 return null;

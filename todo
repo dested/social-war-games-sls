@@ -105,13 +105,18 @@
 '/ <= 0 health guy
 '/ fix players voted bug
 '/ show count on entities on tap
+'/ stress test
+'/ add indexes to mongo
+'/  migrate from s3
+'/ put bounds on view
+'/ if zero votes do something
 
 
 
 gameplay
   units youve participated in, howd they do
   show replay of turns
-  
+  test redux order with and without thunk
   hot units
     units that move all the time
   how many players voted last round
@@ -125,17 +130,14 @@ gameplay
   trend of faction stats
 
 endgame
-  stress test
   balance units
   build bots    
     bot flag in user
     needs good name for ladder
-  add indexes to mongo
   what happens when all factories for a faction is destroyed
   encrypt faction
   mobile support
   update images
-  migrate from s3
   sell
 
 
@@ -144,10 +146,8 @@ low priority
   make entities different colors per factory
   figure out memory leak
   prevote junk in gamelogic
-  planes can fly over water
-  clean up contants
+  clean up constants
     colors 
-  put bounds on view
   unify tsconfig
   make better use of caching in server
   implement tree shaking so server code doesnt make it to the client

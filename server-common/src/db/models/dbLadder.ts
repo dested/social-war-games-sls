@@ -15,6 +15,7 @@ export class DBLadder {
         const ranks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
         if (userId) {
             const me = await this.db.getOne(this.db.query.parse((a, _userId) => a._id === _userId, userId));
+            console.log(me);
             if (me) {
                 ranks.push(...[me.rank - 2, me.rank - 1, me.rank, me.rank + 1, me.rank + 2]);
             }

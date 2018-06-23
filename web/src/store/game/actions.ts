@@ -298,13 +298,13 @@ export class GameThunks {
             // const roundState = await DataService.getRoundState(appState.user.factionId);
             const game = GameLogic.buildGameFromState(layout, localGameState);
 
-            HexConstants.smallHeight = UIConstants.miniMapHeight / game.grid.boundsHeight*1.3384;
+            HexConstants.smallHeight = UIConstants.miniMapHeight / game.grid.boundsHeight * 1.3384;
             HexConstants.smallWidth = UIConstants.miniMapWidth / game.grid.boundsWidth;
 
             DrawingOptions.defaultSmall = {
                 width: HexConstants.smallWidth,
                 height: HexConstants.smallHeight,
-                size: HexConstants.smallHeight / 2-1,
+                size: HexConstants.smallHeight / 2 - 1,
                 orientation: Drawing.Orientation.PointyTop
             };
 
@@ -359,13 +359,15 @@ export class GameThunks {
             const {game, roundState} = gameState;
             dispatch(GameActions.selectEntity(null));
 
+            const votesLeft = gameState.userDetails.maxVotes - gameState.userDetails.voteCount;
+            if (votesLeft === 0) return;
+
             const processedVote = {
                 entityId,
                 action,
                 hexId,
                 factionId: appState.user.factionId
             };
-
             let voteResult = GameLogic.validateVote(game, processedVote);
 
             if (voteResult !== VoteResult.Success) {
@@ -391,10 +393,9 @@ export class GameThunks {
                 });
 
                 if (serverVoteResult.reason !== 'ok') {
-                    dispatch(GameActions.votingError(serverVoteResult.voteResult || VoteResult.Error));
                     dispatch(GameActions.removeLocalVote(processedVote));
                     dispatch(GameThunks.processRoundState(game, roundState));
-
+                    dispatch(GameActions.votingError(serverVoteResult.voteResult || VoteResult.Error));
                     setTimeout(() => {
                         dispatch(GameActions.votingError(null));
                     }, 3000);

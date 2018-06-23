@@ -20,6 +20,8 @@ import {padding} from 'glamor/utils';
 import {LadderResponse} from '@swg-common/models/http/userController';
 import {VoteNote} from '@swg-common/models/voteNote';
 import {Fragment} from 'react';
+import {Utils} from '@swg-common/utils/utils';
+import {FactionStatsCanvas} from './factionStatsCanvas';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -30,7 +32,7 @@ interface Props extends RouteComponentProps<{}> {
     ui: UI;
 
     ladder: LadderResponse;
-    factionStats: FactionStats;
+    factionStats: FactionStats[];
     factionRoundStats: FactionRoundStats;
     getFactionRoundStats: typeof UIThunks.getFactionRoundStats;
 
@@ -94,26 +96,8 @@ export class Component extends React.Component<Props, State> {
         if (!this.props.factionStats) {
             return 'loading';
         }
-        return Factions.map(faction => {
-            const factionStat = this.props.factionStats[faction];
-            return (
-                <span
-                    key={faction}
-                    style={{
-                        display: 'flex',
-                        padding: 10,
-                        margin: 3,
-                        alignItems: 'center',
-                        flexDirection: 'column',
-                        backgroundColor: HexColors.factionIdToColor(faction, '0', '.8')
-                    }}
-                >
-                    <span>Score: {factionStat.score}</span>
-                    <span>Resources: {factionStat.resourceCount}</span>
-                    <span>{Math.round(factionStat.hexPercent * 100).toFixed(0)}% Of World</span>
-                </span>
-            );
-        });
+
+        return <FactionStatsCanvas factionStats={this.props.factionStats} />;
     }
 
     private renderBases() {

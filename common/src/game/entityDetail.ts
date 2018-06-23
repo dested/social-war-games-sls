@@ -20,7 +20,7 @@ export type PlayableFactionId = '1' | '2' | '3';
 export type OfFaction<T> = {[faction in PlayableFactionId]: T};
 
 export let Factions: PlayableFactionId[] = ['1', '2', '3'];
-export let FactionNames: OfFaction<string> = {'1': 'Red', '2': 'Green', '3': 'Blue'};
+export let FactionNames: OfFaction<string> = {'1': 'Red', '2': 'Green', '3': 'Purple'};
 export let EntityTypeNames: {[entity in EntityType]: string} = {
     infantry: 'Infantry',
     tank: 'Tank',

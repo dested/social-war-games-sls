@@ -26,6 +26,7 @@ import {FactionRoundStats, RoundStats} from '@swg-common/models/roundStats';
 import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import {SocketManager} from './socketManager';
+import fetch from 'node-fetch';
 
 export class Worker {
     private static redisManager: RedisManager;
@@ -141,7 +142,11 @@ export class Worker {
             const newGameState = StateManager.buildGameState(game);
 
             const roundState = StateManager.buildRoundState(game.generation, []);
-            console.log(`GENERATION ${game.generation} ${newGameState.generation} ${await this.redisManager.get('game-generation')}`);
+            console.log(
+                `GENERATION ${game.generation} ${newGameState.generation} ${await this.redisManager.get(
+                    'game-generation'
+                )}`
+            );
             await S3Splitter.output(game, game.layout, newGameState, roundState, true);
 
             await this.redisManager.set('game-state', newGameState);
@@ -259,7 +264,7 @@ export class Worker {
         }
     }
 
-    private static writeFactionStats(game: GameModel) {
+    private static async writeFactionStats(game: GameModel) {
         const factionStats: FactionStats = Utils.mapToObj(Factions, faction => {
             const factionHexes = game.grid.hexes.map(a => a.factionId);
             const hexCount = factionHexes.filter(a => a === faction).length;
@@ -270,8 +275,17 @@ export class Worker {
                 score: GameLogic.calculateScore(game, faction)
             };
         });
-
-        S3Manager.uploadJson(`faction-stats.json`, JSON.stringify(factionStats));
+        const response = await fetch('https://s3-us-west-2.amazonaws.com/swg-content/faction-stats.json', {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        let json = (await response.json()) as FactionStats[];
+        json.push(factionStats);
+        json = json.slice(-(24 * 60 * 60 * 1000 / Config.gameDuration * 2));
+        S3Manager.uploadJson(`faction-stats.json`, JSON.stringify(json));
     }
 
     private static async buildRoundStats(
@@ -282,7 +296,6 @@ export class Worker {
         voteCounts: VoteCountResult[]
     ) {
         const userStats = await DBVote.getRoundUserStats(game.generation);
-
         const actionToWeight = (a: EntityAction) => {
             switch (a) {
                 case 'attack':
