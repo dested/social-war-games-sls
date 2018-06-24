@@ -92,7 +92,8 @@ export class Component extends React.Component<Props, State> {
                             bottom: 0,
                             left: 0,
                             backgroundColor: 'black',
-                            borderTopRightRadius: 25
+                            borderTopRightRadius: 25,
+                            overflow: 'hidden'
                         }}
                     >
                         <canvas
@@ -107,13 +108,14 @@ export class Component extends React.Component<Props, State> {
                             height={UIConstants.miniMapHeight}
                         />
                         <div
+                            ref={e => {
+                                window.smallRendererBox = e;
+                                this.gameRenderer.view.updateSmallBox();
+                            }}
                             style={{
-                                width: 50,
-                                height: 50,
-                                border: 'white solid 2px',
-                                position: 'absolute',
-                                left: 100,
-                                top: 100
+                                pointerEvents: 'none',
+                                border: 'white solid 1px',
+                                position: 'absolute'
                             }}
                         />
                     </div>

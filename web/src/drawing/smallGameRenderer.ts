@@ -4,6 +4,7 @@ import {getStore} from '../store';
 import {Dispatcher} from '../store/actions';
 import {SwgStore} from '../store/reducers';
 import {AnimationUtils} from '../utils/animationUtils';
+import {DebounceUtils} from '../utils/debounceUtils';
 import {HexColors} from '../utils/hexColors';
 import {HexConstants} from '../utils/hexConstants';
 import {HexImages} from '../utils/hexImages';
@@ -17,7 +18,7 @@ export class SmallGameRenderer {
     private context: CanvasRenderingContext2D;
     private gameRenderer: GameRenderer;
 
-    tapHex(hexagon: GameHexagon) {
+    tapHex(hexagon: GameHexagon, force: boolean) {
         const gameRendererView = this.gameRenderer.view;
 
         const startX = gameRendererView.x;
@@ -29,18 +30,22 @@ export class SmallGameRenderer {
         this.gameRenderer.swipeVelocity.x = 0;
         this.gameRenderer.swipeVelocity.y = 0;
 
-        AnimationUtils.start({
-            start: 0,
-            finish: 1,
-            duration: 250,
-            easing: AnimationUtils.easings.easeInCubic,
-            callback: c => {
-                gameRendererView.setPosition(
-                    AnimationUtils.lerp(startX, endX, c),
-                    AnimationUtils.lerp(startY, endY, c)
-                );
-            }
-        });
+        if (force) {
+            gameRendererView.setPosition(endX, endY);
+        } else {
+            AnimationUtils.start({
+                start: 0,
+                finish: 1,
+                duration: 250,
+                easing: AnimationUtils.easings.easeInCubic,
+                callback: c => {
+                    gameRendererView.setPosition(
+                        AnimationUtils.lerp(startX, endX, c),
+                        AnimationUtils.lerp(startY, endY, c)
+                    );
+                }
+            });
+        }
     }
 
     start(canvas: HTMLCanvasElement, gameRenderer: GameRenderer) {
@@ -53,8 +58,9 @@ export class SmallGameRenderer {
 
         const manager = new Manager(this.canvas); // const swipe = new Swipe();
         manager.add(new Hammer.Tap({taps: 1}));
+        manager.add(new Hammer.Pan({}));
 
-        manager.on('tap', e => {
+        const goToPosition = (e: HammerInput, force: boolean) => {
             const store = getStore();
             const state = store.getState();
             if (!state.gameState) {
@@ -83,9 +89,17 @@ export class SmallGameRenderer {
             const hex = distances[0].h;
 
             if (hex) {
-                this.tapHex(hex);
+                this.tapHex(hex, force);
             }
+        };
+
+        manager.on('tap', e => {
+            goToPosition(e, false);
         });
+        manager.on('pan', e => {
+            DebounceUtils.wait('small-pan', 16, () => goToPosition(e, true));
+        });
+
         this.forceRender();
     }
 

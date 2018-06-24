@@ -1,4 +1,5 @@
 import {GameModel} from '@swg-common/game/gameLogic';
+import {HexConstants} from '../utils/hexConstants';
 import {DrawingOptions} from './hexDrawing';
 
 export class GameView {
@@ -51,6 +52,23 @@ export class GameView {
 
         localStorage.setItem('view-x' + this.canvas.id, this.x.toString());
         localStorage.setItem('view-y' + this.canvas.id, this.y.toString());
+        this.updateSmallBox();
+    }
+
+    updateSmallBox() {
+        if (!window.smallRendererBox) {
+            return;
+        }
+        const d = window.smallRendererBox as HTMLDivElement;
+
+        const w = HexConstants.width / HexConstants.smallWidth;
+        const h = HexConstants.height / HexConstants.smallHeight;
+
+        d.style.left = `${this.x / w}px`;
+        d.style.top = `${this.y / h}px`;
+
+        d.style.width = `${this.width / w}px`;
+        d.style.height = `${this.height / h}px`;
     }
 
     offsetPosition(x: number, y: number) {
