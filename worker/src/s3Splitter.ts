@@ -58,7 +58,7 @@ export class S3Splitter {
             const gameStateJson = GameStateParser.fromGameState(factionGameState);
             const roundStateJson = RoundStateParser.fromRoundState(factionRoundState);
             if (outputGameState) {
-                await S3Manager.uploadBytes(`game-state-${faction}.swg`, gameStateJson);
+                await S3Manager.uploadBytes(`game-state-${faction}.swg`, gameStateJson,false);
             }
             /*await*/
             SocketManager.publish(`round-state-${faction}`, roundStateJson);

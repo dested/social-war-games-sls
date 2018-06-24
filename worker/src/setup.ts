@@ -61,14 +61,14 @@ export class Setup {
         console.log('built state');
 
         const gameLayoutBytes = GameLayoutParser.fromGameLayout(gameLayout);
-        await S3Manager.uploadBytes('layout.swg', gameLayoutBytes);
+        await S3Manager.uploadBytes('layout.swg', gameLayoutBytes, true);
 
         await S3Splitter.output(game, gameLayout, gameState, roundState, true);
 
         await redisManager.set('layout', gameLayout);
         await redisManager.set('game-state', gameState);
         console.log('set redis');
-        await S3Manager.uploadJson(`faction-stats.json`, JSON.stringify([]));
+        await S3Manager.uploadJson(`faction-stats.json`, JSON.stringify([]), false);
 
         await redisManager.set('stop', false);
         console.timeEnd('setup');

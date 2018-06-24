@@ -285,7 +285,7 @@ export class Worker {
         let json = (await response.json()) as FactionStats[];
         json.push(factionStats);
         json = json.slice(-(24 * 60 * 60 * 1000 / Config.gameDuration * 2));
-        S3Manager.uploadJson(`faction-stats.json`, JSON.stringify(json));
+        S3Manager.uploadJson(`faction-stats.json`, JSON.stringify(json),false);
     }
 
     private static async buildRoundStats(
@@ -574,7 +574,8 @@ export class Worker {
 
             /*await*/ S3Manager.uploadJson(
                 `round-outcomes/round-outcome-${generation}-${faction}.json`,
-                JSON.stringify(factionRoundStats)
+                JSON.stringify(factionRoundStats),
+                true
             );
         }
     }

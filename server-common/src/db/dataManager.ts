@@ -8,7 +8,7 @@ export class DataManager {
 
     static async openDbConnection() {
         console.log('opening db connection');
-        if (!this.dbConnection || (this.dbConnection.serverConfig as any).isConnected()) {
+        if (!this.dbConnection || !(this.dbConnection.serverConfig as any).isConnected()) {
             console.log('db connection is closed');
             this.dbConnection = (await MongoClient.connect(Config.dbConnection)).db(Config.dbName);
             console.log('db connection is open');
@@ -23,10 +23,11 @@ export class DataManager {
     }
 }
 
-export class DocumentManager<T extends {_id:any}> {
+export class DocumentManager<T extends {_id: any}> {
     query = new QueryBuilder<T>();
 
-    constructor(private collectionName: string) {}
+    constructor(private collectionName: string) {
+    }
 
     async insertDocument(document: T): Promise<T> {
         if (!DataManager.dbConnection) {
