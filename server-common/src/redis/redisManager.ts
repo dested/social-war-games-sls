@@ -10,8 +10,9 @@ export class RedisManager {
     static setup(): Promise<RedisManager> {
         return new Promise<RedisManager>((res, rej) => {
             if (RedisManager.manager) {
-                if(RedisManager.manager.client.connected){
-                    return RedisManager.manager;
+                if (RedisManager.manager.client.connected) {
+                    res(RedisManager.manager);
+                    return;
                 }
             }
             const manager = new RedisManager();

@@ -1,7 +1,7 @@
 import {Event} from './utils/models';
 import {VoteRequestBody, voteHandler} from './functions/vote';
 import {UserDetailsRequestBody, userDetailsHandler} from './functions/userDetails';
-import {RegisterRequestBody} from '../common/src/models/http/userController';
+import {RegisterRequestBody} from '@swg-common/models/http/userController';
 import {registerHandler} from './functions/register';
 import {loginHandler} from './functions/login';
 import {ladderHandler} from './functions/ladder';

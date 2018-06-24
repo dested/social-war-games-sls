@@ -1,13 +1,14 @@
-import {GameState, GameStateEntityMap, GameStateResource} from '@swg-common/models/gameState';
+import {GameState, GameStateEntity, GameStateResource} from '@swg-common/models/gameState';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {Point, PointHashKey} from '@swg-common/hex/hex';
 import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
-import {EntityDetails, Factions, GameEntity, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {EntityDetails, Factions, GameEntity, OfFaction, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {SocketManager} from './socketManager';
-import {RoundStateParser} from '@swg-common/utils/roundStateParser';
+import {RoundStateParser} from '@swg-common/parsers/roundStateParser';
+import {GameStateParser} from '@swg-common/parsers/gameStateParser';
 
 export class S3Splitter {
     static async output(
@@ -54,13 +55,13 @@ export class S3Splitter {
                 visibleHexes
             );
 
-            const gameStateJson = JSON.stringify(factionGameState);
+            const gameStateJson = GameStateParser.fromGameState(factionGameState);
             const roundStateJson = RoundStateParser.fromRoundState(factionRoundState);
             if (outputGameState) {
-                await S3Manager.uploadJson(`game-state-${faction}.json`, gameStateJson);
+                await S3Manager.uploadBytes(`game-state-${faction}.swg`, gameStateJson);
             }
-            /*await*/ SocketManager.publish(`round-state-${faction}`, roundStateJson);
-            // /*await*/ S3Manager.uploadJson(`round-state-${faction}.json`, roundStateJson);
+            /*await*/
+            SocketManager.publish(`round-state-${faction}`, roundStateJson);
         }
         // console.timeEnd('faction split');
     }
@@ -76,7 +77,7 @@ export class S3Splitter {
         const visibleEntityVotes: {[id: string]: RoundStateEntityVote[]} = {};
         const visibleResources: GameStateResource[] = [];
 
-        const visibleEntities: GameStateEntityMap = {
+        const visibleEntities: OfFaction<GameStateEntity[]> = {
             '1': [],
             '2': [],
             '3': []

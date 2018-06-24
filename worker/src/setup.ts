@@ -11,7 +11,7 @@ import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
 import {DBLadder} from '@swg-server-common/db/models/dbLadder';
 import {Config} from '@swg-server-common/config';
 import {SocketManager} from './socketManager';
-import {GameLayoutParser} from '@swg-common/utils/gameLayoutParser';
+import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 
 export class Setup {
     static start() {
@@ -61,7 +61,7 @@ export class Setup {
         console.log('built state');
 
         const gameLayoutBytes = GameLayoutParser.fromGameLayout(gameLayout);
-        await S3Manager.uploadBytes('layout.lvl', gameLayoutBytes);
+        await S3Manager.uploadBytes('layout.swg', gameLayoutBytes);
 
         await S3Splitter.output(game, gameLayout, gameState, roundState, true);
 

@@ -1,10 +1,10 @@
-import {EntityAction, EntityType, PlayableFactionId} from '../game/entityDetail';
+import {EntityAction, EntityType, OfFaction, PlayableFactionId} from '../game/entityDetail';
 import {ResourceType} from '../game/gameResource';
 
 export type GameState = {
     factions: string;
-    factionDetails: GameStateFactionDetailMap;
-    entities: GameStateEntityMap;
+    factionDetails: OfFaction<FactionDetail>;
+    entities: OfFaction<GameStateEntity[]>;
     resources: GameStateResource[];
     generation: number;
     roundDuration: number;
@@ -12,12 +12,10 @@ export type GameState = {
     roundEnd: number;
 };
 
-export type GameStateFactionDetailMap = {[faction in PlayableFactionId]: FactionDetail};
 export type FactionDetail = {
     resourceCount: number;
 };
 
-export type GameStateEntityMap = {[faction in PlayableFactionId]: GameStateEntity[]};
 export type GameStateEntity = {
     x: number;
     y: number;

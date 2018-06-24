@@ -10,7 +10,8 @@ import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {FactionRoundStats} from '@swg-common/models/roundStats';
-import {GameLayoutParser} from '@swg-common/utils/gameLayoutParser';
+import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
+import {GameStateParser} from '@swg-common/parsers/gameStateParser';
 
 export class DataService {
     private static apiServer: string = 'https://api.socialwargames.com';
@@ -101,7 +102,7 @@ export class DataService {
     }
 
     static async getLayout() {
-        let response = await fetch(this.s3Server + '/layout.lvl', {
+        let response = await fetch(this.s3Server + '/layout.swg', {
             method: 'GET',
             headers: {
                 Accept: 'application/octet-stream',
@@ -113,14 +114,15 @@ export class DataService {
     }
 
     static async getGameState(factionId: PlayableFactionId): Promise<GameState> {
-        let response = await fetch(`${this.s3Server}/game-state-${factionId}.json?bust=${+new Date()}`, {
+        let response = await fetch(`${this.s3Server}/game-state-${factionId}.swg?bust=${+new Date()}`, {
             method: 'GET',
             headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
+                Accept: 'application/octet-stream',
+                'Content-Type': 'application/octet-stream'
             }
         });
-        return (await response.json()) as GameState;
+        const arrayBuffer = (await response.arrayBuffer());
+        return GameStateParser.toGameState(new Uint8Array(arrayBuffer));
     }
 
     static async getLadder() {

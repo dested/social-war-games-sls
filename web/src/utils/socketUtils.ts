@@ -1,7 +1,7 @@
 import * as AWS from 'aws-sdk/global';
 import * as AWSMqtt from 'aws-mqtt';
 import {RoundState} from '@swg-common/models/roundState';
-import {RoundStateParser} from '@swg-common/utils/roundStateParser';
+import {RoundStateParser} from '@swg-common/parsers/roundStateParser';
 AWS.config.region = 'us-west-2';
 
 AWS.config.credentials = new AWS.CognitoIdentityCredentials({
