@@ -4,10 +4,11 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 module.exports = env => {
     return {
         entry: './src/main.tsx',
-        devtool: 'inline-source-map',
+        // devtool: 'inline-source-map',
         output: {
-            filename: './dist/bundle.js'
+            filename: './bundle.js'
         },
+        ...(process.env.WEBPACK_SERVE ? {mode: 'development'} : {}),
         resolve: {
             extensions: ['.ts', '.tsx', '.js'],
             alias: {
@@ -16,9 +17,7 @@ module.exports = env => {
         },
         plugins: [env === 'deploy' && new UglifyJsPlugin()].filter(a => a),
         module: {
-            loaders: [
-                // loaders will work with webpack 1 or 2; but will be renamed "rules" in future
-                // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
+            rules: [
                 {
                     test: /\.tsx?$/,
                     loader: 'ts-loader',

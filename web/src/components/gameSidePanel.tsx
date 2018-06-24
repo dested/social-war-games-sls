@@ -301,7 +301,6 @@ export class Component extends React.Component<Props, State> {
         const spawnTankCount = this.getActionCount(entity, 'spawn-tank');
         const spawnPlaneCount = this.getActionCount(entity, 'spawn-plane');
 
-        console.log(moveCount);
         switch (entity.entityType) {
             case 'infantry':
                 return (

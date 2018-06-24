@@ -5,20 +5,19 @@ import {RoundState} from '@swg-common/models/roundState';
 
 import {getStore} from './store';
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
-import {VoteRequestResults} from '@swg-common/models/http/voteResults';
+import {VoteRequestResults, VoteResponse} from '@swg-common/models/http/voteResults';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {FactionRoundStats} from '@swg-common/models/roundStats';
+import {GameLayoutParser} from '@swg-common/utils/gameLayoutParser';
 
 export class DataService {
-    private static userServer: string = 'https://user.socialwargames.com';
-    // private static userServer: string = 'http://localhost:4569';
-    private static voteServer: string = 'https://api.socialwargames.com';
+    private static apiServer: string = 'https://api.socialwargames.com';
     private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
 
     static async login(email: string, password: string): Promise<JwtGetUserResponse> {
-        let response = await fetch(this.userServer + '/user/login', {
+        let response = await fetch(this.apiServer + '/login', {
             method: 'POST',
             body: JSON.stringify({
                 email,
@@ -30,15 +29,18 @@ export class DataService {
             }
         });
         if (!response.ok)
-            // or check for response.status
+        // or check for response.status
             throw new Error(response.statusText);
         const json = await response.json();
-
-        return json;
+        if (json.statusCode === 200) {
+            return json.body;
+        } else {
+            throw new Error();
+        }
     }
 
     static async register(email: string, userName: string, password: string): Promise<JwtGetUserResponse> {
-        let response = await fetch(this.userServer + '/user/register', {
+        let response = await fetch(this.apiServer + '/register', {
             method: 'POST',
             body: JSON.stringify({
                 email,
@@ -51,9 +53,14 @@ export class DataService {
             }
         });
         if (!response.ok)
-            // or check for response.status
+        // or check for response.status
             throw new Error(response.statusText);
-        return await response.json();
+        const json = await response.json();
+        if (json.statusCode === 200) {
+            return json.body;
+        } else {
+            throw new Error();
+        }
     }
 
     static async vote(vote: {
@@ -61,10 +68,10 @@ export class DataService {
         action: EntityAction;
         generation: number;
         hexId: string;
-    }): Promise<{reason: VoteRequestResults; voteResult?: VoteResult; votesLeft: number; processedTime: number}> {
+    }): Promise<VoteResponse> {
         const state = getStore().getState();
 
-        let response = await fetch(this.voteServer + '/vote', {
+        let response = await fetch(this.apiServer + '/vote', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -73,14 +80,14 @@ export class DataService {
             },
             body: JSON.stringify(vote)
         });
-        const body = await response.json();
-        return JSON.parse(body.body);
+        const json = await response.json();
+        return json.body;
     }
 
     static async currentUserDetails(): Promise<UserDetails> {
         const state = getStore().getState();
 
-        let response = await fetch(this.voteServer + '/user-details', {
+        let response = await fetch(this.apiServer + '/user-details', {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
@@ -89,19 +96,20 @@ export class DataService {
             }
         });
 
-        const body = await response.json();
-        return body.body;
+        const json = await response.json();
+        return json.body;
     }
 
     static async getLayout() {
-        let response = await fetch(this.s3Server + '/layout.json', {
+        let response = await fetch(this.s3Server + '/layout.lvl', {
             method: 'GET',
             headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
+                Accept: 'application/octet-stream',
+                'Content-Type': 'application/octet-stream'
             }
         });
-        return (await response.json()) as GameLayout;
+        const arrayBuffer = (await response.arrayBuffer());
+        return GameLayoutParser.toGameLayout(new Uint8Array(arrayBuffer));
     }
 
     static async getGameState(factionId: PlayableFactionId): Promise<GameState> {
@@ -118,7 +126,7 @@ export class DataService {
     static async getLadder() {
         const state = getStore().getState();
 
-        let response = await fetch(this.userServer + '/ladder', {
+        let response = await fetch(this.apiServer + '/ladder', {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
@@ -126,7 +134,8 @@ export class DataService {
                 ...(state.appState.jwt ? {Authorization: 'Bearer ' + state.appState.jwt} : {})
             }
         });
-        return (await response.json()) as LadderResponse;
+        const json = await response.json();
+        return json.body;
     }
 
     static async getFactionStats(generation: number): Promise<FactionStats[]> {

@@ -4,11 +4,12 @@ import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {HttpUser} from '@swg-common/models/http/httpUser';
 import {EntityAction} from '@swg-common/game/entityDetail';
 import {UserDetails} from '@swg-common/models/http/userDetails';
-import {Event} from '../models';
+import {Event} from '../utils/models';
+import {HttpResponse, respond} from '../utils/respond';
 
-export async function userDetailsHandler(event: Event<UserDetailsRequestBody>){
+export async function userDetailsHandler(event: Event<UserDetailsRequestBody>): Promise<HttpResponse<{voteCount: number, maxVotes: number; factionToken: string}>> {
     console.log('auth', event);
-    if (!event.headers || !event.headers.Authorization) return error('auth');
+    if (!event.headers || !event.headers.Authorization) return respond(403, {error: 'auth'});
 
     const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
     try {
@@ -20,36 +21,15 @@ export async function userDetailsHandler(event: Event<UserDetailsRequestBody>){
         const totalVotes = await redisManager.get<number>(`user-${user.id}-${generation}-votes`, 0);
         const factionToken = await redisManager.getString(`faction-token-${generation}-${user.factionId}`);
 
-        return response({
+        return respond(200, {
             voteCount: totalVotes,
             maxVotes: user.maxVotesPerRound,
             factionToken
         });
     } catch (ex) {
         console.log('er', ex);
-        return error(ex.stack + JSON.stringify(event));
+        return respond(500, {error: ex.stack + JSON.stringify(event)});
     }
-}
-
-
-function response(userDetails: UserDetails) {
-    return {
-        statusCode: 200,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: userDetails
-    };
-}
-
-function error(error: string) {
-    return {
-        statusCode: 500,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: error
-    };
 }
 
 export interface UserDetailsRequestBody {

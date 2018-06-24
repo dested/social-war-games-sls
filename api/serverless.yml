@@ -52,3 +52,27 @@ functions:
           method: get
           integration: lambda
           cors: true
+  register:
+    handler: handler.register
+    events:
+      - http:
+          path: register
+          method: post
+          integration: lambda
+          cors: true
+  login:
+    handler: handler.login
+    events:
+      - http:
+          path: login
+          method: post
+          integration: lambda
+          cors: true
+  ladder:
+    handler: handler.ladder
+    events:
+      - http:
+          path: ladder
+          method: get
+          integration: lambda
+          cors: true

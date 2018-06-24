@@ -5,10 +5,17 @@ export class RedisManager {
     // https://github.com/notenoughneon/typed-promisify/blob/master/index.ts
 
     private client: RedisClient;
+    static manager: RedisManager;
+
     static setup(): Promise<RedisManager> {
         return new Promise<RedisManager>((res, rej) => {
+            if (RedisManager.manager) {
+                if(RedisManager.manager.client.connected){
+                    return RedisManager.manager;
+                }
+            }
             const manager = new RedisManager();
-
+            RedisManager.manager = manager;
             manager.client = createClient({
                 host: Config.redis.host,
                 port: Config.redis.port,

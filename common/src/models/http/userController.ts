@@ -1,13 +1,13 @@
 import {HttpUser} from './httpUser';
 import {DBUserRoundStatDetails} from '../../../../server-common/src/db/models/dbUserRoundStats';
 
-export interface RegisterRequest {
+export interface RegisterRequestBody {
     email: string;
     userName: string;
     password: string;
 }
 
-export interface LoginRequest {
+export interface LoginRequestBody {
     email: string;
     password: string;
 }

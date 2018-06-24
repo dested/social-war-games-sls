@@ -7,7 +7,7 @@ import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {EntityDetails, Factions, GameEntity, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {SocketManager} from './socketManager';
-import {RoundStateParser} from '@swg-common/utils/RoundStateParser';
+import {RoundStateParser} from '@swg-common/utils/roundStateParser';
 
 export class S3Splitter {
     static async output(

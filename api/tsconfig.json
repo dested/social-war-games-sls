@@ -13,12 +13,12 @@
     "moduleResolution": "node",
     "strictPropertyInitialization": false,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "outDir": "./dist",
     "skipLibCheck": true,
     "paths": {
-      "@swg-server-common/*":["../../server-common/src/*"],
-      "@swg-common/*":["../../common/src/*"]
+      "@swg-server-common/*":["../server-common/src/*"],
+      "@swg-common/*":["../common/src/*"]
     }
   }
 }

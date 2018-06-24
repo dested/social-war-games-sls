@@ -9,26 +9,30 @@ import {HttpUser} from '@swg-common/models/http/httpUser';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {EntityAction} from '@swg-common/game/entityDetail';
 import {VoteRequestResults} from '@swg-common/models/http/voteResults';
-import {Event} from '../models';
+import {Event} from '../utils/models';
+import {HttpResponse, respond} from '../utils/respond';
+import {VoteResponse} from '@swg-common/models/http/voteResults';
+import {DataManager} from '@swg-server-common/db/dataManager';
 
 
 let layout: GameLayout;
 let gameState: GameState;
 let game: GameModel;
 
-export async function voteHandler(event: Event<VoteRequestBody>){
+export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpResponse<VoteResponse>> {
     let startTime = +new Date();
     console.log('auth', event);
-    if (!event.headers || !event.headers.Authorization) return response('auth');
+    if (!event.headers || !event.headers.Authorization) return respond(400, {error: 'auth'});
 
     const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
     try {
         const redisManager = await RedisManager.setup();
+        await DataManager.openDbConnection();
         console.log('connecting');
         console.log('connected to redis');
         const shouldStop = await redisManager.get<boolean>('stop');
         if (shouldStop) {
-            return response('stopped');
+            return respond(400, {error: 'stopped'});
         }
 
         const generation = await redisManager.get<number>('game-generation');
@@ -40,7 +44,7 @@ export async function voteHandler(event: Event<VoteRequestBody>){
         }
 
         if (totalVotes >= user.maxVotesPerRound) {
-            return response('max_votes');
+            return respond(400, {error: 'max_votes'});
         }
         await redisManager.incr(`user-${user.id}-${generation}-votes`);
         totalVotes++;
@@ -49,7 +53,12 @@ export async function voteHandler(event: Event<VoteRequestBody>){
 
         const voteHexes = await redisManager.getString(`user-${user.id}-${generation}-vote-hex`, '');
         if (voteHexes.indexOf(body.entityId + ' ') >= 0) {
-            return response(`cant_vote_twice`);
+            return respond(200, {
+                reason: `cant_vote_twice` as VoteRequestResults,
+                votesLeft: user.maxVotesPerRound - totalVotes,
+                processedTime: 0
+
+            });
         }
 
         layout = layout || (await redisManager.get<GameLayout>('layout'));
@@ -59,8 +68,10 @@ export async function voteHandler(event: Event<VoteRequestBody>){
         }
 
         if (body.generation !== generation) {
-            return response('bad_generation', {
+            return respond(200, {
+                reason: 'bad_generation' as VoteRequestResults,
                 votesLeft: user.maxVotesPerRound - totalVotes,
+                processedTime: +new Date(),
                 generation
             });
         }
@@ -75,8 +86,10 @@ export async function voteHandler(event: Event<VoteRequestBody>){
 
         let voteResult = GameLogic.validateVote(game, vote);
         if (voteResult !== VoteResult.Success) {
-            return response('vote_failed', {
+            return respond(200, {
+                reason: 'vote_failed' as VoteRequestResults,
                 votesLeft: user.maxVotesPerRound - totalVotes,
+                processedTime: +new Date(),
                 voteResult
             });
         }
@@ -87,33 +100,21 @@ export async function voteHandler(event: Event<VoteRequestBody>){
         await DBVote.db.insertDocument(vote);
         let endTime = +new Date();
 
-        return response('ok', {
+        return respond(200, {
+            reason: 'ok' as VoteRequestResults,
             votesLeft: user.maxVotesPerRound - totalVotes,
             duration: endTime - startTime,
             processedTime: endTime
         });
     } catch (ex) {
         console.log('er', ex);
-        return response('error', ex.stack + JSON.stringify(event));
+        return respond(500, {error: ex.stack + JSON.stringify(event)});
     }
 }
 
 
-
-function response(reason: VoteRequestResults, body: any = {}) {
-    body.reason = reason;
-    return {
-        statusCode: 200,
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Credentials': true
-        },
-        body: body ? JSON.stringify(body) : undefined
-    };
-}
-
 export interface VoteRequestBody {
+    reason: VoteRequestResults;
     entityId: number;
     action: EntityAction;
     generation: number;
