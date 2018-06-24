@@ -123,6 +123,13 @@ export class ArrayBufferBuilder {
         }
         return Buffer.from(buffer);
     }
+
+    addString(str: string) {
+        this.addUint16(str.length);
+        for (let i = 0, strLen = str.length; i < strLen; i++) {
+            this.addUint16(str.charCodeAt(i));
+        }
+    }
 }
 
 export class ArrayBufferReader {
@@ -180,5 +187,14 @@ export class ArrayBufferReader {
         const result = this.dv.getUint32(this.index);
         this.index += 4;
         return result;
+    }
+
+    readString() {
+        const len = this.readUint16();
+        const strs: string[] = [];
+        for (let i = 0; i < len; i++) {
+            strs.push(String.fromCharCode(this.readUint16()));
+        }
+        return strs.join('');
     }
 }

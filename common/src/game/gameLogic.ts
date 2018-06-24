@@ -60,7 +60,7 @@ export class GameLogic {
 
     static calculateUserScore(userStats: DBUserRoundStats, currentGeneration: number): number {
         let score = 0;
-        const generationsPerDay = 24 * 60 * 60 / Config.gameDuration;
+        const generationsPerDay = (24 * 60 * 60) / Config.gameDuration;
         const valuableGenerations = generationsPerDay * 2.5;
         for (const r of userStats.roundsParticipated) {
             let roundScore = 0;
@@ -373,7 +373,7 @@ export class GameLogic {
                 new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id)
             );
 
-            const number = Math.floor(far.length / 4 * 3 + far.length / 4 * Math.random());
+            const number = Math.floor((far.length / 4) * 3 + (far.length / 4) * Math.random());
             const end = far[number];
 
             const line = grid.getThickLine(start, end, Math.floor(Math.random() * 4) + 3);

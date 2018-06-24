@@ -11,6 +11,7 @@ import {VoteRequestResults, VoteResponse} from '@swg-common/models/http/voteResu
 import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {GameStateParser} from '@swg-common/parsers/gameStateParser';
+import {RoundOutcomeParser} from '@swg-common/parsers/roundOutcomeParser';
 import {getStore} from './store';
 
 export class DataService {
@@ -154,13 +155,15 @@ export class DataService {
     }
 
     static async getFactionRoundStats(generation: number, factionId: PlayableFactionId) {
-        const response = await fetch(`${this.s3Server}/round-outcomes/round-outcome-${generation}-${factionId}.json`, {
+        const response = await fetch(`${this.s3Server}/round-outcomes/round-outcome-${generation}-${factionId}.swg`, {
             method: 'GET',
             headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
+                Accept: 'application/octet-stream',
+                'Content-Type': 'application/octet-stream'
             }
         });
-        return (await response.json()) as FactionRoundStats;
+
+        const arrayBuffer = await response.arrayBuffer();
+        return RoundOutcomeParser.toRoundStats(new Uint8Array(arrayBuffer));
     }
 }

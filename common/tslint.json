@@ -10,7 +10,7 @@
   "rules": {
     "no-console": false,
     "member-ordering": false,
-
+    "radix": false,
     "no-bitwise": false,
     "array-type": false,
     "no-empty": false,

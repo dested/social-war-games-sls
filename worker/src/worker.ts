@@ -1,14 +1,3 @@
-import * as _ from 'lodash';
-import {RedisManager} from '@swg-server-common/redis/redisManager';
-import {GameState} from '@swg-common/models/gameState';
-import {Config} from '@swg-server-common/config';
-import {DataManager} from '@swg-server-common/db/dataManager';
-import {DBVote, VoteCountResult} from '@swg-server-common/db/models/dbVote';
-import {GameLayout} from '@swg-common/models/gameLayout';
-import {S3Splitter} from './s3Splitter';
-import {StateManager} from './stateManager';
-import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
-import {VoteResult} from '@swg-common/game/voteResult';
 import {
     EntityAction,
     EntityDetails,
@@ -17,16 +6,29 @@ import {
     Factions,
     GameEntity
 } from '@swg-common/game/entityDetail';
-import {FactionStats} from '@swg-common/models/factionStats';
-import {S3Manager} from '@swg-server-common/s3/s3Manager';
-import {Utils} from '@swg-common/utils/utils';
-import {VoteNote} from '@swg-common/models/voteNote';
+import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {GameResource} from '@swg-common/game/gameResource';
+import {VoteResult} from '@swg-common/game/voteResult';
+import {FactionStats} from '@swg-common/models/factionStats';
+import {GameLayout} from '@swg-common/models/gameLayout';
+import {GameState} from '@swg-common/models/gameState';
 import {FactionRoundStats, RoundStats} from '@swg-common/models/roundStats';
+import {VoteNote} from '@swg-common/models/voteNote';
+import {RoundOutcomeParser} from '@swg-common/parsers/roundOutcomeParser';
+import {RoundStateParser} from '@swg-common/parsers/roundStateParser';
+import {Utils} from '@swg-common/utils/utils';
+import {Config} from '@swg-server-common/config';
+import {DataManager} from '@swg-server-common/db/dataManager';
 import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
-import {SocketManager} from './socketManager';
+import {DBVote, VoteCountResult} from '@swg-server-common/db/models/dbVote';
+import {RedisManager} from '@swg-server-common/redis/redisManager';
+import {S3Manager} from '@swg-server-common/s3/s3Manager';
+import * as _ from 'lodash';
 import fetch from 'node-fetch';
+import {S3Splitter} from './s3Splitter';
+import {SocketManager} from './socketManager';
+import {StateManager} from './stateManager';
 
 export class Worker {
     private static redisManager: RedisManager;
@@ -99,8 +101,7 @@ export class Worker {
             const winningVotes: ProcessedVote[] = [];
             for (const voteCount of voteCounts) {
                 const actions = _.orderBy(voteCount.actions, a => a.count, 'desc');
-                for (let index = 0; index < actions.length; index++) {
-                    const action = actions[index];
+                for (const action of actions) {
                     const entity = game.entities.get2({id: voteCount._id});
                     if (!entity) {
                         // TODO REPLACE WITH DEAD ENTITY
@@ -199,8 +200,7 @@ export class Worker {
             }
         }
 
-        for (let i = 0; i < game.entities.array.length; i++) {
-            const entity = game.entities.array[i];
+        for (const entity of game.entities.array) {
             const details = EntityDetails[entity.entityType];
             if (entity.entityType !== 'factory') {
                 for (const gameHexagon of game.grid.getCircle({x: entity.x, y: entity.y}, 1)) {
@@ -218,8 +218,7 @@ export class Worker {
         }
 
         const hexes = game.grid.hexes.array;
-        for (let h = 0; h < hexes.length; h++) {
-            const hex = hexes[h];
+        for (const hex of hexes) {
             if (hex.factionDuration === 1) {
                 hex.factionDuration = 0;
                 hex.factionId = '0';
@@ -284,8 +283,8 @@ export class Worker {
         });
         let json = (await response.json()) as FactionStats[];
         json.push(factionStats);
-        json = json.slice(-(24 * 60 * 60 * 1000 / Config.gameDuration * 2));
-        S3Manager.uploadJson(`faction-stats.json`, JSON.stringify(json),false);
+        json = json.slice(-(((24 * 60 * 60 * 1000) / Config.gameDuration) * 2));
+        S3Manager.uploadJson(`faction-stats.json`, JSON.stringify(json), false);
     }
 
     private static async buildRoundStats(
@@ -324,7 +323,7 @@ export class Worker {
         const playersVoted = Utils.groupByReduce(
             userStats,
             a => a._id.factionId,
-            a => Object.keys(Utils.groupBy(a, a => a._id.userId))
+            a => Object.keys(Utils.groupBy(a, b => b._id.userId))
         );
 
         const roundStats: RoundStats = {
@@ -350,9 +349,7 @@ export class Worker {
 
         const players = Utils.flattenArray(Utils.mapObjToArray(playersVoted, (_, ar) => ar));
 
-        for (let i = 0; i < players.length; i++) {
-            const player = players[i];
-
+        for (const player of players) {
             const votesByUser = userStatsGrouped[player];
 
             const votesCast = votesByUser ? votesByUser.count : 0;
@@ -529,23 +526,23 @@ export class Worker {
                 let turns: number;
                 switch (vote.action) {
                     case 'spawn-infantry':
-                        spawnName = EntityTypeNames['infantry'];
-                        turns = EntityDetails['infantry'].ticksToSpawn;
+                        spawnName = EntityTypeNames.infantry;
+                        turns = EntityDetails.infantry.ticksToSpawn;
                         break;
                     case 'spawn-tank':
-                        spawnName = EntityTypeNames['tank'];
-                        turns = EntityDetails['tank'].ticksToSpawn;
+                        spawnName = EntityTypeNames.tank;
+                        turns = EntityDetails.tank.ticksToSpawn;
                         break;
                     case 'spawn-plane':
-                        spawnName = EntityTypeNames['plane'];
-                        turns = EntityDetails['plane'].ticksToSpawn;
+                        spawnName = EntityTypeNames.plane;
+                        turns = EntityDetails.plane.ticksToSpawn;
                         break;
                 }
 
                 return [
                     {
                         note:
-                            `Our {fromEntityId:${EntityTypeNames['factory']}} ` +
+                            `Our {fromEntityId:${EntityTypeNames.factory}} ` +
                             `has begun constructing a new ${spawnName}. ` +
                             `It will be ready in ${turns} rounds.`,
                         factionId: fromEntity.factionId,
@@ -572,9 +569,9 @@ export class Worker {
                 notes: roundStats.notes[faction]
             };
 
-            /*await*/ S3Manager.uploadJson(
-                `round-outcomes/round-outcome-${generation}-${faction}.json`,
-                JSON.stringify(factionRoundStats),
+            /*await*/ S3Manager.uploadBytes(
+                `round-outcomes/round-outcome-${generation}-${faction}.swg`,
+                RoundOutcomeParser.fromOutcome(factionRoundStats),
                 true
             );
         }

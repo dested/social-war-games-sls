@@ -1,14 +1,14 @@
-import {DataService} from './dataServices';
-import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
-import {Utils} from '@swg-common/utils/utils';
 import {EntityAction, EntityDetails, GameEntity, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {Point, PointHashKey} from '@swg-common/hex/hex';
-import {DoubleHashArray} from '@swg-common/utils/hashArray';
 import {JwtGetUserResponse} from '@swg-common/models/http/userController';
 import {VoteRequestResults} from '@swg-common/models/http/voteResults';
+import {DoubleHashArray} from '@swg-common/utils/hashArray';
+import {Utils} from '@swg-common/utils/utils';
+import {DataService} from './dataServices';
 
-let startBot = async function(userResponse: JwtGetUserResponse) {
+const startBot = async function(userResponse: JwtGetUserResponse) {
     const layout = await DataService.getLayout();
     let localGameState = await DataService.getGameState(userResponse.user.factionId);
 
@@ -125,7 +125,7 @@ async function randomMove(
         generation: game.generation
     };
 
-    let voteResult = GameLogic.validateVote(game, processedVote);
+    const voteResult = GameLogic.validateVote(game, processedVote);
     if (voteResult === VoteResult.Success) {
         const serverVoteResult = await DataService.vote(processedVote, jwt);
         return serverVoteResult;
@@ -162,7 +162,7 @@ async function randomAttack(
         generation: game.generation
     };
 
-    let voteResult = GameLogic.validateVote(game, processedVote);
+    const voteResult = GameLogic.validateVote(game, processedVote);
     if (voteResult === VoteResult.Success) {
         const serverVoteResult = await DataService.vote(processedVote, jwt);
         return serverVoteResult;
@@ -202,7 +202,7 @@ async function randomMine(
         generation: game.generation
     };
 
-    let voteResult = GameLogic.validateVote(game, processedVote);
+    const voteResult = GameLogic.validateVote(game, processedVote);
     if (voteResult === VoteResult.Success) {
         const serverVoteResult = await DataService.vote(processedVote, jwt);
         return serverVoteResult;
@@ -245,7 +245,7 @@ async function randomSpawn(
         generation: game.generation
     };
 
-    let voteResult = GameLogic.validateVote(game, processedVote);
+    const voteResult = GameLogic.validateVote(game, processedVote);
     if (voteResult === VoteResult.Success) {
         const serverVoteResult = await DataService.vote(processedVote, jwt);
         return serverVoteResult;

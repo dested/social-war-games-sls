@@ -109,7 +109,7 @@ export class Component extends React.Component<Props, State> {
                         />
                         <div
                             ref={e => {
-                                window.smallRendererBox = e;
+                                (window as any).smallRendererBox = e;
                                 this.gameRenderer.view.updateSmallBox();
                             }}
                             style={{

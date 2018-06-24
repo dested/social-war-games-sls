@@ -3,12 +3,10 @@ import {FactionDetail} from '../game/factionDetail';
 import {ResourceType} from '../game/gameResource';
 import {GameState, GameStateEntity, GameStateResource} from '../models/gameState';
 import {ArrayBufferBuilder, ArrayBufferReader} from '../utils/arrayBufferBuilder';
-import {RoundStateParser} from './roundStateParser';
+import {ParserEnumUtils} from './parserEnumUtils';
 
 export class GameStateParser {
     static fromGameState(gameState: GameState): Buffer {
-        const hexIdParse = /(-?\d*)-(-?\d*)/;
-
         const buff = new ArrayBufferBuilder();
         buff.addInt32(gameState.generation);
         buff.addInt32(gameState.roundDuration);
@@ -20,7 +18,7 @@ export class GameStateParser {
             buff.addInt16(resource.x);
             buff.addInt16(resource.y);
             buff.addInt8(resource.count);
-            buff.addInt8(this.resourceTypeToInt(resource.type));
+            buff.addInt8(ParserEnumUtils.resourceTypeToInt(resource.type));
         }
 
         buff.addInt8(Object.keys(gameState.entities).length);
@@ -34,16 +32,12 @@ export class GameStateParser {
                 buff.addInt16(entity.y);
                 buff.addInt8(entity.healthRegenStep);
                 buff.addInt8(entity.health);
-                buff.addInt8(this.entityTypeToInt(entity.entityType));
+                buff.addInt8(ParserEnumUtils.entityTypeToInt(entity.entityType));
                 buff.addInt8(entity.busy ? 1 : 0);
                 if (entity.busy) {
                     buff.addInt8(entity.busy.ticks);
-                    buff.addInt8(RoundStateParser.actionToInt(entity.busy.action));
-                    const hexId = hexIdParse.exec(entity.busy.hexId);
-                    const x = parseInt(hexId[1]);
-                    const y = parseInt(hexId[2]);
-                    buff.addInt16(x);
-                    buff.addInt16(y);
+                    buff.addInt8(ParserEnumUtils.actionToInt(entity.busy.action));
+                    ParserEnumUtils.writeHexId(entity.busy.hexId, buff);
                 }
             }
         }
@@ -114,7 +108,7 @@ export class GameStateParser {
             const x = reader.readInt16();
             const y = reader.readInt16();
             const count = reader.readInt8();
-            const type = this.intToResourceType(reader.readInt8());
+            const type = ParserEnumUtils.intToResourceType(reader.readInt8());
             resources.push({
                 x,
                 y,
@@ -137,19 +131,18 @@ export class GameStateParser {
                 const y = reader.readInt16();
                 const healthRegenStep = reader.readInt8();
                 const health = reader.readInt8();
-                const entityType = this.intToEntityType(reader.readInt8());
+                const entityType = ParserEnumUtils.intToEntityType(reader.readInt8());
                 const isBusy = reader.readInt8() === 1;
                 let busy: GameEntityBusyDetails;
 
                 if (isBusy) {
                     const ticks = reader.readInt8();
-                    const action = RoundStateParser.intToAction(reader.readInt8());
-                    const x = reader.readInt16();
-                    const y = reader.readInt16();
+                    const action = ParserEnumUtils.intToAction(reader.readInt8());
+                    const hexId = ParserEnumUtils.readHexId(reader);
                     busy = {
                         ticks,
                         action,
-                        hexId: x + '-' + y
+                        hexId: hexId.id
                     };
                 }
 
@@ -221,53 +214,5 @@ export class GameStateParser {
 
         console.log(JSON.stringify(gameState).length, buffer.length);
         return gameState;
-    }
-
-    static resourceTypeToInt(type: ResourceType): number {
-        switch (type) {
-            case 'bronze':
-                return 1;
-            case 'gold':
-                return 2;
-            case 'silver':
-                return 3;
-        }
-    }
-
-    static intToResourceType(type: number): ResourceType {
-        switch (type) {
-            case 1:
-                return 'bronze';
-            case 2:
-                return 'gold';
-            case 3:
-                return 'silver';
-        }
-    }
-
-    static entityTypeToInt(type: EntityType): number {
-        switch (type) {
-            case 'infantry':
-                return 1;
-            case 'tank':
-                return 2;
-            case 'factory':
-                return 3;
-            case 'plane':
-                return 4;
-        }
-    }
-
-    static intToEntityType(type: number): EntityType {
-        switch (type) {
-            case 1:
-                return 'infantry';
-            case 2:
-                return 'tank';
-            case 3:
-                return 'factory';
-            case 4:
-                return 'plane';
-        }
     }
 }

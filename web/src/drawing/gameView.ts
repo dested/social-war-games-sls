@@ -56,10 +56,10 @@ export class GameView {
     }
 
     updateSmallBox() {
-        if (!window.smallRendererBox) {
+        if (!(window as any).smallRendererBox) {
             return;
         }
-        const d = window.smallRendererBox as HTMLDivElement;
+        const d = (window as any).smallRendererBox as HTMLDivElement;
 
         const w = HexConstants.width / HexConstants.smallWidth;
         const h = HexConstants.height / HexConstants.smallHeight;

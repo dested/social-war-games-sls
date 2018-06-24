@@ -4,7 +4,7 @@ export interface VoteNote {
     note: string;
     fromEntityId: number;
     factionId: PlayableFactionId;
-    toEntityId: number;
+    toEntityId?: number;
     toHexId: string;
     fromHexId: string;
     voteCount: number;
