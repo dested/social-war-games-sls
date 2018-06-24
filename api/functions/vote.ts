@@ -9,13 +9,14 @@ import {HttpUser} from '@swg-common/models/http/httpUser';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {EntityAction} from '@swg-common/game/entityDetail';
 import {VoteRequestResults} from '@swg-common/models/http/voteResults';
-import {Event} from './models';
+import {Event} from '../models';
+
 
 let layout: GameLayout;
 let gameState: GameState;
 let game: GameModel;
 
-export const handler = async (event: Event<RequestBody>) => {
+export async function voteHandler(event: Event<VoteRequestBody>){
     let startTime = +new Date();
     console.log('auth', event);
     if (!event.headers || !event.headers.Authorization) return response('auth');
@@ -95,18 +96,24 @@ export const handler = async (event: Event<RequestBody>) => {
         console.log('er', ex);
         return response('error', ex.stack + JSON.stringify(event));
     }
-};
+}
+
+
 
 function response(reason: VoteRequestResults, body: any = {}) {
     body.reason = reason;
     return {
         statusCode: 200,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true
+        },
         body: body ? JSON.stringify(body) : undefined
     };
 }
 
-interface RequestBody {
+export interface VoteRequestBody {
     entityId: number;
     action: EntityAction;
     generation: number;

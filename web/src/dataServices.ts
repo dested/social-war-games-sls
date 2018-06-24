@@ -80,7 +80,7 @@ export class DataService {
     static async currentUserDetails(): Promise<UserDetails> {
         const state = getStore().getState();
 
-        let response = await fetch(this.voteServer + '/user', {
+        let response = await fetch(this.voteServer + '/user-details', {
             method: 'GET',
             headers: {
                 Accept: 'application/json',

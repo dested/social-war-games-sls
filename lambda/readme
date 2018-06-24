@@ -1,5 +1,0 @@
-# notes
-
-to set up the lamdba to connect to redis you must create an execution role that has access to AWSLambdaVPCAccessExecutionRole. from there you can now add it to the vpc its in.
-
-you must add the appropriate header in apigateway for cors

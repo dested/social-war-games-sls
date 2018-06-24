@@ -146,7 +146,8 @@ export class GameRenderer {
             startViewX = this.view.x;
             startViewY = this.view.y;
         });
-        manager.on('panend', e => {});
+        manager.on('panend', e => {
+        });
 
         manager.on('swipe', (ev: {velocityX: number; velocityY: number}) => {
             store.dispatch(UIActions.setUI('None'));

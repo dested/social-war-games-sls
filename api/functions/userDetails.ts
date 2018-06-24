@@ -4,9 +4,9 @@ import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {HttpUser} from '@swg-common/models/http/httpUser';
 import {EntityAction} from '@swg-common/game/entityDetail';
 import {UserDetails} from '@swg-common/models/http/userDetails';
-import {Event} from './models';
+import {Event} from '../models';
 
-export const handler = async (event: Event<void>) => {
+export async function userDetailsHandler(event: Event<UserDetailsRequestBody>){
     console.log('auth', event);
     if (!event.headers || !event.headers.Authorization) return error('auth');
 
@@ -29,7 +29,8 @@ export const handler = async (event: Event<void>) => {
         console.log('er', ex);
         return error(ex.stack + JSON.stringify(event));
     }
-};
+}
+
 
 function response(userDetails: UserDetails) {
     return {
@@ -51,9 +52,5 @@ function error(error: string) {
     };
 }
 
-interface RequestBody {
-    entityId: string;
-    action: EntityAction;
-    generation: number;
-    hexId: string;
+export interface UserDetailsRequestBody {
 }
