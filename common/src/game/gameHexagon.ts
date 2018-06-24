@@ -1,7 +1,6 @@
 import {Hexagon, Point} from '../hex/hex';
-import {HexagonTileType} from './hexagonTypes';
 import {Faction} from './entityDetail';
-
+import {HexagonTileType} from './hexagonTypes';
 
 export class GameHexagon extends Hexagon {
     factionId: Faction = '0';

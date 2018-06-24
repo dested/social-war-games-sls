@@ -28,11 +28,11 @@ export let EntityTypeNames: {[entity in EntityType]: string} = {
     factory: 'Factory'
 };
 
-export type GameEntityBusyDetails = {
+export interface GameEntityBusyDetails {
     ticks: number;
     action: EntityAction;
     hexId: string;
-};
+}
 
 export interface GameEntity {
     id: number;

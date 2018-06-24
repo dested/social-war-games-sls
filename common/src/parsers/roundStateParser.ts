@@ -1,7 +1,7 @@
-import {RoundState, RoundStateEntityVote} from '../models/roundState';
 import {EntityAction} from '../game/entityDetail';
-import {Utils} from '../utils/utils';
+import {RoundState, RoundStateEntityVote} from '../models/roundState';
 import {ArrayBufferBuilder, ArrayBufferReader} from '../utils/arrayBufferBuilder';
+import {Utils} from '../utils/utils';
 
 export class RoundStateParser {
     static fromRoundState(roundState: RoundState): Buffer {

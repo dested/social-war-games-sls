@@ -1,5 +1,5 @@
-import {HttpUser} from './httpUser';
 import {DBUserRoundStatDetails} from '../../../../server-common/src/db/models/dbUserRoundStats';
+import {HttpUser} from './httpUser';
 
 export interface RegisterRequestBody {
     email: string;

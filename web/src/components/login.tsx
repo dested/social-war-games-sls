@@ -1,10 +1,10 @@
 import * as React from 'react';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
 import {Link, withRouter} from 'react-router-dom';
 import {DataService} from '../dataServices';
-import {RouteComponentProps} from 'react-router';
-import {connect} from 'react-redux';
-import {SwgStore} from '../store/reducers';
 import {AppActions} from '../store/app/actions';
+import {SwgStore} from '../store/reducers';
 
 interface Props extends RouteComponentProps<{}> {
     setJwt: typeof AppActions.setJWT;
@@ -25,7 +25,7 @@ class Component extends React.Component<Props, State> {
         };
     }
 
-    private login = async (e:any) => {
+    private login = async (e: any) => {
         e.preventDefault();
         try {
             const response = await DataService.login(this.state.email, this.state.password);
@@ -39,8 +39,8 @@ class Component extends React.Component<Props, State> {
         }
     };
 
-    private updateEmail = async (e:any) => this.setState({email: e.target.value});
-    private updatePassword = async (e:any) => this.setState({password: e.target.value});
+    private updateEmail = async (e: any) => this.setState({email: e.target.value});
+    private updatePassword = async (e: any) => this.setState({password: e.target.value});
 
     render() {
         return (
@@ -77,6 +77,7 @@ class Component extends React.Component<Props, State> {
     }
 }
 
-export let Login = connect((state: SwgStore) => ({}), {setJwt: AppActions.setJWT, setUser: AppActions.setUser})(
-    withRouter(Component)
-);
+export let Login = connect(
+    (state: SwgStore) => ({}),
+    {setJwt: AppActions.setJWT, setUser: AppActions.setUser}
+)(withRouter(Component));

@@ -1,5 +1,6 @@
 const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+var nodeExternals = require('webpack-node-externals');
 
 module.exports = env => {
     return {
@@ -15,6 +16,7 @@ module.exports = env => {
                 '@swg-common': path.resolve(__dirname, '../common/src/')
             }
         },
+        // externals: [nodeExternals()],
         plugins: [env === 'deploy' && new UglifyJsPlugin()].filter(a => a),
         module: {
             rules: [

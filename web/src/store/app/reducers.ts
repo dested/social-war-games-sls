@@ -1,5 +1,5 @@
-import {AppAction, AppActionOptions} from './actions';
 import {HttpUser} from '@swg-common/models/http/httpUser';
+import {AppAction, AppActionOptions} from './actions';
 
 const initialState: AppStore = {};
 

@@ -1,12 +1,12 @@
 import {EntityAction} from '../game/entityDetail';
 
-export type RoundState = {
+export interface RoundState {
     thisUpdateTime: number;
     generation: number;
     entities: {[id: number]: RoundStateEntityVote[]};
-};
-export type RoundStateEntityVote = {
+}
+export interface RoundStateEntityVote {
     action: EntityAction;
     hexId: string;
     count: number;
-};
+}

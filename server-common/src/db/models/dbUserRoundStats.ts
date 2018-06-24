@@ -1,7 +1,7 @@
-import {DocumentManager} from '../dataManager';
-import {MongoDocument} from './mongoDocument';
 import {Config} from '../../config';
+import {DocumentManager} from '../dataManager';
 import {DBUser} from './dbUser';
+import {MongoDocument} from './mongoDocument';
 
 export class DBUserRoundStats extends MongoDocument {
     static collectionName = 'user-round-stats';

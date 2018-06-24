@@ -1,9 +1,9 @@
-import {GameState, GameStateEntity, GameStateResource} from '../models/gameState';
-import {ArrayBufferBuilder, ArrayBufferReader} from '../utils/arrayBufferBuilder';
 import {EntityType, GameEntityBusyDetails, OfFaction, PlayableFactionId} from '../game/entityDetail';
-import {RoundStateParser} from './roundStateParser';
 import {FactionDetail} from '../game/factionDetail';
 import {ResourceType} from '../game/gameResource';
+import {GameState, GameStateEntity, GameStateResource} from '../models/gameState';
+import {ArrayBufferBuilder, ArrayBufferReader} from '../utils/arrayBufferBuilder';
+import {RoundStateParser} from './roundStateParser';
 
 export class GameStateParser {
     static fromGameState(gameState: GameState): Buffer {
@@ -48,13 +48,11 @@ export class GameStateParser {
             }
         }
 
-
         buff.addInt8(Object.keys(gameState.factionDetails).length);
         for (const factionsKey in gameState.factionDetails) {
             buff.addInt8(parseInt(factionsKey));
             buff.addInt32(gameState.factionDetails[factionsKey as PlayableFactionId].resourceCount);
         }
-
 
         let empty = 0;
         let hidden = 0;
@@ -118,7 +116,10 @@ export class GameStateParser {
             const count = reader.readInt8();
             const type = this.intToResourceType(reader.readInt8());
             resources.push({
-                x, y, type, count
+                x,
+                y,
+                type,
+                count
             });
         }
 
@@ -126,7 +127,7 @@ export class GameStateParser {
         const entities: OfFaction<GameStateEntity[]> = {} as any;
 
         for (let f = 0; f < entitiesFactionsLength; f++) {
-            const factionId = (reader.readInt8()).toString() as PlayableFactionId;
+            const factionId = reader.readInt8().toString() as PlayableFactionId;
             const entitiesLength = reader.readInt16();
             const entitiesInFaction: GameStateEntity[] = [];
 
@@ -138,7 +139,7 @@ export class GameStateParser {
                 const health = reader.readInt8();
                 const entityType = this.intToEntityType(reader.readInt8());
                 const isBusy = reader.readInt8() === 1;
-                let busy: GameEntityBusyDetails = undefined;
+                let busy: GameEntityBusyDetails;
 
                 if (isBusy) {
                     const ticks = reader.readInt8();
@@ -146,16 +147,21 @@ export class GameStateParser {
                     const x = reader.readInt16();
                     const y = reader.readInt16();
                     busy = {
-                        ticks, action,
+                        ticks,
+                        action,
                         hexId: x + '-' + y
                     };
                 }
 
-
                 entitiesInFaction.push({
-                        x, y, entityType, health, id, healthRegenStep, busy
-                    }
-                );
+                    x,
+                    y,
+                    entityType,
+                    health,
+                    id,
+                    healthRegenStep,
+                    busy
+                });
             }
             entities[factionId] = entitiesInFaction;
         }
@@ -163,7 +169,7 @@ export class GameStateParser {
         const factionDetailsLength = reader.readInt8();
         const factionDetails: OfFaction<FactionDetail> = {} as any;
         for (let i = 0; i < factionDetailsLength; i++) {
-            const factionKey = (reader.readInt8()).toString() as PlayableFactionId;
+            const factionKey = reader.readInt8().toString() as PlayableFactionId;
             const resourceCount = reader.readInt32();
             factionDetails[factionKey] = {
                 resourceCount
@@ -175,21 +181,23 @@ export class GameStateParser {
         while (!over) {
             const type = reader.readUint8();
             switch (type) {
-                case 1: {
-                    const len = reader.readInt32();
-                    for (let i = 0; i < len; i++) {
-                        factions.push('9');
-                        factions.push('0');
+                case 1:
+                    {
+                        const len = reader.readInt32();
+                        for (let i = 0; i < len; i++) {
+                            factions.push('9');
+                            factions.push('0');
+                        }
                     }
-                }
                     break;
-                case 2: {
-                    const len = reader.readInt32();
-                    for (let i = 0; i < len; i++) {
-                        factions.push('0');
-                        factions.push('0');
+                case 2:
+                    {
+                        const len = reader.readInt32();
+                        for (let i = 0; i < len; i++) {
+                            factions.push('0');
+                            factions.push('0');
+                        }
                     }
-                }
                     break;
                 case 3:
                     factions.push(reader.readInt8().toString());
@@ -199,7 +207,6 @@ export class GameStateParser {
                     over = true;
                     break;
             }
-
         }
         const gameState = {
             factions: factions.join(''),
@@ -237,7 +244,6 @@ export class GameStateParser {
                 return 'silver';
         }
     }
-
 
     static entityTypeToInt(type: EntityType): number {
         switch (type) {

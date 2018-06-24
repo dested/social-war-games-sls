@@ -9,11 +9,11 @@
   },
   "rules": {
     "no-console": false,
+    "member-ordering": false,
 
     "no-bitwise": false,
     "array-type": false,
     "no-empty": false,
-    "member-ordering": false,
     "object-literal-sort-keys": false,
     "jsx-no-lambda": false,
     "jsx-boolean-value": false,

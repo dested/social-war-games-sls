@@ -1,24 +1,24 @@
-import {JwtGetUserResponse, LadderResponse} from '@swg-common/models/http/userController';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
+import {JwtGetUserResponse, LadderResponse} from '@swg-common/models/http/userController';
 import {RoundState} from '@swg-common/models/roundState';
 
-import {getStore} from './store';
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
-import {VoteRequestResults, VoteResponse} from '@swg-common/models/http/voteResults';
-import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {FactionStats} from '@swg-common/models/factionStats';
+import {UserDetails} from '@swg-common/models/http/userDetails';
+import {VoteRequestResults, VoteResponse} from '@swg-common/models/http/voteResults';
 import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {GameStateParser} from '@swg-common/parsers/gameStateParser';
+import {getStore} from './store';
 
 export class DataService {
     private static apiServer: string = 'https://api.socialwargames.com';
     private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
 
     static async login(email: string, password: string): Promise<JwtGetUserResponse> {
-        let response = await fetch(this.apiServer + '/login', {
+        const response = await fetch(this.apiServer + '/login', {
             method: 'POST',
             body: JSON.stringify({
                 email,
@@ -29,9 +29,10 @@ export class DataService {
                 'Content-Type': 'application/json'
             }
         });
-        if (!response.ok)
-        // or check for response.status
+        if (!response.ok) {
+            // or check for response.status
             throw new Error(response.statusText);
+        }
         const json = await response.json();
         if (json.statusCode === 200) {
             return json.body;
@@ -41,7 +42,7 @@ export class DataService {
     }
 
     static async register(email: string, userName: string, password: string): Promise<JwtGetUserResponse> {
-        let response = await fetch(this.apiServer + '/register', {
+        const response = await fetch(this.apiServer + '/register', {
             method: 'POST',
             body: JSON.stringify({
                 email,
@@ -53,9 +54,10 @@ export class DataService {
                 'Content-Type': 'application/json'
             }
         });
-        if (!response.ok)
-        // or check for response.status
+        if (!response.ok) {
+            // or check for response.status
             throw new Error(response.statusText);
+        }
         const json = await response.json();
         if (json.statusCode === 200) {
             return json.body;
@@ -72,7 +74,7 @@ export class DataService {
     }): Promise<VoteResponse> {
         const state = getStore().getState();
 
-        let response = await fetch(this.apiServer + '/vote', {
+        const response = await fetch(this.apiServer + '/vote', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -88,7 +90,7 @@ export class DataService {
     static async currentUserDetails(): Promise<UserDetails> {
         const state = getStore().getState();
 
-        let response = await fetch(this.apiServer + '/user-details', {
+        const response = await fetch(this.apiServer + '/user-details', {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
@@ -102,33 +104,33 @@ export class DataService {
     }
 
     static async getLayout() {
-        let response = await fetch(this.s3Server + '/layout.swg', {
+        const response = await fetch(this.s3Server + '/layout.swg', {
             method: 'GET',
             headers: {
                 Accept: 'application/octet-stream',
                 'Content-Type': 'application/octet-stream'
             }
         });
-        const arrayBuffer = (await response.arrayBuffer());
+        const arrayBuffer = await response.arrayBuffer();
         return GameLayoutParser.toGameLayout(new Uint8Array(arrayBuffer));
     }
 
     static async getGameState(factionId: PlayableFactionId): Promise<GameState> {
-        let response = await fetch(`${this.s3Server}/game-state-${factionId}.swg?bust=${+new Date()}`, {
+        const response = await fetch(`${this.s3Server}/game-state-${factionId}.swg?bust=${+new Date()}`, {
             method: 'GET',
             headers: {
                 Accept: 'application/octet-stream',
                 'Content-Type': 'application/octet-stream'
             }
         });
-        const arrayBuffer = (await response.arrayBuffer());
+        const arrayBuffer = await response.arrayBuffer();
         return GameStateParser.toGameState(new Uint8Array(arrayBuffer));
     }
 
     static async getLadder() {
         const state = getStore().getState();
 
-        let response = await fetch(this.apiServer + '/ladder', {
+        const response = await fetch(this.apiServer + '/ladder', {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
@@ -141,7 +143,7 @@ export class DataService {
     }
 
     static async getFactionStats(generation: number): Promise<FactionStats[]> {
-        let response = await fetch(`${this.s3Server}/faction-stats.json?bust=${generation}`, {
+        const response = await fetch(`${this.s3Server}/faction-stats.json?bust=${generation}`, {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
@@ -152,7 +154,7 @@ export class DataService {
     }
 
     static async getFactionRoundStats(generation: number, factionId: PlayableFactionId) {
-        let response = await fetch(`${this.s3Server}/round-outcomes/round-outcome-${generation}-${factionId}.json`, {
+        const response = await fetch(`${this.s3Server}/round-outcomes/round-outcome-${generation}-${factionId}.json`, {
             method: 'GET',
             headers: {
                 Accept: 'application/json',

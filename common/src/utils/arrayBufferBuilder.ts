@@ -103,7 +103,6 @@ export class ArrayBufferBuilder {
                             curPosition += 4;
                             break;
                     }
-
                 } else {
                     switch (ele.size) {
                         case 8:
@@ -119,7 +118,6 @@ export class ArrayBufferBuilder {
                             curPosition += 4;
                             break;
                     }
-
                 }
             }
         }

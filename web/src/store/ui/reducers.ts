@@ -1,7 +1,7 @@
-import {UI, UIAction, UIActionOptions} from './actions';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {LadderResponse} from '@swg-common/models/http/userController';
 import {FactionRoundStats} from '@swg-common/models/roundStats';
+import {UI, UIAction, UIActionOptions} from './actions';
 
 const initialState: UIStore = {
     ui: 'None'

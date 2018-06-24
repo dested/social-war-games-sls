@@ -26,8 +26,7 @@ export class DataManager {
 export class DocumentManager<T extends {_id: any}> {
     query = new QueryBuilder<T>();
 
-    constructor(private collectionName: string) {
-    }
+    constructor(private collectionName: string) {}
 
     async insertDocument(document: T): Promise<T> {
         if (!DataManager.dbConnection) {

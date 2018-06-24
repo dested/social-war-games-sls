@@ -1,26 +1,25 @@
-import * as React from 'react';
-import {withRouter} from 'react-router-dom';
-import {connect} from 'react-redux';
-import {HttpUser} from '@swg-common/models/http/httpUser';
-import {SwgStore} from '../store/reducers';
-import {RouteComponentProps} from 'react-router';
-import {UI, UIActions, UIThunks} from '../store/actions';
-import {RoundState} from '@swg-common/models/roundState';
-import {GameModel} from '@swg-common/game/gameLogic';
 import {Factions, GameEntity} from '@swg-common/game/entityDetail';
-import {HexColors} from '../utils/hexColors';
-import {GameAssets} from '../drawing/gameAssets';
-import {HexConstants} from '../utils/hexConstants';
+import {GameModel} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {FactionStats} from '@swg-common/models/factionStats';
-import {GameRenderer} from '../drawing/gameRenderer';
-import {UserDetails} from '@swg-common/models/http/userDetails';
-import {padding} from 'glamor/utils';
+import {HttpUser} from '@swg-common/models/http/httpUser';
 import {LadderResponse} from '@swg-common/models/http/userController';
+import {UserDetails} from '@swg-common/models/http/userDetails';
+import {RoundState} from '@swg-common/models/roundState';
+import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {VoteNote} from '@swg-common/models/voteNote';
-import {Fragment} from 'react';
 import {Utils} from '@swg-common/utils/utils';
+import {Fragment} from 'react';
+import * as React from 'react';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
+import {withRouter} from 'react-router-dom';
+import {GameAssets} from '../drawing/gameAssets';
+import {GameRenderer} from '../drawing/gameRenderer';
+import {UI, UIActions, UIThunks} from '../store/actions';
+import {SwgStore} from '../store/reducers';
+import {HexColors} from '../utils/hexColors';
+import {HexConstants} from '../utils/hexConstants';
 import {FactionStatsCanvas} from './factionStatsCanvas';
 
 interface Props extends RouteComponentProps<{}> {
@@ -172,7 +171,7 @@ export class Component extends React.Component<Props, State> {
                     <div style={{display: 'flex', flexDirection: 'column', flexWrap: 'wrap'}}>
                         {factionRoundStats.hotEntities.map(e => {
                             const ent = this.props.game.entities.get2(e);
-                            if (!ent) return null;
+                            if (!ent) { return null; }
                             let color: string;
                             if (e.count < 2) {
                                 color = '#284a2a';
@@ -210,12 +209,12 @@ export class Component extends React.Component<Props, State> {
         this.props.gameRenderer.moveToEntity(ent);
     }
 
-    public goToEntity(entityId: number) {
+    goToEntity(entityId: number) {
         const entity = this.props.game.entities.get2({id: entityId});
-        if (entity) this.props.gameRenderer.moveToEntity(entity);
+        if (entity) { this.props.gameRenderer.moveToEntity(entity); }
     }
 
-    public goToHex(hexId: string) {
+    goToHex(hexId: string) {
         this.props.gameRenderer.moveToHexagon(this.props.game.grid.hexes.find(a => a.id === hexId));
     }
 

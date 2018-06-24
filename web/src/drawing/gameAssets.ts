@@ -2,14 +2,14 @@ import {EntityType} from '@swg-common/game/entityDetail';
 import {ResourceType} from '@swg-common/game/gameResource';
 import {ImageUtils} from '../utils/imageUtils';
 
-type GameAsset = {
+interface GameAsset {
     image: HTMLImageElement;
     imageUrl: string;
     width: number;
     height: number;
     centerX: number;
     centerY: number;
-};
+}
 
 export type GameAssetType = EntityType | ResourceType;
 

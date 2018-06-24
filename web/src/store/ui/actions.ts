@@ -1,9 +1,9 @@
-import {SwgStore} from '../reducers';
-import {Dispatcher} from '../actions';
-import {LadderResponse} from '@swg-common/models/http/userController';
 import {FactionStats} from '@swg-common/models/factionStats';
+import {LadderResponse} from '@swg-common/models/http/userController';
 import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {DataService} from '../../dataServices';
+import {Dispatcher} from '../actions';
+import {SwgStore} from '../reducers';
 
 export type UI = 'None' | 'FactionStats' | 'RoundStats' | 'Ladder' | 'Bases';
 export enum UIActionOptions {

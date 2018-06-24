@@ -1,6 +1,6 @@
-import {VoteNote} from './voteNote';
 import {OfFaction} from '../game/entityDetail';
 import {ProcessedVote} from '../game/gameLogic';
+import {VoteNote} from './voteNote';
 
 export interface RoundStats {
     generation: number;

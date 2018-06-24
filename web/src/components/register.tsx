@@ -1,12 +1,12 @@
+import {HttpUser} from '@swg-common/models/http/httpUser';
 import * as React from 'react';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
 import {Link, withRouter} from 'react-router-dom';
 import {DataService} from '../dataServices';
-import {RouteComponentProps} from 'react-router';
-import {HttpUser} from '@swg-common/models/http/httpUser';
-import {connect} from 'react-redux';
-import {SwgStore} from '../store/reducers';
-import {AppActions} from '../store/app/actions';
 import {Dispatcher} from '../store/actions';
+import {AppActions} from '../store/app/actions';
+import {SwgStore} from '../store/reducers';
 
 interface Props extends RouteComponentProps<{}> {
     setJwt: (jwt: string) => void;
@@ -31,7 +31,7 @@ class Component extends React.Component<Props, State> {
 
     private register = async (e: any) => {
         e.preventDefault();
-        if (!this.state.email || !this.state.userName || !this.state.password) return;
+        if (!this.state.email || !this.state.userName || !this.state.password) { return; }
         try {
             const response = await DataService.register(this.state.email, this.state.userName, this.state.password);
             this.props.setJwt(response.jwt);

@@ -110,7 +110,11 @@
 '/  migrate from s3
 '/ put bounds on view
 '/ if zero votes do something
+'/ compress the gamestatejson
+'/ fix mongodb connection bug
 
+fix round outcome
+fix faction stats
 
 
 gameplay
@@ -155,7 +159,6 @@ low priority
   update progress bar to be less realistic
   show game under login/register screen
   cleanup login screen
-  compress the gamestatejson
   unfuck css
   store game in mongo
   get more turns button

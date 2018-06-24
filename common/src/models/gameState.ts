@@ -1,7 +1,7 @@
 import {EntityAction, EntityType, OfFaction, PlayableFactionId} from '../game/entityDetail';
 import {ResourceType} from '../game/gameResource';
 
-export type GameState = {
+export interface GameState {
     factions: string;
     factionDetails: OfFaction<FactionDetail>;
     entities: OfFaction<GameStateEntity[]>;
@@ -10,13 +10,13 @@ export type GameState = {
     roundDuration: number;
     roundStart: number;
     roundEnd: number;
-};
+}
 
-export type FactionDetail = {
+export interface FactionDetail {
     resourceCount: number;
-};
+}
 
-export type GameStateEntity = {
+export interface GameStateEntity {
     x: number;
     y: number;
     id: number;
@@ -24,17 +24,17 @@ export type GameStateEntity = {
     entityType: EntityType;
     health: number;
     healthRegenStep: number;
-};
+}
 
-export type GameStateGameEntityBusyDetails = {
+export interface GameStateGameEntityBusyDetails {
     ticks: number;
     action: EntityAction;
     hexId: string;
-};
+}
 
-export type GameStateResource = {
+export interface GameStateResource {
     x: number;
     y: number;
     count: number;
     type: ResourceType;
-};
+}

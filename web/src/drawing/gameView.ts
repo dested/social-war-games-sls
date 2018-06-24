@@ -54,24 +54,30 @@ export class GameView {
     }
 
     offsetPosition(x: number, y: number) {
-        this.x += x;
-        this.y += y;
-        this.clamp();
-
-        localStorage.setItem('view-x' + this.canvas.id, this.x.toString());
-        localStorage.setItem('view-y' + this.canvas.id, this.y.toString());
+        this.setPosition(this.x + x, this.y + y);
     }
 
     private clamp() {
         const gutter = 0.2;
         const reverseGutter = 1 - gutter;
 
-        if (this.x < -window.innerWidth * gutter) this.x = -window.innerWidth * gutter;
-        if (this.y < -window.innerHeight * gutter) this.y = -window.innerHeight * gutter;
-        if (this.x > this.game.grid.boundsWidth * DrawingOptions.default.width - window.innerWidth * reverseGutter)
+        if (this.x < -window.innerWidth * gutter) {
+            this.x = -window.innerWidth * gutter;
+        }
+        if (this.y < -window.innerHeight * gutter) {
+            this.y = -window.innerHeight * gutter;
+        }
+        if (this.x > this.game.grid.boundsWidth * DrawingOptions.default.width - window.innerWidth * reverseGutter) {
             this.x = this.game.grid.boundsWidth * DrawingOptions.default.width - window.innerWidth * reverseGutter;
+        }
 
-        if (this.y > this.game.grid.boundsHeight * DrawingOptions.default.height * 3 / 4 - window.innerHeight * reverseGutter)
-            this.y = this.game.grid.boundsHeight * DrawingOptions.default.height * 3 / 4 - window.innerHeight * reverseGutter;
+        if (
+            this.y >
+            (this.game.grid.boundsHeight * DrawingOptions.default.height * 3) / 4 - window.innerHeight * reverseGutter
+        ) {
+            this.y =
+                (this.game.grid.boundsHeight * DrawingOptions.default.height * 3) / 4 -
+                window.innerHeight * reverseGutter;
+        }
     }
 }

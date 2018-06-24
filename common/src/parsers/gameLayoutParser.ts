@@ -1,9 +1,9 @@
-import {RoundState, RoundStateEntityVote} from '../models/roundState';
 import {EntityAction} from '../game/entityDetail';
-import {Utils} from '../utils/utils';
-import {GameLayout, GameLayoutHex} from '../models/gameLayout';
 import {TileSubType, TileType} from '../game/hexagonTypes';
+import {GameLayout, GameLayoutHex} from '../models/gameLayout';
+import {RoundState, RoundStateEntityVote} from '../models/roundState';
 import {ArrayBufferBuilder, ArrayBufferReader} from '../utils/arrayBufferBuilder';
+import {Utils} from '../utils/utils';
 
 export class GameLayoutParser {
     static fromGameLayout(gameLayout: GameLayout): Buffer {

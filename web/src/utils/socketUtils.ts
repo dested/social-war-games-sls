@@ -1,14 +1,14 @@
-import * as AWS from 'aws-sdk/global';
-import * as AWSMqtt from 'aws-mqtt';
 import {RoundState} from '@swg-common/models/roundState';
 import {RoundStateParser} from '@swg-common/parsers/roundStateParser';
+import * as AWSMqtt from 'aws-mqtt';
+import * as AWS from 'aws-sdk/global';
 AWS.config.region = 'us-west-2';
 
 AWS.config.credentials = new AWS.CognitoIdentityCredentials({
     IdentityPoolId: 'us-west-2:72aa50f2-bbec-4cc6-848e-d3bfb5058d7c'
 });
 
-let params = {
+const params = {
     WebSocket: (window as any).WebSocket,
     credentials: AWS.config.credentials,
     region: 'us-west-2',

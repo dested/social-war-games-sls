@@ -1,21 +1,21 @@
-import * as React from 'react';
-import {withRouter} from 'react-router-dom';
-import {connect} from 'react-redux';
-import {HttpUser} from '@swg-common/models/http/httpUser';
-import {SwgStore} from '../store/reducers';
-import {RouteComponentProps} from 'react-router';
-import {GameThunks} from '../store/game/actions';
-import {Dispatcher} from '../store/actions';
-import {RoundState} from '@swg-common/models/roundState';
-import {GameModel} from '@swg-common/game/gameLogic';
 import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
-import {HexColors} from '../utils/hexColors';
-import {ColorUtils} from '../utils/colorUtils';
-import {GameAssets} from '../drawing/gameAssets';
+import {GameModel} from '@swg-common/game/gameLogic';
 import {GameResource, ResourceDetails} from '@swg-common/game/gameResource';
-import {HexConstants} from '../utils/hexConstants';
-import {SFC} from 'react';
+import {HttpUser} from '@swg-common/models/http/httpUser';
+import {RoundState} from '@swg-common/models/roundState';
 import {Utils} from '@swg-common/utils/utils';
+import * as React from 'react';
+import {SFC} from 'react';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
+import {withRouter} from 'react-router-dom';
+import {GameAssets} from '../drawing/gameAssets';
+import {Dispatcher} from '../store/actions';
+import {GameThunks} from '../store/game/actions';
+import {SwgStore} from '../store/reducers';
+import {ColorUtils} from '../utils/colorUtils';
+import {HexColors} from '../utils/hexColors';
+import {HexConstants} from '../utils/hexConstants';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -115,7 +115,7 @@ export class Component extends React.Component<Props, State> {
         const healthBarInner = HexConstants.isMobile
             ? {
                   borderRadius: '10px',
-                  width: `${resource.currentCount / resourceDetails.startingCount * 100}%`,
+                  width: `${(resource.currentCount / resourceDetails.startingCount) * 100}%`,
                   backgroundColor: ColorUtils.lerpColor(
                       '#FF0000',
                       '#00FF00',
@@ -124,7 +124,7 @@ export class Component extends React.Component<Props, State> {
               }
             : {
                   borderRadius: '20px',
-                  width: `${resource.currentCount / resourceDetails.startingCount * 100}%`,
+                  width: `${(resource.currentCount / resourceDetails.startingCount) * 100}%`,
                   backgroundColor: ColorUtils.lerpColor(
                       '#FF0000',
                       '#00FF00',
@@ -217,12 +217,12 @@ export class Component extends React.Component<Props, State> {
         const healthBarInner = HexConstants.isMobile
             ? {
                   borderRadius: '10px',
-                  width: `${entity.health / entityDetails.health * 100}%`,
+                  width: `${(entity.health / entityDetails.health) * 100}%`,
                   backgroundColor: ColorUtils.lerpColor('#FF0000', '#00FF00', entity.health / entityDetails.health)
               }
             : {
                   borderRadius: '20px',
-                  width: `${entity.health / entityDetails.health * 100}%`,
+                  width: `${(entity.health / entityDetails.health) * 100}%`,
                   backgroundColor: ColorUtils.lerpColor('#FF0000', '#00FF00', entity.health / entityDetails.health)
               };
 

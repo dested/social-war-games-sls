@@ -1,7 +1,7 @@
-import {HexConstants} from '../utils/hexConstants';
-import {Axial, Grid, Hexagon, Point} from '@swg-common/hex/hex';
 import {GameHexagon} from '@swg-common/../../../common/src/game/gameHexagon';
+import {Axial, Grid, Hexagon, Point} from '@swg-common/hex/hex';
 import {HexColors} from '../utils/hexColors';
+import {HexConstants} from '../utils/hexConstants';
 
 export class Drawing {
     static Orientation: {
@@ -31,19 +31,25 @@ export class Drawing {
         for (let i = 0; i < hex.points.length; i++) {
             const p1 = hex.points[i];
             const p2 = hex.points[(i + 1) % 6];
-            if (!p1 || !p2) continue;
+            if (!p1 || !p2) {
+                continue;
+            }
 
             if (!neighbor[i] || neighbor[i].factionId !== hex.factionId) {
-                if (hex.factionId === '9' || (neighbor[i] && neighbor[i].factionId === '9')) continue;
+                if (hex.factionId === '9' || (neighbor[i] && neighbor[i].factionId === '9')) {
+                    continue;
+                }
                 const color = HexColors.factionIdToColor(
                     hex.factionId,
                     !neighbor[i] ? '0' : neighbor[i].factionId,
                     '1'
                 );
-                if (!color) continue;
+                if (!color) {
+                    continue;
+                }
                 hex.lines.push({
                     line: [p1, p2],
-                    color: color
+                    color
                 });
             }
         }
@@ -61,7 +67,7 @@ export class Drawing {
     static getCorner(center: Point, options: DrawingOptions, corner: number) {
         const offset = options.orientation === Drawing.Orientation.PointyTop ? 90 : 0;
         const angle_deg = 60 * corner + offset;
-        const angle_rad = Math.PI / 180 * angle_deg;
+        const angle_rad = (Math.PI / 180) * angle_deg;
         return {
             x: center.x + options.size * Math.cos(angle_rad),
             y: center.y + options.size * Math.sin(angle_rad)
@@ -74,11 +80,11 @@ export class Drawing {
         const c = axial.toCube();
 
         if (options.orientation === Drawing.Orientation.FlatTop) {
-            x = c.x * options.width * 3 / 4;
+            x = (c.x * options.width * 3) / 4;
             y = (c.z + c.x / 2) * options.height;
         } else {
             x = (c.x + c.z / 2) * options.width;
-            y = c.z * options.height * 3 / 4;
+            y = (c.z * options.height * 3) / 4;
         }
         return {x, y};
     }
@@ -88,11 +94,11 @@ export class Drawing {
         let y;
 
         if (options.orientation === Drawing.Orientation.FlatTop) {
-            x = p.x * 2 / 3 / options.size;
-            y = (-p.x / 3 + Math.sqrt(3) / 3 * p.y) / options.size;
+            x = (p.x * 2) / 3 / options.size;
+            y = (-p.x / 3 + (Math.sqrt(3) / 3) * p.y) / options.size;
         } else {
-            x = (p.x * Math.sqrt(3) / 3 - p.y / 3) / options.size;
-            y = p.y * 2 / 3 / options.size;
+            x = ((p.x * Math.sqrt(3)) / 3 - p.y / 3) / options.size;
+            y = (p.y * 2) / 3 / options.size;
         }
 
         const a = new Axial(x, y)
@@ -116,10 +122,10 @@ export class DrawingOptions {
         this.size = side;
         if (this.orientation === Drawing.Orientation.FlatTop) {
             this.width = side * 2;
-            this.height = Math.sqrt(3) / 2 * this.width;
+            this.height = (Math.sqrt(3) / 2) * this.width;
         } else {
             this.height = side * 2;
-            this.width = Math.sqrt(3) / 2 * this.height;
+            this.width = (Math.sqrt(3) / 2) * this.height;
         }
     }
 }

@@ -1,11 +1,11 @@
-import {ImageUtils} from './imageUtils';
 import {TileSubType, TileType} from '@swg-common/game/hexagonTypes';
+import {ImageUtils} from './imageUtils';
 
 export class HexImages {
     static imageCache: {[key: string]: HTMLImageElement} = {};
-    public static hexTypeToImage(type: TileType, subType: TileSubType) {
+    static hexTypeToImage(type: TileType, subType: TileSubType) {
         const key = `${type} ${subType}`;
-        if (this.imageCache[key]) return this.imageCache[key];
+        if (this.imageCache[key]) { return this.imageCache[key]; }
 
         let url: string;
         switch (type) {

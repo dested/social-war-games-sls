@@ -1,7 +1,7 @@
 // https://github.com/bodinaren/BHex.js
 
-import {DoubleHashArray, HashArray} from '../utils/hashArray';
 import {GameEntity} from '../game/entityDetail';
+import {DoubleHashArray, HashArray} from '../utils/hashArray';
 
 /**
  * Axial is a axial position of a Hexagon within a grid.
@@ -29,7 +29,7 @@ export class Axial {
      * Check if two Axial items has the same x and y.
      */
     compareTo(other: Point | undefined) {
-        if (!other) return false;
+        if (!other) { return false; }
         return this.x === other.x && this.y === other.y;
     }
 }
@@ -68,9 +68,9 @@ export class Cube extends Axial {
             y_diff = Math.abs(this.y - cy),
             z_diff = Math.abs(this.z - cz);
 
-        if (x_diff > y_diff && x_diff > z_diff) this.x = -this.y - this.z;
-        else if (y_diff > z_diff) this.y = -this.x - this.z;
-        else this.z = -this.x - this.y;
+        if (x_diff > y_diff && x_diff > z_diff) { this.x = -this.y - this.z; }
+        else if (y_diff > z_diff) { this.y = -this.x - this.z; }
+        else { this.z = -this.x - this.y; }
 
         return this;
     }
@@ -107,7 +107,7 @@ export class Grid<T extends Hexagon = Hexagon> {
                 for (let z = -radius; z <= radius; z++) {
                     if (x + y + z == 0) {
                         const hex = this.getHexAt({x: x + a.x, y: y + a.y});
-                        if (hex) hexes.push(hex);
+                        if (hex) { hexes.push(hex); }
                     }
                 }
             }
@@ -126,8 +126,8 @@ export class Grid<T extends Hexagon = Hexagon> {
 
     private neighborCache: {[key: string]: T[]} = {};
     getNeighbors(a: Point): T[] {
-        let key = `${a.x} ${a.y}`;
-        if (this.neighborCache[key]) return this.neighborCache[key];
+        const key = `${a.x} ${a.y}`;
+        if (this.neighborCache[key]) { return this.neighborCache[key]; }
         const directions = [
             new Axial(a.x - 1, a.y + 1),
             new Axial(a.x - 1, a.y),
@@ -153,8 +153,8 @@ export class Grid<T extends Hexagon = Hexagon> {
         const difX = a.x - b.x;
         const difY = a.y - b.y;
 
-        let xDirection = difX > 0 ? 'West' : difX < 0 ? 'East' : '';
-        let yDirection = difY > 0 ? 'North' : difY < 0 ? 'South' : '';
+        const xDirection = difX > 0 ? 'West' : difX < 0 ? 'East' : '';
+        const yDirection = difY > 0 ? 'North' : difY < 0 ? 'South' : '';
 
         if (yDirection && xDirection) {
             return yDirection + xDirection.toLowerCase();
@@ -167,8 +167,8 @@ export class Grid<T extends Hexagon = Hexagon> {
         let x0 = start.x;
         let y0 = start.y;
 
-        let x1 = end.x;
-        let y1 = end.y;
+        const x1 = end.x;
+        const y1 = end.y;
         const dx = Math.abs(x1 - x0);
         const sx = x0 < x1 ? 1 : -1;
         const dy = Math.abs(y1 - y0);
@@ -180,19 +180,19 @@ export class Grid<T extends Hexagon = Hexagon> {
 
         const ed = dx + dy == 0 ? 1 : Math.sqrt(dx * dx + dy * dy);
 
-        let hexes: T[] = [];
+        const hexes: T[] = [];
 
         for (wd = (wd + 1) / 2; ; ) {
             let hex = this.getHexAt(this.easyBounds(x0, y0));
-            if (hex) hexes.push(hex);
+            if (hex) { hexes.push(hex); }
             e2 = err;
             x2 = x0;
             if (2 * e2 >= -dx) {
                 for (e2 += dy, y2 = y0; e2 < ed * wd && (y1 != y2 || dx > dy); e2 += dx) {
                     hex = this.getHexAt(this.easyBounds(x0, (y2 += sy)));
-                    if (hex) hexes.push(hex);
+                    if (hex) { hexes.push(hex); }
                 }
-                if (x0 == x1) break;
+                if (x0 == x1) { break; }
                 e2 = err;
                 err -= dy;
                 x0 += sx;
@@ -200,10 +200,10 @@ export class Grid<T extends Hexagon = Hexagon> {
             if (2 * e2 <= dy) {
                 for (e2 = dx - e2; e2 < ed * wd && (x1 != x2 || dx < dy); e2 += dy) {
                     hex = this.getHexAt(this.easyBounds((x2 += sx), y0));
-                    if (hex) hexes.push(hex);
+                    if (hex) { hexes.push(hex); }
                 }
 
-                if (y0 == y1) break;
+                if (y0 == y1) { break; }
                 err += dx;
                 y0 += sy;
             }
@@ -212,7 +212,7 @@ export class Grid<T extends Hexagon = Hexagon> {
     }
 
     getLine(start: Axial, end: Axial): T[] {
-        if (start.compareTo(end)) return [];
+        if (start.compareTo(end)) { return []; }
 
         const cube_lerp = (a: Cube, b: Cube, t: number) =>
             new Cube(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t);
@@ -241,7 +241,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             if (!start.compareTo(hex)) {
                 if (hex && !hex.blocked) {
                     line1.push(hex);
-                } else break;
+                } else { break; }
             }
         }
 
@@ -255,7 +255,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             if (!start.compareTo(hex)) {
                 if (hex && !hex.blocked) {
                     line2.push(hex);
-                } else break;
+                } else { break; }
             }
         }
 
@@ -282,7 +282,7 @@ export class Grid<T extends Hexagon = Hexagon> {
 
             for (const n of neighbors) {
                 // Make sure the neighbor is not blocked and that we haven't already processed it.
-                if (!n || n.blocked || closedHexes[n.getKey()]) continue;
+                if (!n || n.blocked || closedHexes[n.getKey()]) { continue; }
 
                 // Get the total cost of going to this neighbor.
                 const g = current.G + n.cost + (blockEntities.exists1(n) && 1000);
@@ -308,7 +308,7 @@ export class Grid<T extends Hexagon = Hexagon> {
         }
 
         const arr: T[] = [];
-        for (const i in visitedNodes) if (visitedNodes.hasOwnProperty(i)) arr.push(visitedNodes[i].hex);
+        for (const i in visitedNodes) { if (visitedNodes.hasOwnProperty(i)) { arr.push(visitedNodes[i].hex); } }
 
         return arr;
     }
@@ -342,7 +342,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             const neighbors = grid.getNeighbors(current.hex);
             for (const n of neighbors) {
                 // Make sure the neighbor is not blocked and that we haven't already processed it.
-                if (!n || n.blocked || closedHexes[n.getKey()]) continue;
+                if (!n || n.blocked || closedHexes[n.getKey()]) { continue; }
 
                 // Get the total cost of going to this neighbor.
                 const g = current.G + n.cost + +(blockEntities.exists1(n) && 1000);

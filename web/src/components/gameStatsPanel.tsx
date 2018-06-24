@@ -1,16 +1,16 @@
-import * as React from 'react';
-import {withRouter} from 'react-router-dom';
-import {connect} from 'react-redux';
-import {HttpUser} from '@swg-common/models/http/httpUser';
-import {SwgStore} from '../store/reducers';
-import {RouteComponentProps} from 'react-router';
-import {UI, UIActions} from '../store/actions';
-import {RoundState} from '@swg-common/models/roundState';
 import {GameModel} from '@swg-common/game/gameLogic';
-import {UIConstants} from '../utils/uiConstants';
-import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResult} from '@swg-common/game/voteResult';
+import {HttpUser} from '@swg-common/models/http/httpUser';
+import {UserDetails} from '@swg-common/models/http/userDetails';
+import {RoundState} from '@swg-common/models/roundState';
+import * as React from 'react';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
+import {withRouter} from 'react-router-dom';
+import {UI, UIActions} from '../store/actions';
+import {SwgStore} from '../store/reducers';
 import {UIThunks} from '../store/ui/actions';
+import {UIConstants} from '../utils/uiConstants';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;

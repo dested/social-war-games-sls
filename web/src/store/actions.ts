@@ -1,6 +1,6 @@
 import {Dispatch} from 'redux';
-import {GameAction} from './game/actions';
 import {AppAction} from './app/actions';
+import {GameAction} from './game/actions';
 import {UIAction} from './ui/actions';
 
 export * from './app/actions';

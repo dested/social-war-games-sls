@@ -65,8 +65,11 @@ export class Utils {
     }
 
     static mathSign(f: number) {
-        if (f < 0) return -1;
-        else if (f > 0) return 1;
+        if (f < 0) {
+            return -1;
+        } else if (f > 0) {
+            return 1;
+        }
         return 0;
     }
 

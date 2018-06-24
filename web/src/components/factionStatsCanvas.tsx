@@ -1,27 +1,9 @@
-import * as React from 'react';
-import {withRouter} from 'react-router-dom';
-import {connect} from 'react-redux';
-import {HttpUser} from '@swg-common/models/http/httpUser';
-import {SwgStore} from '../store/reducers';
-import {RouteComponentProps} from 'react-router';
-import {UI, UIActions, UIThunks} from '../store/actions';
-import {RoundState} from '@swg-common/models/roundState';
-import {GameModel} from '@swg-common/game/gameLogic';
 import {Factions, GameEntity, OfFaction} from '@swg-common/game/entityDetail';
-import {HexColors} from '../utils/hexColors';
-import {GameAssets} from '../drawing/gameAssets';
-import {HexConstants} from '../utils/hexConstants';
-import {VoteResult} from '@swg-common/game/voteResult';
-import {FactionRoundStats} from '@swg-common/models/roundStats';
-import {FactionStat, FactionStats} from '@swg-common/models/factionStats';
-import {GameRenderer} from '../drawing/gameRenderer';
-import {UserDetails} from '@swg-common/models/http/userDetails';
-import {padding} from 'glamor/utils';
-import {LadderResponse} from '@swg-common/models/http/userController';
-import {VoteNote} from '@swg-common/models/voteNote';
-import {Fragment} from 'react';
-import {Utils} from '@swg-common/utils/utils';
 import {Point} from '@swg-common/hex/hex';
+import {FactionStat, FactionStats} from '@swg-common/models/factionStats';
+import {Utils} from '@swg-common/utils/utils';
+import * as React from 'react';
+import {HexColors} from '../utils/hexColors';
 
 interface Props {
     factionStats: FactionStats[];

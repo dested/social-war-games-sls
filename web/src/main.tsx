@@ -1,13 +1,13 @@
-﻿import * as React from 'react';
+import * as React from 'react';
 import {Fragment} from 'react';
 import * as ReactDOM from 'react-dom';
-import {Route} from 'react-router';
 import {Provider} from 'react-redux';
+import {Route} from 'react-router';
 
-import {Register} from './components/register';
-import {Game} from './components/game';
 import {HashRouter} from 'react-router-dom';
+import {Game} from './components/game';
 import {Login} from './components/login';
+import {Register} from './components/register';
 import {store} from './store';
 
 function run() {

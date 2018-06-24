@@ -1,14 +1,14 @@
-import {GameAction, GameActionOptions} from './actions';
-import {RoundState} from '@swg-common/models/roundState';
-import {GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {EntityAction, GameEntity} from '@swg-common/game/entityDetail';
+import {GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {GameResource} from '@swg-common/game/gameResource';
-import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {GameRenderer} from '../../drawing/gameRenderer';
-import {SmallGameRenderer} from '../../drawing/smallGameRenderer';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
+import {UserDetails} from '@swg-common/models/http/userDetails';
+import {RoundState} from '@swg-common/models/roundState';
+import {GameRenderer} from '../../drawing/gameRenderer';
+import {SmallGameRenderer} from '../../drawing/smallGameRenderer';
+import {GameAction, GameActionOptions} from './actions';
 
 const initialState: GameStore = {
     localVotes: []
@@ -85,7 +85,7 @@ export default function gameReducer(state: GameStore = initialState, action: Gam
             );
             return {
                 ...state,
-                localVotes: localVotes
+                localVotes
             };
         }
         case GameActionOptions.UpdateUserDetails: {

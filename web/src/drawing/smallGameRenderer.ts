@@ -1,16 +1,16 @@
-import {GameView} from './gameView';
-import {getStore} from '../store';
-import {Drawing, DrawingOptions} from './hexDrawing';
-import {SwgStore} from '../store/reducers';
-import {Manager, Pan} from 'hammerjs';
-import {Dispatcher} from '../store/actions';
-import {HexImages} from '../utils/hexImages';
-import {HexConstants} from '../utils/hexConstants';
-import {HexColors} from '../utils/hexColors';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
+import {Manager, Pan} from 'hammerjs';
+import {getStore} from '../store';
+import {Dispatcher} from '../store/actions';
+import {SwgStore} from '../store/reducers';
 import {AnimationUtils} from '../utils/animationUtils';
-import {GameRenderer} from './gameRenderer';
+import {HexColors} from '../utils/hexColors';
+import {HexConstants} from '../utils/hexConstants';
+import {HexImages} from '../utils/hexImages';
 import {UIConstants} from '../utils/uiConstants';
+import {GameRenderer} from './gameRenderer';
+import {GameView} from './gameView';
+import {Drawing, DrawingOptions} from './hexDrawing';
 
 export class SmallGameRenderer {
     private canvas: HTMLCanvasElement;
@@ -44,7 +44,9 @@ export class SmallGameRenderer {
     }
 
     start(canvas: HTMLCanvasElement, gameRenderer: GameRenderer) {
-        if (this.canvas) return;
+        if (this.canvas) {
+            return;
+        }
         this.gameRenderer = gameRenderer;
         this.canvas = canvas;
         this.context = this.canvas.getContext('2d');
@@ -55,11 +57,19 @@ export class SmallGameRenderer {
         manager.on('tap', e => {
             const store = getStore();
             const state = store.getState();
-            if (!state.gameState) return;
+            if (!state.gameState) {
+                return;
+            }
             const {game} = state.gameState;
+
+            const bodyRect = document.body.getBoundingClientRect();
+            const elemRect = e.target.getBoundingClientRect();
+            const offsetX = elemRect.left - bodyRect.left;
+            const offsetY = elemRect.top - bodyRect.top;
+
             const position = {
-                x: e.center.x - e.target.offsetLeft,
-                y: e.center.y - e.target.offsetTop
+                x: e.center.x - offsetX,
+                y: e.center.y - offsetY
             };
 
             const distances = game.grid.hexes.array.map(h => ({
@@ -80,7 +90,7 @@ export class SmallGameRenderer {
     }
 
     forceRender() {
-        let store = getStore();
+        const store = getStore();
         try {
             this.render(store.getState(), store.dispatch);
         } catch (ex) {
@@ -90,10 +100,14 @@ export class SmallGameRenderer {
 
     private render(state: SwgStore, dispatch: Dispatcher) {
         const {canvas, context} = this;
-        if (!canvas) return;
+        if (!canvas) {
+            return;
+        }
 
         const {game, roundState} = state.gameState;
-        if (!game) return;
+        if (!game) {
+            return;
+        }
         const {grid} = game;
 
         context.clearRect(0, 0, canvas.width, canvas.height);

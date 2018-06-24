@@ -1,8 +1,7 @@
 import {combineReducers} from 'redux';
 import {AppStore, default as appReducer} from './app/reducers';
-import {GameStore, default as gameReducer} from './game/reducers';
-import {UIStore, default as uiReducer} from './ui/reducers';
-
+import {default as gameReducer, GameStore} from './game/reducers';
+import {default as uiReducer, UIStore} from './ui/reducers';
 
 export interface SwgStore {
     appState: AppStore;
@@ -15,4 +14,3 @@ export default combineReducers<SwgStore>({
     gameState: gameReducer,
     uiState: uiReducer
 });
-

@@ -1,26 +1,26 @@
-import {Dispatcher} from '../actions';
-import {SwgStore} from '../reducers';
-import {DataService} from '../../dataServices';
-import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
-import {HexImages} from '../../utils/hexImages';
-import {Point, PointHashKey} from '@swg-common/hex/hex';
-import {DoubleHashArray} from '@swg-common/utils/hashArray';
-import {GameHexagon} from '@swg-common/game/gameHexagon';
-import {HexagonTypes} from '@swg-common/game/hexagonTypes';
-import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
-import {VoteResult} from '@swg-common/game/voteResult';
 import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
-import {loadEntities} from '../../drawing/gameAssets';
+import {GameHexagon} from '@swg-common/game/gameHexagon';
+import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {GameResource} from '@swg-common/game/gameResource';
+import {HexagonTypes} from '@swg-common/game/hexagonTypes';
+import {VoteResult} from '@swg-common/game/voteResult';
+import {Point, PointHashKey} from '@swg-common/hex/hex';
+import {GameLayout} from '@swg-common/models/gameLayout';
+import {GameState} from '@swg-common/models/gameState';
 import {UserDetails} from '@swg-common/models/http/userDetails';
+import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
+import {DoubleHashArray} from '@swg-common/utils/hashArray';
+import {DataService} from '../../dataServices';
+import {loadEntities} from '../../drawing/gameAssets';
 import {GameRenderer} from '../../drawing/gameRenderer';
 import {Drawing, DrawingOptions} from '../../drawing/hexDrawing';
 import {SmallGameRenderer} from '../../drawing/smallGameRenderer';
-import {GameLayout} from '@swg-common/models/gameLayout';
-import {GameState} from '@swg-common/models/gameState';
 import {HexConstants} from '../../utils/hexConstants';
-import {UIConstants} from '../../utils/uiConstants';
+import {HexImages} from '../../utils/hexImages';
 import {SocketUtils} from '../../utils/socketUtils';
+import {UIConstants} from '../../utils/uiConstants';
+import {Dispatcher} from '../actions';
+import {SwgStore} from '../reducers';
 
 export enum GameActionOptions {
     SetGameLayout = 'SetGameLayout',
@@ -260,7 +260,9 @@ export class GameThunks {
             const localRoundState: RoundState = JSON.parse(JSON.stringify(roundState));
 
             for (const processedVote of gameState.localVotes) {
-                if (processedVote.processedTime < localRoundState.thisUpdateTime) continue;
+                if (processedVote.processedTime < localRoundState.thisUpdateTime) {
+                    continue;
+                }
 
                 if (!localRoundState.entities[processedVote.entityId]) {
                     localRoundState.entities[processedVote.entityId] = [];
@@ -292,13 +294,17 @@ export class GameThunks {
             dispatch(GameActions.setGameLayout(layout));
             const localGameState = await DataService.getGameState(appState.user.factionId);
             dispatch(GameActions.setGameState(localGameState));
-            SocketUtils.connect(appState.user.id, appState.user.factionId, roundState => {
-                GameThunks.getNewState(roundState, dispatch, getState).catch(ex => console.error(ex));
-            });
+            SocketUtils.connect(
+                appState.user.id,
+                appState.user.factionId,
+                roundState => {
+                    GameThunks.getNewState(roundState, dispatch, getState).catch(ex => console.error(ex));
+                }
+            );
             // const roundState = await DataService.getRoundState(appState.user.factionId);
             const game = GameLogic.buildGameFromState(layout, localGameState);
 
-            HexConstants.smallHeight = UIConstants.miniMapHeight / game.grid.boundsHeight * 1.3384;
+            HexConstants.smallHeight = (UIConstants.miniMapHeight / game.grid.boundsHeight) * 1.3384;
             HexConstants.smallWidth = UIConstants.miniMapWidth / game.grid.boundsWidth;
 
             DrawingOptions.defaultSmall = {
@@ -360,7 +366,9 @@ export class GameThunks {
             dispatch(GameActions.selectEntity(null));
 
             const votesLeft = gameState.userDetails.maxVotes - gameState.userDetails.voteCount;
-            if (votesLeft === 0) return;
+            if (votesLeft === 0) {
+                return;
+            }
 
             const processedVote = {
                 entityId,
@@ -368,7 +376,7 @@ export class GameThunks {
                 hexId,
                 factionId: appState.user.factionId
             };
-            let voteResult = GameLogic.validateVote(game, processedVote);
+            const voteResult = GameLogic.validateVote(game, processedVote);
 
             if (voteResult !== VoteResult.Success) {
                 dispatch(GameActions.votingError(voteResult));

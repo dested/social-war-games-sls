@@ -1,23 +1,23 @@
+import {GameEntity} from '@swg-common/game/entityDetail';
+import {GameHexagon} from '@swg-common/game/gameHexagon';
+import {GameResource} from '@swg-common/game/gameResource';
+import {Grid} from '@swg-common/hex/hex';
+import {HttpUser} from '@swg-common/models/http/httpUser';
 import * as React from 'react';
 import {Fragment} from 'react';
-import {withRouter} from 'react-router-dom';
 import {connect} from 'react-redux';
-import {HttpUser} from '@swg-common/models/http/httpUser';
-import {SwgStore} from '../store/reducers';
 import {RouteComponentProps} from 'react-router';
-import {GameActions, GameThunks} from '../store/game/actions';
-import {GameSidePanel} from './gameSidePanel';
+import {withRouter} from 'react-router-dom';
 import {GameRenderer} from '../drawing/gameRenderer';
-import {GameEntity} from '@swg-common/game/entityDetail';
+import {DrawingOptions} from '../drawing/hexDrawing';
 import {SmallGameRenderer} from '../drawing/smallGameRenderer';
-import {UIConstants} from '../utils/uiConstants';
-import {GameResource} from '@swg-common/game/gameResource';
+import {GameActions, GameThunks} from '../store/game/actions';
+import {SwgStore} from '../store/reducers';
 import {HexConstants} from '../utils/hexConstants';
+import {UIConstants} from '../utils/uiConstants';
+import {GameSidePanel} from './gameSidePanel';
 import {GameStatsPanel} from './gameStatsPanel';
 import {UIPanel} from './uiPanel';
-import {Grid} from '@swg-common/hex/hex';
-import {GameHexagon} from '@swg-common/game/gameHexagon';
-import {DrawingOptions} from '../drawing/hexDrawing';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -86,21 +86,37 @@ export class Component extends React.Component<Props, State> {
                         height={UIConstants.miniMapHeight}
                     />
                 ) : (
-                    <canvas
-                        id="minimap"
+                    <div
                         style={{
                             position: 'absolute',
                             bottom: 0,
                             left: 0,
                             backgroundColor: 'black',
-                            borderTop: 'solid 3px black',
-                            borderRight: 'solid 3px black',
                             borderTopRightRadius: 25
                         }}
-                        ref={e => this.smallGameRenderer.start(e, this.gameRenderer)}
-                        width={UIConstants.miniMapWidth}
-                        height={UIConstants.miniMapHeight}
-                    />
+                    >
+                        <canvas
+                            id="minimap"
+                            style={{
+                                borderTop: 'solid 3px black',
+                                borderRight: 'solid 3px black',
+                                borderTopRightRadius: 25
+                            }}
+                            ref={e => this.smallGameRenderer.start(e, this.gameRenderer)}
+                            width={UIConstants.miniMapWidth}
+                            height={UIConstants.miniMapHeight}
+                        />
+                        <div
+                            style={{
+                                width: 50,
+                                height: 50,
+                                border: 'white solid 2px',
+                                position: 'absolute',
+                                left: 100,
+                                top: 100
+                            }}
+                        />
+                    </div>
                 )}
 
                 <UIPanel />

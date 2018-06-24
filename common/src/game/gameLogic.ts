@@ -1,10 +1,10 @@
+import {Config} from '../../../server-common/src/config';
+import {DBUserRoundStats} from '../../../server-common/src/db/models/dbUserRoundStats';
 import {Grid, Point, PointHashKey} from '../hex/hex';
-import {GameHexagon} from './gameHexagon';
 import {GameLayout} from '../models/gameLayout';
 import {GameState} from '../models/gameState';
 import {DoubleHashArray, HashArray} from '../utils/hashArray';
-import {HexagonTypes} from './hexagonTypes';
-import {Config} from '../../../server-common/src/config';
+import {Utils} from '../utils/utils';
 import {
     EntityAction,
     EntityDetail,
@@ -14,19 +14,19 @@ import {
     GameEntity,
     PlayableFactionId
 } from './entityDetail';
-import {VoteResult} from './voteResult';
-import {Utils} from '../utils/utils';
-import {GameResource, ResourceDetails, ResourceType} from './gameResource';
 import {FactionDetail} from './factionDetail';
-import {DBUserRoundStats} from '../../../server-common/src/db/models/dbUserRoundStats';
+import {GameHexagon} from './gameHexagon';
+import {GameResource, ResourceDetails, ResourceType} from './gameResource';
+import {HexagonTypes} from './hexagonTypes';
+import {VoteResult} from './voteResult';
 
-export type ProcessedVote = {
+export interface ProcessedVote {
     entityId: number;
     action: EntityAction;
     factionId: PlayableFactionId;
     hexId: string;
     voteCount?: number;
-};
+}
 
 export interface GameModel {
     factionDetails: {[key in PlayableFactionId]: FactionDetail};
@@ -92,26 +92,26 @@ export class GameLogic {
 
     static createDebugGame(): GameModel {
         const entitiesPerBase = [
-            EntityDetails['factory'],
-            EntityDetails['tank'],
-            EntityDetails['tank'],
-            EntityDetails['tank'],
-            EntityDetails['tank'],
-            EntityDetails['tank'],
-            EntityDetails['tank'],
-            EntityDetails['tank'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['plane'],
-            EntityDetails['plane'],
-            EntityDetails['plane'],
-            EntityDetails['plane']
+            EntityDetails.factory,
+            EntityDetails.tank,
+            EntityDetails.tank,
+            EntityDetails.tank,
+            EntityDetails.tank,
+            EntityDetails.tank,
+            EntityDetails.tank,
+            EntityDetails.tank,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.plane,
+            EntityDetails.plane,
+            EntityDetails.plane,
+            EntityDetails.plane
         ];
 
         const baseRadius = 5;
@@ -130,7 +130,7 @@ export class GameLogic {
         }
 
         for (let i = 0; i < Factions.length; i++) {
-            let faction = Factions[i];
+            const faction = Factions[i];
 
             for (let base = 0; base < numberOfBasesPerFaction; base++) {
                 const x = Math.round(Math.random() * (grid.boundsWidth - 14) + 7);
@@ -222,17 +222,17 @@ export class GameLogic {
 
     static createGame(): GameModel {
         const entitiesPerBase = [
-            EntityDetails['factory'],
-            EntityDetails['tank'],
-            EntityDetails['tank'],
-            EntityDetails['tank'],
-            EntityDetails['tank'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['infantry'],
-            EntityDetails['plane']
+            EntityDetails.factory,
+            EntityDetails.tank,
+            EntityDetails.tank,
+            EntityDetails.tank,
+            EntityDetails.tank,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.infantry,
+            EntityDetails.plane
         ];
 
         const baseRadius = 5;
@@ -254,7 +254,7 @@ export class GameLogic {
 
         const factionCenters: Point[] = [];
         for (let i = 0; i < Factions.length; i++) {
-            let faction = Factions[i];
+            const faction = Factions[i];
             const myFactionCenters: Point[] = [];
 
             for (let base = 0; base < numberOfBasesPerFaction; base++) {
@@ -321,7 +321,9 @@ export class GameLogic {
             const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
             const type = Utils.random(60)
                 ? HexagonTypes.grass
-                : Utils.random(50) ? HexagonTypes.clay : HexagonTypes.stone;
+                : Utils.random(50)
+                    ? HexagonTypes.clay
+                    : HexagonTypes.stone;
 
             for (const gameHexagon of grid.getCircle(center, Math.floor(Math.random() * 8))) {
                 if (Utils.random(100 - grid.getDistance(gameHexagon, center) * 2)) {
@@ -483,15 +485,25 @@ export class GameLogic {
 
     static validateVote(game: GameModel, vote: ProcessedVote): VoteResult {
         const fromEntity = game.entities.get2({id: vote.entityId});
-        if (!fromEntity) return VoteResult.EntityNotFound;
-        if (fromEntity.busy) return VoteResult.EntityIsBusy;
-        if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
+        if (!fromEntity) {
+            return VoteResult.EntityNotFound;
+        }
+        if (fromEntity.busy) {
+            return VoteResult.EntityIsBusy;
+        }
+        if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) {
+            return VoteResult.FactionMismatch;
+        }
 
         const fromHex = game.grid.hexes.get(fromEntity);
-        if (!fromHex) return VoteResult.FromHexNotFound;
+        if (!fromHex) {
+            return VoteResult.FromHexNotFound;
+        }
 
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
-        if (!toHex) return VoteResult.ToHexNotFound;
+        if (!toHex) {
+            return VoteResult.ToHexNotFound;
+        }
 
         let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
 
@@ -513,7 +525,9 @@ export class GameLogic {
         }
 
         const path = game.grid.findPath(fromHex, toHex, entityHash);
-        if (path.length === 0) return VoteResult.PathIsZero;
+        if (path.length === 0) {
+            return VoteResult.PathIsZero;
+        }
 
         const entityDetails = EntityDetails[fromEntity.entityType];
 
@@ -535,32 +549,48 @@ export class GameLogic {
                 break;
         }
 
-        if (path.length > range) return VoteResult.PathOutOfRange;
+        if (path.length > range) {
+            return VoteResult.PathOutOfRange;
+        }
 
         const toEntity = game.entities.get1(toHex);
         const toResource = game.resources.get(toHex);
 
         switch (vote.action) {
             case 'attack':
-                if (!toEntity) return VoteResult.NoEntityToAttack;
+                if (!toEntity) {
+                    return VoteResult.NoEntityToAttack;
+                }
                 if (toEntity.factionId === fromEntity.factionId) {
                     return VoteResult.AttackFactionMismatch;
                 }
 
                 break;
             case 'move':
-                if (toEntity) return VoteResult.MoveSpotNotEmpty;
-                if (toResource) return VoteResult.MoveSpotNotEmpty;
+                if (toEntity) {
+                    return VoteResult.MoveSpotNotEmpty;
+                }
+                if (toResource) {
+                    return VoteResult.MoveSpotNotEmpty;
+                }
                 break;
             case 'mine':
-                if (!toResource) return VoteResult.NoResourceToMine;
+                if (!toResource) {
+                    return VoteResult.NoResourceToMine;
+                }
                 break;
             case 'spawn-infantry':
             case 'spawn-tank':
             case 'spawn-plane':
-                if (toEntity) return VoteResult.SpawnSpotNotEmpty;
-                if (toResource) return VoteResult.SpawnSpotNotEmpty;
-                if (entityDetails.spawnRadius === 0) return VoteResult.EntityCannotSpawn;
+                if (toEntity) {
+                    return VoteResult.SpawnSpotNotEmpty;
+                }
+                if (toResource) {
+                    return VoteResult.SpawnSpotNotEmpty;
+                }
+                if (entityDetails.spawnRadius === 0) {
+                    return VoteResult.EntityCannotSpawn;
+                }
                 const resourceCount = game.factionDetails[fromEntity.factionId].resourceCount;
                 let spawnEntity: EntityDetail;
                 switch (vote.action) {
@@ -574,7 +604,9 @@ export class GameLogic {
                         spawnEntity = EntityDetails.plane;
                         break;
                 }
-                if (resourceCount < spawnEntity.spawnCost) return VoteResult.NotEnoughResources;
+                if (resourceCount < spawnEntity.spawnCost) {
+                    return VoteResult.NotEnoughResources;
+                }
                 break;
         }
 
@@ -583,17 +615,27 @@ export class GameLogic {
 
     static processVote(game: GameModel, vote: ProcessedVote, fromBusy: boolean): VoteResult {
         const fromEntity = game.entities.get2({id: vote.entityId});
-        if (!fromEntity) return VoteResult.EntityNotFound;
+        if (!fromEntity) {
+            return VoteResult.EntityNotFound;
+        }
 
-        if (!fromBusy && fromEntity.busy) return VoteResult.EntityIsBusy;
+        if (!fromBusy && fromEntity.busy) {
+            return VoteResult.EntityIsBusy;
+        }
 
-        if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) return VoteResult.FactionMismatch;
+        if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) {
+            return VoteResult.FactionMismatch;
+        }
 
         const fromHex = game.grid.hexes.get(fromEntity);
-        if (!fromHex) return VoteResult.FromHexNotFound;
+        if (!fromHex) {
+            return VoteResult.FromHexNotFound;
+        }
 
         const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
-        if (!toHex) return VoteResult.ToHexNotFound;
+        if (!toHex) {
+            return VoteResult.ToHexNotFound;
+        }
         let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
 
         switch (vote.action) {
@@ -614,7 +656,9 @@ export class GameLogic {
         }
 
         const path = game.grid.findPath(fromHex, toHex, entityHash);
-        if (path.length === 0) return VoteResult.PathIsZero;
+        if (path.length === 0) {
+            return VoteResult.PathIsZero;
+        }
 
         const entityDetails = EntityDetails[fromEntity.entityType];
 
@@ -636,14 +680,18 @@ export class GameLogic {
                 break;
         }
 
-        if (path.length > range) return VoteResult.PathOutOfRange;
+        if (path.length > range) {
+            return VoteResult.PathOutOfRange;
+        }
 
         const toEntity = game.entities.get1(toHex);
         const toResource = game.resources.get(toHex);
 
         switch (vote.action) {
             case 'attack':
-                if (!toEntity) return VoteResult.NoEntityToAttack;
+                if (!toEntity) {
+                    return VoteResult.NoEntityToAttack;
+                }
 
                 if (toEntity.factionId === fromEntity.factionId) {
                     return VoteResult.AttackFactionMismatch;
@@ -657,8 +705,12 @@ export class GameLogic {
 
                 break;
             case 'move':
-                if (toEntity) return VoteResult.MoveSpotNotEmpty;
-                if (toResource) return VoteResult.MoveSpotNotEmpty;
+                if (toEntity) {
+                    return VoteResult.MoveSpotNotEmpty;
+                }
+                if (toResource) {
+                    return VoteResult.MoveSpotNotEmpty;
+                }
                 for (let index = 0; index < path.length; index++) {
                     for (const gameHexagon of game.grid.getCircle(path[index], 1)) {
                         gameHexagon.setFactionId(fromEntity.factionId, 3);
@@ -672,8 +724,12 @@ export class GameLogic {
 
                 break;
             case 'mine':
-                if (toEntity) return VoteResult.MoveSpotNotEmpty;
-                if (!toResource) return VoteResult.NoResourceToMine;
+                if (toEntity) {
+                    return VoteResult.MoveSpotNotEmpty;
+                }
+                if (!toResource) {
+                    return VoteResult.NoResourceToMine;
+                }
 
                 if (!fromBusy) {
                     fromEntity.busy = {
@@ -710,9 +766,15 @@ export class GameLogic {
             case 'spawn-infantry':
             case 'spawn-tank':
             case 'spawn-plane':
-                if (toEntity) return VoteResult.SpawnSpotNotEmpty;
-                if (toResource) return VoteResult.SpawnSpotNotEmpty;
-                if (entityDetails.spawnRadius === 0) return VoteResult.EntityCannotSpawn;
+                if (toEntity) {
+                    return VoteResult.SpawnSpotNotEmpty;
+                }
+                if (toResource) {
+                    return VoteResult.SpawnSpotNotEmpty;
+                }
+                if (entityDetails.spawnRadius === 0) {
+                    return VoteResult.EntityCannotSpawn;
+                }
                 const resourceCount = game.factionDetails[fromEntity.factionId].resourceCount;
                 let spawnEntity: EntityDetail;
                 switch (vote.action) {
@@ -726,7 +788,9 @@ export class GameLogic {
                         spawnEntity = EntityDetails.plane;
                         break;
                 }
-                if (resourceCount < spawnEntity.spawnCost) return VoteResult.NotEnoughResources;
+                if (resourceCount < spawnEntity.spawnCost) {
+                    return VoteResult.NotEnoughResources;
+                }
 
                 if (!fromBusy) {
                     fromEntity.busy = {

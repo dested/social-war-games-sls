@@ -1,21 +1,21 @@
-import {getStore} from '../store';
-import {SwgStore} from '../store/reducers';
-import {Dispatcher, GameActions, GameThunks, UIActions} from '../store/actions';
-import {Manager, Pan, Tap} from 'hammerjs';
-import {HexConstants} from '../utils/hexConstants';
-import * as _ from 'lodash';
-import {AnimationUtils} from '../utils/animationUtils';
-import {HexColors} from '../utils/hexColors';
-import {Drawing, DrawingOptions} from './hexDrawing';
-import {HexImages} from '../utils/hexImages';
-import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameEntity} from '@swg-common/game/entityDetail';
-import {ColorUtils} from '../utils/colorUtils';
-import {GameView} from './gameView';
-import {UIConstants} from '../utils/uiConstants';
-import {GameAssets} from './gameAssets';
+import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameResource} from '@swg-common/game/gameResource';
 import {Utils} from '@swg-common/utils/utils';
+import {Manager, Pan, Tap} from 'hammerjs';
+import * as _ from 'lodash';
+import {getStore} from '../store';
+import {Dispatcher, GameActions, GameThunks, UIActions} from '../store/actions';
+import {SwgStore} from '../store/reducers';
+import {AnimationUtils} from '../utils/animationUtils';
+import {ColorUtils} from '../utils/colorUtils';
+import {HexColors} from '../utils/hexColors';
+import {HexConstants} from '../utils/hexConstants';
+import {HexImages} from '../utils/hexImages';
+import {UIConstants} from '../utils/uiConstants';
+import {GameAssets} from './gameAssets';
+import {GameView} from './gameView';
+import {Drawing, DrawingOptions} from './hexDrawing';
 
 export class GameRenderer {
     private canvas: HTMLCanvasElement;
@@ -75,7 +75,7 @@ export class GameRenderer {
         }
     }
 
-    public moveToHexagon(hexagon: GameHexagon) {
+    moveToHexagon(hexagon: GameHexagon) {
         const startX = this.view.x;
         const endX = this.view.x + (hexagon.center.x - (this.view.x + this.view.width / 2));
 
@@ -102,7 +102,7 @@ export class GameRenderer {
         });
     }
 
-    public moveToEntity(entity: GameEntity) {
+    moveToEntity(entity: GameEntity) {
         const store = getStore();
         const state = store.getState();
 
@@ -113,7 +113,9 @@ export class GameRenderer {
     start(canvas: HTMLCanvasElement) {
         const store = getStore();
 
-        if (this.canvas) return;
+        if (this.canvas) {
+            return;
+        }
         this.canvas = canvas;
         this.context = this.canvas.getContext('2d');
 
@@ -133,7 +135,9 @@ export class GameRenderer {
         this.view = new GameView(this.canvas, gameState.game);
 
         manager.on('panmove', e => {
-            if (e.velocity === 0) return;
+            if (e.velocity === 0) {
+                return;
+            }
             this.view.setPosition(startViewX + (startX - e.center.x), startViewY + (startY - e.center.y));
         });
 
@@ -146,8 +150,7 @@ export class GameRenderer {
             startViewX = this.view.x;
             startViewY = this.view.y;
         });
-        manager.on('panend', e => {
-        });
+        manager.on('panend', e => {});
 
         manager.on('swipe', (ev: {velocityX: number; velocityY: number}) => {
             store.dispatch(UIActions.setUI('None'));
@@ -159,7 +162,9 @@ export class GameRenderer {
             this.swipeVelocity.x = this.swipeVelocity.y = 0;
             store.dispatch(UIActions.setUI('None'));
             const state = store.getState();
-            if (!state.gameState) return;
+            if (!state.gameState) {
+                return;
+            }
             const {game} = state.gameState;
             const hex = Drawing.getHexAt(
                 {
@@ -176,7 +181,7 @@ export class GameRenderer {
 
         setInterval(() => {
             if (Math.abs(this.swipeVelocity.x) > 0) {
-                let sign = Utils.mathSign(this.swipeVelocity.x);
+                const sign = Utils.mathSign(this.swipeVelocity.x);
                 this.swipeVelocity.x += 0.7 * -sign;
                 if (Utils.mathSign(this.swipeVelocity.x) != sign) {
                     this.swipeVelocity.x = 0;
@@ -184,7 +189,7 @@ export class GameRenderer {
             }
 
             if (Math.abs(this.swipeVelocity.y) > 0) {
-                let sign = Utils.mathSign(this.swipeVelocity.y);
+                const sign = Utils.mathSign(this.swipeVelocity.y);
                 this.swipeVelocity.y += 0.7 * -sign;
                 if (Utils.mathSign(this.swipeVelocity.y) != sign) {
                     this.swipeVelocity.y = 0;
@@ -200,7 +205,7 @@ export class GameRenderer {
 
     private startRender() {
         requestAnimationFrame(() => {
-            let store = getStore();
+            const store = getStore();
             try {
                 this.render(store.getState(), store.dispatch);
             } catch (ex) {
@@ -213,7 +218,9 @@ export class GameRenderer {
     private render(state: SwgStore, dispatch: Dispatcher) {
         const {canvas, context} = this;
         const {game, localRoundState: roundState, selectedEntityAction, selectedEntity} = state.gameState;
-        if (!game) return;
+        if (!game) {
+            return;
+        }
         const {grid} = game;
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.save();
@@ -256,7 +263,9 @@ export class GameRenderer {
                 if (isViableHex) {
                     context.fillStyle = 'rgba(226,238,54,.25)';
                 } else {
-                    if (hexagon.factionId === '0') continue;
+                    if (hexagon.factionId === '0') {
+                        continue;
+                    }
                     if (hasEntity) {
                         if (hasEntity === selectedEntity) {
                             context.fillStyle = '#f1f1f1';
@@ -345,7 +354,7 @@ export class GameRenderer {
                 context.beginPath();
                 context.strokeStyle = strokedColor;
                 for (let i = 0; i < hexagon.lines.length; i++) {
-                    let line = hexagon.lines[i];
+                    const line = hexagon.lines[i];
                     if (line.color !== strokedColor) {
                         context.stroke();
                         context.beginPath();
@@ -373,9 +382,9 @@ export class GameRenderer {
             );
         }
 
-        let rectWidth = HexConstants.width * 0.35;
-        let rectHeight = HexConstants.height * 0.4;
-        let fontSize = Math.round(rectWidth / 1.7);
+        const rectWidth = HexConstants.width * 0.35;
+        const rectHeight = HexConstants.height * 0.4;
+        const fontSize = Math.round(rectWidth / 1.7);
         context.textAlign = 'center';
         context.textBaseline = 'bottom';
         context.font = `${fontSize}px Arial`;
@@ -397,8 +406,8 @@ export class GameRenderer {
         for (let i = 0; i < game.entities.length; i++) {
             const entity = game.entities.getIndex(i);
             const hex = grid.getHexAt(entity);
-            let rectX = hex.center.x - HexConstants.width / 2;
-            let rectY = hex.center.y;
+            const rectX = hex.center.x - HexConstants.width / 2;
+            const rectY = hex.center.y;
             context.drawImage(this.roundRect(rectWidth, rectHeight, 5, 'rgba(0,0,0,.6)'), rectX, rectY);
 
             context.fillStyle = 'white';
@@ -456,7 +465,7 @@ export class GameRenderer {
             radius = {tl: rad, tr: rad, br: rad, bl: rad};
         } else {
             const defaultRadius: any = {tl: 0, tr: 0, br: 0, bl: 0};
-            for (let side in defaultRadius) {
+            for (const side in defaultRadius) {
                 radius[side] = radius[side] || defaultRadius[side];
             }
         }

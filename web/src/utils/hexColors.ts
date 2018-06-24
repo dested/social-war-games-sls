@@ -1,5 +1,5 @@
 export class HexColors {
-    public static factionIdToColor(factionId: string, neighborFactionId: string = '0', transparency: string = '1') {
+    static factionIdToColor(factionId: string, neighborFactionId: string = '0', transparency: string = '1') {
         switch (factionId) {
             case '0':
                 return null;
@@ -41,5 +41,5 @@ export class HexColors {
                 break;
         }
     }
-    public static defaultBorder = 'rgba(127,127,127,0.13)';
+    static defaultBorder = 'rgba(127,127,127,0.13)';
 }

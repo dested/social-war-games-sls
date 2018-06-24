@@ -83,7 +83,9 @@ export class HexagonTypes {
     });
 
     static randomSubType(): TileSubType {
-        if (Utils.random(90)) return '1';
+        if (Utils.random(90)) {
+            return '1';
+        }
         return (Math.floor(Math.random() * 5) + 1).toString() as TileSubType;
     }
 
