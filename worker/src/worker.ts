@@ -179,8 +179,7 @@ export class Worker {
     }
 
     private static postVoteTasks(game: GameModel) {
-        for (let i = 0; i < game.entities.array.length; i++) {
-            const entity = game.entities.array[i];
+        for (const entity of game.entities.array) {
             const details = EntityDetails[entity.entityType];
             if (details.healthRegenRate >= 0) {
                 entity.healthRegenStep++;
@@ -208,9 +207,7 @@ export class Worker {
                 }
             }
         }
-
-        for (let i = 0; i < game.entities.array.length; i++) {
-            const entity = game.entities.array[i];
+        for (const entity of game.entities.array) {
             const details = EntityDetails[entity.entityType];
             if (entity.entityType !== 'factory') {
                 game.grid.getHexAt({x: entity.x, y: entity.y}).setFactionId(entity.factionId, 3);
@@ -268,10 +265,10 @@ export class Worker {
             const factionHexes = game.grid.hexes.map(a => a.factionId);
             const hexCount = factionHexes.filter(a => a === faction).length;
             return {
-                hexCount,
-                hexPercent: hexCount / factionHexes.length,
-                resourceCount: game.factionDetails[faction].resourceCount,
-                score: GameLogic.calculateScore(game, faction)
+                c: hexCount,
+                p: hexCount / factionHexes.length,
+                r: game.factionDetails[faction].resourceCount,
+                s: GameLogic.calculateScore(game, faction)
             };
         });
         const response = await fetch('https://s3-us-west-2.amazonaws.com/swg-content/faction-stats.json', {

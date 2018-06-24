@@ -29,7 +29,7 @@ export class FactionStatsCanvas extends React.Component<Props, State> {
         const width = 300;
         const height = 300;
 
-        const field: keyof FactionStat = 'score';
+        const field: keyof FactionStat = 's';
 
         const factionStats = this.props.factionStats;
         const all = Utils.mapMany(factionStats, a => Factions.map(f => a[f][field]));
