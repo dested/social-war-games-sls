@@ -53,7 +53,6 @@ export class RoundStateParser {
             thisUpdateTime,
             entities
         };
-        console.log(JSON.stringify(roundState).length, buffer.length);
         return roundState;
     }
 }

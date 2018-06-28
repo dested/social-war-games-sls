@@ -15,7 +15,7 @@ import {GameActions, GameThunks} from '../store/game/actions';
 import {SwgStore} from '../store/reducers';
 import {HexConstants} from '../utils/hexConstants';
 import {UIConstants} from '../utils/uiConstants';
-import {GameSidePanel} from './gameSidePanel';
+import {ActionPanel} from './actionPanel';
 import {GameStatsPanel} from './gameStatsPanel';
 import {UIPanel} from './uiPanel';
 
@@ -122,7 +122,7 @@ export class Component extends React.Component<Props, State> {
                 )}
 
                 <UIPanel />
-                {(this.props.selectedEntity || this.props.selectedResource) && <GameSidePanel />}
+                {(this.props.selectedEntity || this.props.selectedResource) && <ActionPanel />}
                 <GameStatsPanel />
             </Fragment>
         );

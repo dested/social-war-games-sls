@@ -23,14 +23,12 @@ export class Setup {
 
     static async work() {
         console.time('setup');
-        console.log('booting');
         const redisManager = await RedisManager.setup();
         console.log('redis connected');
         await DataManager.openDbConnection();
 
         await SocketManager.open();
         await redisManager.flushAll();
-        console.log('redis flush');
         await redisManager.set('stop', true);
 
         await DBVote.db.deleteMany({});

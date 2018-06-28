@@ -1,0 +1,32 @@
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+.window-border {
+  position: relative;
+  border: 4px solid transparent;
+  border-radius: 10px;
+  background: linear-gradient(#DADADA, #B3B3B3);
+  background-clip: padding-box;
+  padding: 10px;
+}
+.window-border:after {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: -3px;
+  right: -3px;
+  background: linear-gradient(#FDFDFD, #9B9B9B, #FFFEFF, #DADADA, #A09DA8);
+  content: '';
+  display: inline-block;
+  z-index: -1;
+  border-radius: 10px;
+}
+.window-z {
+  z-index: 1;
+}
+/*# sourceMappingURL=global.css.map */

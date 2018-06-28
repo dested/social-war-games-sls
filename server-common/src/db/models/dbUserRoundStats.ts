@@ -35,7 +35,7 @@ export class DBUserRoundStats extends MongoDocument {
     }
 
     static async buildLadder(currentGeneration: number) {
-        const generationsPerDay = 24 * 60 * 60 * 1000 / Config.gameDuration;
+        const generationsPerDay = (24 * 60 * 60 * 1000) / Config.gameDuration;
         const valuableGenerations = generationsPerDay * 2.5;
         await this.db.aggregate([
             {

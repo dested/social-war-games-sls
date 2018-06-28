@@ -1,0 +1,35 @@
+
+.action-window {
+  height: 200px;
+  width: 500px;
+}
+
+.action-window-left {
+  border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  width:300px;
+  height: 200px;
+}
+
+.action-window-left:after {
+  right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.action-window-right {
+  position: relative;
+  border-left: none;
+  border-radius: 0 50% 50% 0;
+  width: 200px;
+  height: 200px;
+}
+
+.action-window-right:after {
+  border-radius: 0 50% 50% 0;
+}
+
+.action-window-inner{
+
+}

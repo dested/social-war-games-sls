@@ -119,7 +119,6 @@ export class RoundOutcomeParser {
             notes
         };
 
-        console.log(JSON.stringify(roundOutcome).length, buffer.length);
         return roundOutcome;
     }
 }

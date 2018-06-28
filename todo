@@ -112,9 +112,8 @@
 '/ if zero votes do something
 '/ compress the gamestatejson
 '/ fix mongodb connection bug
-
-fix round outcome
-fix faction stats
+'/ fix round outcome
+'/ fix faction stats
 
 
 gameplay

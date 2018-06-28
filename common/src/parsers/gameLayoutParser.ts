@@ -45,7 +45,6 @@ export class GameLayoutParser {
             boardHeight,
             hexes
         };
-        console.log(JSON.stringify(gameLayout).length, buffer.length);
         return gameLayout;
     }
 }

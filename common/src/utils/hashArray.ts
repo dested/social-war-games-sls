@@ -19,7 +19,9 @@ export class HashArray<T extends TKey, TKey = T> {
 
     push(item: T) {
         const key = this.getKey(item);
-        if (this.hash[key]) { return; }
+        if (this.hash[key]) {
+            return;
+        }
 
         this.hash[key] = item;
         this.array.push(item);
@@ -27,7 +29,9 @@ export class HashArray<T extends TKey, TKey = T> {
 
     removeItem(item: T) {
         const key = this.getKey(item);
-        if (!this.hash[key]) { return; }
+        if (!this.hash[key]) {
+            return;
+        }
 
         const hashedItem = this.hash[key];
         delete this.hash[key];
@@ -98,7 +102,9 @@ export class DoubleHashArray<T extends TKey1 & TKey2, TKey1 = T, TKey2 = T> {
 
     push(item: T) {
         const key1 = this.getKey1(item);
-        if (this.hash1[key1]) { return; }
+        if (this.hash1[key1]) {
+            return;
+        }
 
         this.hash1[key1] = item;
 
@@ -109,7 +115,9 @@ export class DoubleHashArray<T extends TKey1 & TKey2, TKey1 = T, TKey2 = T> {
 
     removeItem(item: T) {
         const key1 = this.getKey1(item);
-        if (!this.hash1[key1]) { return; }
+        if (!this.hash1[key1]) {
+            return;
+        }
         const hashedItem = this.hash1[key1];
         const key2 = this.getKey2(item);
 

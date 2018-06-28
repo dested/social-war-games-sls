@@ -60,7 +60,6 @@ export class Worker {
     private static async processNewRound() {
         try {
             console.time('round end');
-            console.log('round end');
             await this.redisManager.set('stop', true);
             const generation = await this.redisManager.get<number>('game-generation');
 

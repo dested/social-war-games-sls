@@ -1,14 +1,11 @@
 export class DebounceUtils {
     static debounce(key: string, ms: number, callback: () => void): any {
         if (DebounceUtils.debounceCallbacks[key]) {
-            //                console.log(key + ' debounce stopped');
             clearTimeout(DebounceUtils.debounceCallbacks[key].timeout);
         }
-        console.log(key + ' debounce started', ms);
         DebounceUtils.debounceCallbacks[key] = {
             callback,
             timeout: window.setTimeout(() => {
-                console.log(key + ' debounce called');
                 callback();
                 delete DebounceUtils.debounceCallbacks[key];
             }, ms)

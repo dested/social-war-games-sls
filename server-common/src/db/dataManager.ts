@@ -7,11 +7,8 @@ export class DataManager {
     static dbConnection: Db;
 
     static async openDbConnection() {
-        console.log('opening db connection');
         if (!this.dbConnection || !(this.dbConnection.serverConfig as any).isConnected()) {
-            console.log('db connection is closed');
             this.dbConnection = (await MongoClient.connect(Config.dbConnection)).db(Config.dbName);
-            console.log('db connection is open');
         }
     }
 
@@ -29,11 +26,6 @@ export class DocumentManager<T extends {_id: any}> {
     constructor(private collectionName: string) {}
 
     async insertDocument(document: T): Promise<T> {
-        if (!DataManager.dbConnection) {
-            console.log('db is closed, reopening');
-            await DataManager.openDbConnection();
-            console.log('db should be open now');
-        }
         const result = await DataManager.dbConnection.collection(this.collectionName).insertOne(document);
         document._id = result.insertedId;
         return document;

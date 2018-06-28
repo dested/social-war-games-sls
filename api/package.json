@@ -4,7 +4,9 @@
   "description": "",
   "main": "handler.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "pretty": "npx prettier \"*/**/*.ts*\"  --config .prettierrc --write",
+    "lint": "npx tslint -p tsconfig.json --fix",
+    "verify": "tsc --noEmit",
     "deploy": "sls deploy"
   },
   "author": "",

@@ -1,4 +1,4 @@
-import {RedisClient, createClient} from 'redis';
+import {createClient, RedisClient} from 'redis';
 import {Config} from '../config';
 
 export class RedisManager {
@@ -40,11 +40,10 @@ export class RedisManager {
                     return;
                 }
 
-                res(JSON.parse(result) as T || def);
+                res((JSON.parse(result) as T) || def);
             });
         });
     }
-
 
     getString(key: string, def: string = undefined): Promise<string> {
         return new Promise((res, rej) => {
@@ -58,7 +57,6 @@ export class RedisManager {
             });
         });
     }
-
 
     set<T>(key: string, value: T): Promise<void> {
         return new Promise((res, rej) => {

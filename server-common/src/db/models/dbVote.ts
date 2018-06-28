@@ -1,13 +1,13 @@
+import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {DocumentManager} from '../dataManager';
 import {MongoDocument} from './mongoDocument';
-import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
 
-export type VoteCountResult = {_id: number; actions: {action: EntityAction; hexId: string; count: number}[]};
-export type RoundUserStats = {
+export interface VoteCountResult {_id: number; actions: {action: EntityAction; hexId: string; count: number}[]}
+export interface RoundUserStats {
     _id: {userId: string; factionId: PlayableFactionId};
     count: number;
     votes: {action: EntityAction; hexId: string; entityId: number}[];
-};
+}
 
 export class DBVote extends MongoDocument {
     static collectionName = 'vote';

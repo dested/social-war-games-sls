@@ -3,7 +3,6 @@ import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameResource} from '@swg-common/game/gameResource';
 import {Utils} from '@swg-common/utils/utils';
 import {Manager, Pan, Tap} from 'hammerjs';
-import * as _ from 'lodash';
 import {getStore} from '../store';
 import {Dispatcher, GameActions, GameThunks, UIActions} from '../store/actions';
 import {SwgStore} from '../store/reducers';
@@ -325,7 +324,7 @@ export class GameRenderer {
                 const voteEntities = roundState.entities[hasEntity.id];
                 if (voteEntities && voteEntities.length > 0) {
                     context.save();
-                    const count = _.sum(voteEntities.map(a => a.count));
+                    const count = Utils.sum(voteEntities, a => a.count);
                     context.strokeStyle = '#dfdfdf';
                     if (count < 2) {
                         context.lineWidth = 2;

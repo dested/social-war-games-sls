@@ -16,6 +16,8 @@ import {SwgStore} from '../store/reducers';
 import {ColorUtils} from '../utils/colorUtils';
 import {HexColors} from '../utils/hexColors';
 import {HexConstants} from '../utils/hexConstants';
+import './actionPanel.css';
+import './global.css';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -36,6 +38,24 @@ export class Component extends React.Component<Props, State> {
     }
 
     render() {
+        return (
+            <div
+                className="flex-row window-z action-window"
+                style={{top: 50, height: 100, position: 'absolute', right: 50}}
+            >
+                <div className="action-window-left window-border">hi</div>
+                <div className="action-window-right window-border">hi</div>
+                <div className="action-window-inner">
+                    <div className="black-box">
+                        <div className="button action">Attack</div>
+                        <div className="button action">Move</div>
+                        <div className="button action">Mine</div>
+                    </div>
+                    <div className="health-bar" />
+                    <div className="radar" />
+                </div>
+            </div>
+        );
         if (this.props.selectedEntity) {
             return this.renderEntity();
         } else if (this.props.selectedResource) {
@@ -151,94 +171,35 @@ export class Component extends React.Component<Props, State> {
         const entityDetails = EntityDetails[entity.entityType];
         const myEntity = this.props.user.factionId === entity.factionId;
 
-        const sidePanelBox = HexConstants.isMobile
-            ? {
-                  height: '175px',
-                  borderBottomLeftRadius: '20px',
-                  width: '150px',
-                  position: 'absolute' as 'absolute',
-                  right: 0,
-                  backgroundColor: 'rgba(255,255,255,.6)',
-                  padding: 10,
-                  display: 'flex',
-                  flexDirection: 'column' as 'column'
-              }
-            : {
-                  height: myEntity ? '368px' : '300px',
-                  borderBottomLeftRadius: '40px',
-                  width: '330px',
-                  position: 'absolute' as 'absolute',
-                  right: 0,
-                  backgroundColor: 'rgba(255,255,255,.6)',
-                  padding: 20,
-                  display: 'flex',
-                  flexDirection: 'column' as 'column'
-              };
-
-        const sidePanelEntityCircle = HexConstants.isMobile
-            ? {
-                  borderRadius: '50%',
-                  width: '60px',
-                  height: '60px',
-                  display: 'flex',
-                  alignSelf: 'center',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  margin: '10px',
-                  backgroundColor: HexColors.factionIdToColor(entity.factionId, '0', '.8')
-              }
-            : {
-                  borderRadius: '50%',
-                  width: '180px',
-                  height: '180px',
-                  display: 'flex',
-                  alignSelf: 'center',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  margin: '10px',
-                  backgroundColor: HexColors.factionIdToColor(entity.factionId, '0', '.8')
-              };
-
-        const healthBar = HexConstants.isMobile
-            ? {
-                  display: 'flex',
-                  borderRadius: '10px',
-                  border: 'solid 2px black',
-                  backgroundColor: 'rgba(50,50,50,1)',
-                  height: '20px'
-              }
-            : {
-                  display: 'flex',
-                  borderRadius: '20px',
-                  border: 'solid 2px black',
-                  backgroundColor: 'rgba(50,50,50,1)',
-                  height: '40px'
-              };
-        const healthBarInner = HexConstants.isMobile
-            ? {
-                  borderRadius: '10px',
-                  width: `${(entity.health / entityDetails.health) * 100}%`,
-                  backgroundColor: ColorUtils.lerpColor('#FF0000', '#00FF00', entity.health / entityDetails.health)
-              }
-            : {
-                  borderRadius: '20px',
-                  width: `${(entity.health / entityDetails.health) * 100}%`,
-                  backgroundColor: ColorUtils.lerpColor('#FF0000', '#00FF00', entity.health / entityDetails.health)
-              };
-
-        const entityImage = HexConstants.isMobile ? {width: '50px'} : {width: '120px'};
+        const healthColor = ColorUtils.lerpColor('#FF0000', '#00FF00', entity.health / entityDetails.health);
+        const imageUrl = GameAssets[entity.entityType].imageUrl;
 
         return (
+            <div className={'flex-row'} style={{top: 50, height: 100, position: 'absolute', right: 50}}>
+                <div
+                    className={'window-border-left'}
+                    style={{
+                        width: 200
+                    }}
+                >
+                    hi
+                </div>
+
+                <div className={'window-border-right'}>ho</div>
+            </div>
+        );
+
+        /*(
             <div style={sidePanelBox}>
                 <div style={sidePanelEntityCircle}>
-                    <img src={GameAssets[entity.entityType].imageUrl} style={entityImage} />
+                    <img src={imageUrl} style={entityImage} />
                 </div>
                 <div style={healthBar}>
                     <div style={healthBarInner} />
                 </div>
                 {myEntity && this.renderActions(entity)}
             </div>
-        );
+        )*/
     }
 
     private renderActions(entity: GameEntity) {
@@ -461,7 +422,7 @@ export let Badge: SFC<{count: number}> = ({count}) => {
     );
 };
 
-export let GameSidePanel = connect(
+export let ActionPanel = connect(
     (state: SwgStore) => ({
         user: state.appState.user,
         game: state.gameState.game,

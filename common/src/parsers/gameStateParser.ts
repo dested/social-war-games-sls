@@ -212,7 +212,6 @@ export class GameStateParser {
             roundEnd
         };
 
-        console.log(JSON.stringify(gameState).length, buffer.length);
         return gameState;
     }
 }

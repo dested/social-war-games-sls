@@ -11,12 +11,14 @@ module.exports = env => {
         },
         ...(process.env.WEBPACK_SERVE ? {mode: 'development'} : {}),
         resolve: {
-            extensions: ['.ts', '.tsx', '.js'],
+            extensions: ['.ts', '.tsx', '.js', '.css'],
             alias: {
                 '@swg-common': path.resolve(__dirname, '../common/src/')
             }
         },
-        // externals: [nodeExternals()],
+        externals: [{
+            // 'lodash': 'lodash'
+        }],
         plugins: [env === 'deploy' && new UglifyJsPlugin()].filter(a => a),
         module: {
             rules: [
@@ -30,8 +32,11 @@ module.exports = env => {
                 {
                     test: /\.less$/,
                     loader: 'less-loader' // compiles Less to CSS
-                }
-            ]
+                },
+                {
+                    test: /\.css$/,
+                    loader: 'style-loader!css-loader'
+                }]
         }
     };
 };
