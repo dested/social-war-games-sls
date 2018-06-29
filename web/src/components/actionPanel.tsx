@@ -5,7 +5,7 @@ import {HttpUser} from '@swg-common/models/http/httpUser';
 import {RoundState} from '@swg-common/models/roundState';
 import {Utils} from '@swg-common/utils/utils';
 import * as React from 'react';
-import {SFC} from 'react';
+import {Fragment, SFC} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {withRouter} from 'react-router-dom';
@@ -38,24 +38,6 @@ export class Component extends React.Component<Props, State> {
     }
 
     render() {
-        return (
-            <div
-                className="flex-row window-z action-window"
-                style={{top: 50, height: 100, position: 'absolute', right: 50}}
-            >
-                <div className="action-window-left window-border">hi</div>
-                <div className="action-window-right window-border">hi</div>
-                <div className="action-window-inner">
-                    <div className="black-box">
-                        <div className="button action">Attack</div>
-                        <div className="button action">Move</div>
-                        <div className="button action">Mine</div>
-                    </div>
-                    <div className="health-bar" />
-                    <div className="radar" />
-                </div>
-            </div>
-        );
         if (this.props.selectedEntity) {
             return this.renderEntity();
         } else if (this.props.selectedResource) {
@@ -69,98 +51,30 @@ export class Component extends React.Component<Props, State> {
 
         const currentFaction = this.props.game.grid.getHexAt(resource).factionId;
 
-        const sidePanelBox = HexConstants.isMobile
-            ? {
-                  height: '175px',
-                  borderBottomLeftRadius: '20px',
-                  width: '150px',
-                  position: 'absolute' as 'absolute',
-                  right: 0,
-                  backgroundColor: 'rgba(255,255,255,.6)',
-                  padding: 10,
-                  display: 'flex',
-                  flexDirection: 'column' as 'column'
-              }
-            : {
-                  height: '300px',
-                  borderBottomLeftRadius: '40px',
-                  width: '330px',
-                  position: 'absolute' as 'absolute',
-                  right: 0,
-                  backgroundColor: 'rgba(255,255,255,.6)',
-                  padding: 20,
-                  display: 'flex',
-                  flexDirection: 'column' as 'column'
-              };
-
-        const sidePanelEntityCircle = HexConstants.isMobile
-            ? {
-                  borderRadius: '50%',
-                  width: '60px',
-                  height: '60px',
-                  display: 'flex',
-                  alignSelf: 'center',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  margin: '10px',
-                  backgroundColor: HexColors.factionIdToColor(currentFaction, '0', '.8')
-              }
-            : {
-                  borderRadius: '50%',
-                  width: '180px',
-                  height: '180px',
-                  display: 'flex',
-                  alignSelf: 'center',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  margin: '10px',
-                  backgroundColor: HexColors.factionIdToColor(currentFaction, '0', '.8')
-              };
-
-        const healthBar = HexConstants.isMobile
-            ? {
-                  display: 'flex',
-                  borderRadius: '10px',
-                  border: 'solid 2px black',
-                  backgroundColor: 'rgba(50,50,50,1)',
-                  height: '20px'
-              }
-            : {
-                  display: 'flex',
-                  borderRadius: '20px',
-                  border: 'solid 2px black',
-                  backgroundColor: 'rgba(50,50,50,1)',
-                  height: '40px'
-              };
-        const healthBarInner = HexConstants.isMobile
-            ? {
-                  borderRadius: '10px',
-                  width: `${(resource.currentCount / resourceDetails.startingCount) * 100}%`,
-                  backgroundColor: ColorUtils.lerpColor(
-                      '#FF0000',
-                      '#00FF00',
-                      resource.currentCount / resourceDetails.startingCount
-                  )
-              }
-            : {
-                  borderRadius: '20px',
-                  width: `${(resource.currentCount / resourceDetails.startingCount) * 100}%`,
-                  backgroundColor: ColorUtils.lerpColor(
-                      '#FF0000',
-                      '#00FF00',
-                      resource.currentCount / resourceDetails.startingCount
-                  )
-              };
-
-        const entityImage = HexConstants.isMobile ? {width: '50px'} : {width: '120px'};
+        const healthPercent = resource.currentCount / resourceDetails.startingCount;
+        const healthColor = ColorUtils.lerpColor(
+            '#FF0000',
+            '#00FF00',
+            resource.currentCount / resourceDetails.startingCount
+        );
 
         return (
-            <div style={sidePanelBox}>
-                <div style={sidePanelEntityCircle}>
-                    <img src={GameAssets[resource.resourceType].imageUrl} style={entityImage} />
-                </div>
-                <div style={healthBar}>
-                    <div style={healthBarInner} />
+            <div className={`window-z action-window small-action-window`}>
+                <div className="window-border action-window-left small-action-window-left" />
+                <div className="window-border action-window-right small-action-window-right" />
+                <div className="action-window-inner">
+                    <div className="action-health-bar-outer">
+                        <div
+                            className="action-health-bar-inner"
+                            style={{
+                                height: `${healthPercent * 100}%`,
+                                backgroundColor: healthColor
+                            }}
+                        />
+                    </div>
+                    <div className="radar">
+                        <img className="radar-icon" src={GameAssets[resource.resourceType].imageUrl} />
+                    </div>
                 </div>
             </div>
         );
@@ -171,35 +85,31 @@ export class Component extends React.Component<Props, State> {
         const entityDetails = EntityDetails[entity.entityType];
         const myEntity = this.props.user.factionId === entity.factionId;
 
-        const healthColor = ColorUtils.lerpColor('#FF0000', '#00FF00', entity.health / entityDetails.health);
+        const healthPercent = entity.health / entityDetails.health;
+        const healthColor = ColorUtils.lerpColor('#FF0000', '#00FF00', healthPercent);
         const imageUrl = GameAssets[entity.entityType].imageUrl;
 
         return (
-            <div className={'flex-row'} style={{top: 50, height: 100, position: 'absolute', right: 50}}>
-                <div
-                    className={'window-border-left'}
-                    style={{
-                        width: 200
-                    }}
-                >
-                    hi
+            <div className={`flex-row window-z action-window ${!myEntity && 'small-action-window'}`}>
+                <div className={`window-border action-window-left ${!myEntity && 'small-action-window-left'}`} />
+                <div className={`window-border action-window-right ${!myEntity && 'small-action-window-right'}`} />
+                <div className="action-window-inner">
+                    {myEntity && <div className="black-box action-list-box">{this.renderActions(entity)}</div>}
+                    <div className="action-health-bar-outer">
+                        <div
+                            className="action-health-bar-inner"
+                            style={{
+                                height: `${healthPercent * 100}%`,
+                                backgroundColor: healthColor
+                            }}
+                        />
+                    </div>
+                    <div className="radar">
+                        <img className="radar-icon" src={imageUrl} />
+                    </div>
                 </div>
-
-                <div className={'window-border-right'}>ho</div>
             </div>
         );
-
-        /*(
-            <div style={sidePanelBox}>
-                <div style={sidePanelEntityCircle}>
-                    <img src={imageUrl} style={entityImage} />
-                </div>
-                <div style={healthBar}>
-                    <div style={healthBarInner} />
-                </div>
-                {myEntity && this.renderActions(entity)}
-            </div>
-        )*/
     }
 
     private renderActions(entity: GameEntity) {
@@ -210,42 +120,10 @@ export class Component extends React.Component<Props, State> {
                 </span>
             );
         }
-
-        const actionButton = HexConstants.isMobile
-            ? {
-                  width: 50,
-                  margin: 10,
-                  position: 'relative' as any,
-                  borderRadius: 10,
-                  alignItems: 'center',
-                  height: 35,
-                  color: 'white',
-                  justifyContent: 'center',
-                  display: 'flex'
-              }
-            : {
-                  width: 100,
-                  margin: 10,
-                  position: 'relative' as any,
-                  borderRadius: 10,
-                  alignItems: 'center',
-                  height: 100,
-                  color: 'white',
-                  justifyContent: 'center',
-                  display: 'flex'
-              };
-
-        const outer = HexConstants.isMobile
-            ? {
-                  display: 'flex',
-                  justifyContent: 'center',
-                  fontSize: '13px'
-              }
-            : {
-                  display: 'flex',
-                  justifyContent: 'center',
-                  fontSize: '25px'
-              };
+        /*
+                        <div className={`button action-button`}>Attack</div>
+                        <div className={`button action-button`}>Move</div>
+                        <div className={`button action-button`}>Mine</div>*/
 
         const selectedButton = HexConstants.isMobile
             ? {
@@ -262,136 +140,91 @@ export class Component extends React.Component<Props, State> {
         const spawnTankCount = this.getActionCount(entity, 'spawn-tank');
         const spawnPlaneCount = this.getActionCount(entity, 'spawn-plane');
 
+        const selected = this.props.selectedEntityAction;
+
         switch (entity.entityType) {
             case 'infantry':
                 return (
-                    <div style={outer}>
+                    <Fragment>
                         <div
-                            style={{
-                                ...actionButton,
-                                backgroundColor: 'red',
-                                ...(this.props.selectedEntityAction === 'attack' && selectedButton)
-                            }}
+                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
                         >
-                            <span>Attack</span>
-                            {attackCount > 0 && <Badge count={attackCount} />}
+                            Attack {attackCount > 0 && <Badge count={attackCount} />}
                         </div>
                         <div
-                            style={{
-                                ...actionButton,
-                                backgroundColor: 'purple',
-                                ...(this.props.selectedEntityAction === 'mine' && selectedButton)
-                            }}
-                            onClick={() => this.props.startEntityAction(entity, 'mine')}
-                        >
-                            <span>Mine</span>
-                            {mineCount > 0 && <Badge count={mineCount} />}
-                        </div>
-                        <div
-                            style={{
-                                ...actionButton,
-                                backgroundColor: 'blue',
-                                ...(this.props.selectedEntityAction === 'move' && selectedButton)
-                            }}
+                            className={`button action-button ${selected === 'move' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
-                            <span>Move</span>
-                            {moveCount > 0 && <Badge count={moveCount} />}
+                            Move {moveCount > 0 && <Badge count={moveCount} />}
                         </div>
-                    </div>
+                        <div
+                            className={`button action-button ${selected === 'mine' && 'selected-button'}`}
+                            onClick={() => this.props.startEntityAction(entity, 'mine')}
+                        >
+                            Mine {mineCount > 0 && <Badge count={mineCount} />}
+                        </div>
+                    </Fragment>
                 );
             case 'tank':
                 return (
-                    <div style={outer}>
+                    <Fragment>
                         <div
-                            style={{
-                                ...actionButton,
-                                backgroundColor: 'red',
-                                ...(this.props.selectedEntityAction === 'attack' && selectedButton)
-                            }}
+                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
                         >
-                            <span>Attack</span>
-                            {attackCount > 0 && <Badge count={attackCount} />}
+                            Attack {attackCount > 0 && <Badge count={attackCount} />}
                         </div>
                         <div
-                            style={{
-                                ...actionButton,
-                                backgroundColor: 'blue',
-                                ...(this.props.selectedEntityAction === 'move' && selectedButton)
-                            }}
+                            className={`button action-button ${selected === 'move' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
-                            <span>Move</span>
-                            {moveCount > 0 && <Badge count={moveCount} />}
+                            Move {moveCount > 0 && <Badge count={moveCount} />}
                         </div>
-                    </div>
+                        <div className={`fake-button`}>&nbsp;</div>
+                    </Fragment>
                 );
+
             case 'plane':
                 return (
-                    <div style={outer}>
+                    <Fragment>
                         <div
-                            style={{
-                                ...actionButton,
-                                backgroundColor: 'red',
-                                ...(this.props.selectedEntityAction === 'attack' && selectedButton)
-                            }}
+                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'attack')}
                         >
-                            <span>Attack</span>
-                            {attackCount > 0 && <Badge count={attackCount} />}
+                            Attack {attackCount > 0 && <Badge count={attackCount} />}
                         </div>
                         <div
-                            style={{
-                                ...actionButton,
-                                backgroundColor: 'blue',
-                                ...(this.props.selectedEntityAction === 'move' && selectedButton)
-                            }}
+                            className={`button action-button ${selected === 'move' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
-                            <span>Move</span>
-                            {moveCount > 0 && <Badge count={moveCount} />}
+                            Move {moveCount > 0 && <Badge count={moveCount} />}
                         </div>
-                    </div>
+                        <div className={`fake-button`}>&nbsp;</div>
+                    </Fragment>
                 );
             case 'factory':
                 return (
-                    <div style={outer}>
+                    <Fragment>
                         <div
-                            style={{
-                                ...actionButton,
-                                backgroundColor: 'green',
-                                ...(this.props.selectedEntityAction === 'spawn-infantry' && selectedButton)
-                            }}
+                            className={`button action-button ${selected === 'spawn-infantry' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'spawn-infantry')}
                         >
-                            <span style={{fontSize: 17}}>Spawn Infantry ({EntityDetails.infantry.spawnCost})</span>
-                            {spawnInfantryCount > 0 && <Badge count={spawnInfantryCount} />}
+                            Infantry {spawnInfantryCount > 0 && <Badge count={spawnInfantryCount} />}
                         </div>
                         <div
-                            style={{
-                                ...actionButton,
-                                backgroundColor: 'green',
-                                ...(this.props.selectedEntityAction === 'spawn-tank' && selectedButton)
-                            }}
+                            className={`button action-button ${selected === 'spawn-tank' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'spawn-tank')}
                         >
-                            <span style={{fontSize: 17}}>Spawn Tank ({EntityDetails.tank.spawnCost})₽</span>
-                            {spawnTankCount > 0 && <Badge count={spawnTankCount} />}
+                            Tank {spawnTankCount > 0 && <Badge count={spawnTankCount} />}
                         </div>
                         <div
-                            style={{
-                                ...actionButton,
-                                backgroundColor: 'green',
-                                ...(this.props.selectedEntityAction === 'spawn-plane' && selectedButton)
-                            }}
+                            className={`button action-button ${selected === 'spawn-plane' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'spawn-plane')}
                         >
-                            <span style={{fontSize: 17}}>Spawn Plane ({EntityDetails.plane.spawnCost})₽</span>
-                            {spawnPlaneCount > 0 && <Badge count={spawnPlaneCount} />}
+                            Plane {spawnPlaneCount > 0 && <Badge count={spawnPlaneCount} />}
                         </div>
-                    </div>
+                    </Fragment>
                 );
         }
     }

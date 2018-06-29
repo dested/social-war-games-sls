@@ -21,6 +21,7 @@ import {SwgStore} from '../store/reducers';
 import {HexColors} from '../utils/hexColors';
 import {HexConstants} from '../utils/hexConstants';
 import {FactionStatsCanvas} from './factionStatsCanvas';
+import './uiPanel.css';
 
 interface Props extends RouteComponentProps<{}> {
     user?: HttpUser;
@@ -52,26 +53,21 @@ export class Component extends React.Component<Props, State> {
             return null;
         }
 
-        const margin = 100;
-
-        const box = {
-            height: `50vh`,
-            borderRadius: '40px',
-            width: `30vw`,
-            padding: 50,
-            position: 'absolute' as 'absolute',
-            marginLeft: margin / 2,
-            marginTop: margin / 2,
-            backgroundColor: 'rgba(255,255,255,.9)',
-            display: 'flex',
-            flexDirection: 'column' as 'column'
-        };
         return (
-            <div style={box}>
-                {(this.props.ui === 'Ladder' && this.renderLadder()) ||
-                    (this.props.ui === 'FactionStats' && this.renderFactionStats()) ||
-                    (this.props.ui === 'Bases' && this.renderBases()) ||
-                    (this.props.ui === 'RoundStats' && this.renderRoundStats())}
+            <div className={`main-window`}>
+                <div className={`window-border main-window-border`}>
+                    <div className={`flex-row`}>
+                        <div className={`main-window-title`}>{this.props.ui}</div>
+                        <div className={`main-window-title-right`} />
+                    </div>
+
+                    <div className={`main-window-inner`}>
+                        {(this.props.ui === 'Ladder' && this.renderLadder()) ||
+                            (this.props.ui === 'FactionStats' && this.renderFactionStats()) ||
+                            (this.props.ui === 'Bases' && this.renderBases()) ||
+                            (this.props.ui === 'RoundStats' && this.renderRoundStats())}
+                    </div>
+                </div>
             </div>
         );
     }
@@ -91,6 +87,7 @@ export class Component extends React.Component<Props, State> {
             </div>
         );
     }
+
     private renderFactionStats() {
         if (!this.props.factionStats) {
             return 'loading';
@@ -171,7 +168,9 @@ export class Component extends React.Component<Props, State> {
                     <div style={{display: 'flex', flexDirection: 'column', flexWrap: 'wrap'}}>
                         {factionRoundStats.hotEntities.map(e => {
                             const ent = this.props.game.entities.get2(e);
-                            if (!ent) { return null; }
+                            if (!ent) {
+                                return null;
+                            }
                             let color: string;
                             if (e.count < 2) {
                                 color = '#284a2a';
@@ -211,7 +210,9 @@ export class Component extends React.Component<Props, State> {
 
     goToEntity(entityId: number) {
         const entity = this.props.game.entities.get2({id: entityId});
-        if (entity) { this.props.gameRenderer.moveToEntity(entity); }
+        if (entity) {
+            this.props.gameRenderer.moveToEntity(entity);
+        }
     }
 
     goToHex(hexId: string) {
