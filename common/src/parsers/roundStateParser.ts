@@ -24,7 +24,7 @@ export class RoundStateParser {
         return buff.buildBuffer(null);
     }
 
-    static toRoundState(buffer: ArrayBuffer): RoundState {
+    static toRoundState(buffer: ArrayBufferLike): RoundState {
         const reader = new ArrayBufferReader(buffer);
         const generation = reader.readInt32();
         const thisUpdateTime = reader.readFloat64();

@@ -25,7 +25,7 @@ export class SocketUtils {
             this.client.subscribe(`round-state-${factionToken}`);
         });
         this.client.on('message', (topic: string, buffer: Uint8Array) => {
-            const round = RoundStateParser.toRoundState(buffer);
+            const round = RoundStateParser.toRoundState(new Uint8Array(buffer).buffer);
             onMessage(round);
         });
         this.client.on('close', (err: string) => {

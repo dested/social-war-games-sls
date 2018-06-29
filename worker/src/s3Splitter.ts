@@ -69,13 +69,13 @@ export class S3Splitter {
                 visibleHexes
             );
 
-            const gameStateJson = GameStateParser.fromGameState(
-                factionGameState,
-                factionTokens[faction].split('.').map(a => parseInt(a))
-            );
             const roundStateJson = RoundStateParser.fromRoundState(factionRoundState);
             if (outputGameState) {
                 // await this.redisManager.set(`faction-token-${generation}-${1}`, ``);
+                const gameStateJson = GameStateParser.fromGameState(
+                    factionGameState,
+                    factionTokens[faction].split('.').map(a => parseInt(a))
+                );
 
                 await S3Manager.uploadBytes(`game-state-${faction}.swg`, gameStateJson, false);
             }

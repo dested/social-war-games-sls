@@ -4,7 +4,7 @@ import * as aesjs from 'aes-js';
 import {Utils} from './utils';
 
 export class ArrayBufferBuilder {
-    private array: { value: number; float: boolean; unsigned?: boolean; size: 8 | 16 | 32 | 64 }[] = [];
+    private array: {value: number; float: boolean; unsigned?: boolean; size: 8 | 16 | 32 | 64}[] = [];
 
     addFloat32(value: number) {
         this.array.push({
@@ -156,7 +156,7 @@ export class ArrayBufferReader {
     private index: number;
     private dv: DataView;
 
-    constructor(buffer: ArrayBuffer, decryptToken?: number[]) {
+    constructor(buffer: ArrayBuffer | ArrayBufferLike, decryptToken?: number[]) {
 
         if (decryptToken) {
 
