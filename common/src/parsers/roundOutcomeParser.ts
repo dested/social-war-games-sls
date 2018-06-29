@@ -46,7 +46,7 @@ export class RoundOutcomeParser {
         return buff.buildBuffer(null);
     }
 
-    static toRoundStats(buffer: Uint8Array): FactionRoundStats {
+    static toRoundStats(buffer: ArrayBuffer): FactionRoundStats {
         const reader = new ArrayBufferReader(buffer);
         const generation = reader.readInt32();
         const totalPlayersVoted = reader.readInt32();

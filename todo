@@ -115,6 +115,7 @@
 '/ fix round outcome
 '/ fix faction stats
 '/ encrypt faction
+'/ add checksum to faction encryption
 
 gameplay
   units youve participated in, howd they do
@@ -125,7 +126,6 @@ gameplay
   randomize factionid
   handle utc time
     offset from server time?
-  add checksum to faction encryption
   better bases tab
   better colors scale for vote
   emoji for hold the fort, attack west, need resources

@@ -18,9 +18,7 @@
     "outDir": "./bin",
     "skipLibCheck": true,
     "paths": {
-      "@swg-common/*": [
-        "../../common/src/*"
-      ]
+      "@swg-common/*":["../../common/src/*"]
     }
   },
   "include": [

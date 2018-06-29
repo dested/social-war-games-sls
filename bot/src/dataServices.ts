@@ -112,10 +112,10 @@ export class DataService {
             }
         });
         const arrayBuffer = await response.arrayBuffer();
-        return GameLayoutParser.toGameLayout(new Uint8Array(arrayBuffer));
+        return GameLayoutParser.toGameLayout(arrayBuffer);
     }
 
-    static async getGameState(factionId: PlayableFactionId): Promise<GameState> {
+    static async getGameState(factionId: PlayableFactionId, factionToken: string): Promise<GameState> {
         const response = await fetch(`${this.s3Server}/game-state-${factionId}.swg?bust=${+new Date()}`, {
             method: 'GET',
             headers: {
@@ -124,7 +124,7 @@ export class DataService {
             }
         });
         const arrayBuffer = await response.arrayBuffer();
-        return GameStateParser.toGameState(new Uint8Array(arrayBuffer));
+        return GameStateParser.toGameState(arrayBuffer, factionToken.split('.').map(a => parseInt(a)));
     }
 
     static async getLadder(jwt: string) {
@@ -161,6 +161,6 @@ export class DataService {
         });
 
         const arrayBuffer = await response.arrayBuffer();
-        return RoundOutcomeParser.toRoundStats(new Uint8Array(arrayBuffer));
+        return RoundOutcomeParser.toRoundStats(arrayBuffer);
     }
 }

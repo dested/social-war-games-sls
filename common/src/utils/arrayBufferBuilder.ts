@@ -4,7 +4,7 @@ import * as aesjs from 'aes-js';
 import {Utils} from './utils';
 
 export class ArrayBufferBuilder {
-    private array: {value: number; float: boolean; unsigned?: boolean; size: 8 | 16 | 32 | 64}[] = [];
+    private array: { value: number; float: boolean; unsigned?: boolean; size: 8 | 16 | 32 | 64 }[] = [];
 
     addFloat32(value: number) {
         this.array.push({
@@ -131,10 +131,11 @@ export class ArrayBufferBuilder {
             const aesCtr = new aesjs.ModeOfOperation.ctr(encryptionToken);
             const encryptedBytes = aesCtr.encrypt(new Uint8Array(buffer));
 
-            const readyBytes = new ArrayBuffer(Utils.roundUpTo8(encryptedBytes.length + 8));
-            new Uint8Array(readyBytes).set(encryptedBytes);
+            const readyBytes = new ArrayBuffer(Utils.roundUpTo8(encryptedBytes.length + 8 + 4));
+            new Uint8Array(readyBytes).set(encryptedBytes, 8 + 4);
 
             new Float64Array(readyBytes)[0] = checksum;
+            new Uint32Array(readyBytes)[2] = encryptedBytes.length;
 
             console.log(buffer.byteLength, checksum);
             return new Buffer(readyBytes);
@@ -155,8 +156,27 @@ export class ArrayBufferReader {
     private index: number;
     private dv: DataView;
 
-    constructor(private buffer: Uint8Array) {
-        this.dv = new DataView(new Uint8Array(buffer).buffer);
+    constructor(buffer: ArrayBuffer, decryptToken?: number[]) {
+
+        if (decryptToken) {
+
+            const aesCtr = new aesjs.ModeOfOperation.ctr(decryptToken);
+            const checksum = new Float64Array(buffer)[0];
+            const length = new Uint32Array(buffer)[2];
+
+            const nonCheckedBytes = new Uint8Array(buffer.slice(8 + 4, 8 + 4 + length));
+            const decryptedBytes = aesCtr.decrypt(nonCheckedBytes);
+            const result = new Uint8Array(decryptedBytes);
+            const actualChecksum = Utils.checksum(result);
+            if (checksum !== actualChecksum) {
+                throw new Error('Invalid Token!');
+            }
+
+            this.dv = new DataView(result.buffer);
+        } else {
+            this.dv = new DataView(buffer);
+        }
+
         this.index = 0;
     }
 

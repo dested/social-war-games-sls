@@ -5,7 +5,8 @@
   "author": "Salvatore <dested@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "tsc": "cd common && tsc && cd ../server-common && tsc && cd ../api-user && tsc && cd ../web && tsc && cd ../worker && tsc && cd ../lambda && tsc"
+    "setup": "cd common && npm install && cd ../server-common && npm install && cd ../api && npm install && cd ../web && npm install && cd ../worker && npm install",
+    "tsc": "cd common && tsc && cd ../server-common && tsc && cd ../api && tsc && cd ../web && tsc && cd ../worker && tsc && cd ../lambda && tsc"
   },
   "dependencies": {
     "serverless": "^1.27.3"

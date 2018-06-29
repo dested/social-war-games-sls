@@ -115,7 +115,7 @@ export class DataService {
             }
         });
         const arrayBuffer = await response.arrayBuffer();
-        return GameLayoutParser.toGameLayout(new Uint8Array(arrayBuffer));
+        return GameLayoutParser.toGameLayout(arrayBuffer);
     }
 
     static async getGameState(factionId: PlayableFactionId, factionToken: string): Promise<GameState> {
@@ -127,18 +127,7 @@ export class DataService {
             }
         });
         const arrayBuffer = await response.arrayBuffer();
-        debugger;
-        const aesCtr = new aesjs.ModeOfOperation.ctr(factionToken.split('.').map(a => parseInt(a)));
-THIS ISSUE IS WITH THE PAD TO 8 BULLSHIT THE LENGTH IS DIFFERENT SO DECRYPT IS FUCKO BOINGO
-        const checksum = new Float64Array(arrayBuffer)[0];
-        const nonCheckedBytes = new Uint8Array(arrayBuffer.slice(8));
-        const decryptedBytes = aesCtr.decrypt(nonCheckedBytes);
-        const result = new Uint8Array(decryptedBytes);
-        const actualChecksum = Utils.checksum(result);
-        if (checksum !== actualChecksum) {
-            // throw new Error('Invalid Faction!');
-        }
-        return GameStateParser.toGameState(result);
+        return GameStateParser.toGameState(arrayBuffer, factionToken.split('.').map(a => parseInt(a)));
     }
 
     static async getLadder() {
@@ -175,8 +164,7 @@ THIS ISSUE IS WITH THE PAD TO 8 BULLSHIT THE LENGTH IS DIFFERENT SO DECRYPT IS F
                 'Content-Type': 'application/octet-stream'
             }
         });
-
         const arrayBuffer = await response.arrayBuffer();
-        return RoundOutcomeParser.toRoundStats(new Uint8Array(arrayBuffer));
+        return RoundOutcomeParser.toRoundStats(arrayBuffer);
     }
 }

@@ -20,7 +20,7 @@ export class GameLayoutParser {
         return buff.buildBuffer(null);
     }
 
-    static toGameLayout(buffer: Uint8Array): GameLayout {
+    static toGameLayout(buffer: ArrayBuffer): GameLayout {
         const reader = new ArrayBufferReader(buffer);
         const boardWidth = reader.readInt32();
         const boardHeight = reader.readInt32();

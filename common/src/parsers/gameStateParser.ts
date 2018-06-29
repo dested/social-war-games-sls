@@ -95,8 +95,8 @@ export class GameStateParser {
         return buff.buildBuffer(factionToken);
     }
 
-    static toGameState(buffer: Uint8Array): GameState {
-        const reader = new ArrayBufferReader(buffer);
+    static toGameState(buffer: ArrayBuffer, factionToken: number[]): GameState {
+        const reader = new ArrayBufferReader(buffer, factionToken);
         const generation = reader.readInt32();
         const roundDuration = reader.readInt32();
         const roundStart = reader.readFloat64();
@@ -174,23 +174,21 @@ export class GameStateParser {
         while (!over) {
             const type = reader.readUint8();
             switch (type) {
-                case 1:
-                    {
-                        const len = reader.readInt32();
-                        for (let i = 0; i < len; i++) {
-                            factions.push('9');
-                            factions.push('0');
-                        }
+                case 1: {
+                    const len = reader.readInt32();
+                    for (let i = 0; i < len; i++) {
+                        factions.push('9');
+                        factions.push('0');
                     }
+                }
                     break;
-                case 2:
-                    {
-                        const len = reader.readInt32();
-                        for (let i = 0; i < len; i++) {
-                            factions.push('0');
-                            factions.push('0');
-                        }
+                case 2: {
+                    const len = reader.readInt32();
+                    for (let i = 0; i < len; i++) {
+                        factions.push('0');
+                        factions.push('0');
                     }
+                }
                     break;
                 case 3:
                     factions.push(reader.readInt8().toString());
