@@ -1,17 +1,17 @@
-import {RedisManager} from '@swg-server-common/redis/redisManager';
-import {DataManager} from '@swg-server-common/db/dataManager';
-import {DBVote} from '@swg-server-common/db/models/dbVote';
-import {S3Manager} from '@swg-server-common/s3/s3Manager';
-import {GameLayout} from '@swg-common/models/gameLayout';
-import {S3Splitter} from './s3Splitter';
-import {StateManager} from './stateManager';
 import {GameLogic} from '@swg-common/game/gameLogic';
-import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
-import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
-import {DBLadder} from '@swg-server-common/db/models/dbLadder';
-import {Config} from '@swg-server-common/config';
-import {SocketManager} from './socketManager';
+import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
+import {Config} from '@swg-server-common/config';
+import {DataManager} from '@swg-server-common/db/dataManager';
+import {DBLadder} from '@swg-server-common/db/models/dbLadder';
+import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
+import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
+import {DBVote} from '@swg-server-common/db/models/dbVote';
+import {RedisManager} from '@swg-server-common/redis/redisManager';
+import {S3Manager} from '@swg-server-common/s3/s3Manager';
+import {S3Splitter} from './s3Splitter';
+import {SocketManager} from './socketManager';
+import {StateManager} from './stateManager';
 
 export class Setup {
     static start() {
@@ -36,7 +36,7 @@ export class Setup {
         await DBRoundStats.db.deleteMany({});
         await DBLadder.db.deleteMany({});
 
-        let game = GameLogic.createGame();
+        const game = GameLogic.createGame();
         console.log('create game');
         await redisManager.set<number>('game-generation', game.generation);
         console.log('set generation', game.generation);
@@ -60,8 +60,8 @@ export class Setup {
 
         const gameLayoutBytes = GameLayoutParser.fromGameLayout(gameLayout);
         await S3Manager.uploadBytes('layout.swg', gameLayoutBytes, true);
-
-        await S3Splitter.output(game, gameLayout, gameState, roundState, true);
+        const factionTokens = await S3Splitter.generateFactionTokens(redisManager, game.generation);
+        await S3Splitter.output(game, gameLayout, gameState, roundState, factionTokens, true);
 
         await redisManager.set('layout', gameLayout);
         await redisManager.set('game-state', gameState);

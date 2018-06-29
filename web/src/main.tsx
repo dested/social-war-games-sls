@@ -1,3 +1,5 @@
+///<reference path="../../common/src/types/aesjs.d.ts"/>
+
 import * as React from 'react';
 import {Fragment} from 'react';
 import * as ReactDOM from 'react-dom';

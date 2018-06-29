@@ -129,8 +129,7 @@ export class GameLogic {
             }
         }
 
-        for (let i = 0; i < Factions.length; i++) {
-            const faction = Factions[i];
+        for (const faction of Factions) {
 
             for (let base = 0; base < numberOfBasesPerFaction; base++) {
                 const x = Math.round(Math.random() * (grid.boundsWidth - 14) + 7);
@@ -699,6 +698,7 @@ export class GameLogic {
 
                 const damage = Math.floor(Math.random() * entityDetails.attackPower) + 1;
                 toEntity.health -= damage;
+                toEntity.healthRegenStep = 0;
                 if (toEntity.health <= 0) {
                     game.entities.removeItem(toEntity);
                 }

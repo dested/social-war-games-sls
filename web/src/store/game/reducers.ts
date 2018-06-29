@@ -126,6 +126,7 @@ export default function gameReducer(state: GameStore = initialState, action: Gam
             };
         }
         case GameActionOptions.SetGameLayout: {
+            console.log('in action');
             return {
                 ...state,
                 layout: action.layout

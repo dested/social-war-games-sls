@@ -6,7 +6,7 @@ import {ArrayBufferBuilder, ArrayBufferReader} from '../utils/arrayBufferBuilder
 import {ParserEnumUtils} from './parserEnumUtils';
 
 export class GameStateParser {
-    static fromGameState(gameState: GameState): Buffer {
+    static fromGameState(gameState: GameState, factionToken: number[]): Buffer {
         const buff = new ArrayBufferBuilder();
         buff.addInt32(gameState.generation);
         buff.addInt32(gameState.roundDuration);
@@ -92,7 +92,7 @@ export class GameStateParser {
         tryFlushHidden();
         buff.addUint8(255);
 
-        return buff.buildBuffer();
+        return buff.buildBuffer(factionToken);
     }
 
     static toGameState(buffer: Uint8Array): GameState {

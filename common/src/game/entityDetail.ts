@@ -67,7 +67,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         mineRadius: 0,
         attackPower: 3,
         ticksToSpawn: 3,
-        healthRegenRate: 2,
+        healthRegenRate: 3,
         spawnCost: 6,
         solid: false,
         spawnRadius: 0
@@ -80,7 +80,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         mineRadius: 0,
         attackPower: 3,
         ticksToSpawn: 4,
-        healthRegenRate: 2,
+        healthRegenRate: 3,
         spawnCost: 10,
         solid: false,
         spawnRadius: 0
@@ -94,7 +94,7 @@ export let EntityDetails: {[key in EntityType]: EntityDetail} = {
         attackPower: 1,
         ticksToSpawn: 2,
         spawnCost: 4,
-        healthRegenRate: 2,
+        healthRegenRate: 3,
         solid: false,
         spawnRadius: 2
     }

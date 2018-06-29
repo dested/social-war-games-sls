@@ -15,6 +15,7 @@
   "dependencies": {
     "hammerjs": "^2.0.8",
     "react": "^16.0.0",
+    "aes-js": "^3.1.1",
     "react-dom": "^16.0.0",
     "react-redux": "^5.0.7",
     "redux-thunk": "^2.2.0",

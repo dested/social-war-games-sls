@@ -43,7 +43,7 @@ export class RoundOutcomeParser {
             buff.addString(note.note);
         }
 
-        return buff.buildBuffer();
+        return buff.buildBuffer(null);
     }
 
     static toRoundStats(buffer: Uint8Array): FactionRoundStats {

@@ -17,7 +17,7 @@ export class GameLayoutParser {
             buff.addInt8(ParserEnumUtils.hexTypeToInt(hex.type));
             buff.addInt8(ParserEnumUtils.hexSubTypeToInt(hex.subType));
         }
-        return buff.buildBuffer();
+        return buff.buildBuffer(null);
     }
 
     static toGameLayout(buffer: Uint8Array): GameLayout {

@@ -12,6 +12,8 @@ import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {GameStateParser} from '@swg-common/parsers/gameStateParser';
 import {RoundOutcomeParser} from '@swg-common/parsers/roundOutcomeParser';
+import {Utils} from '@swg-common/utils/utils';
+import * as aesjs from 'aes-js';
 import {getStore} from './store';
 
 export class DataService {
@@ -116,7 +118,7 @@ export class DataService {
         return GameLayoutParser.toGameLayout(new Uint8Array(arrayBuffer));
     }
 
-    static async getGameState(factionId: PlayableFactionId): Promise<GameState> {
+    static async getGameState(factionId: PlayableFactionId, factionToken: string): Promise<GameState> {
         const response = await fetch(`${this.s3Server}/game-state-${factionId}.swg?bust=${+new Date()}`, {
             method: 'GET',
             headers: {
@@ -125,7 +127,18 @@ export class DataService {
             }
         });
         const arrayBuffer = await response.arrayBuffer();
-        return GameStateParser.toGameState(new Uint8Array(arrayBuffer));
+        debugger;
+        const aesCtr = new aesjs.ModeOfOperation.ctr(factionToken.split('.').map(a => parseInt(a)));
+THIS ISSUE IS WITH THE PAD TO 8 BULLSHIT THE LENGTH IS DIFFERENT SO DECRYPT IS FUCKO BOINGO
+        const checksum = new Float64Array(arrayBuffer)[0];
+        const nonCheckedBytes = new Uint8Array(arrayBuffer.slice(8));
+        const decryptedBytes = aesCtr.decrypt(nonCheckedBytes);
+        const result = new Uint8Array(decryptedBytes);
+        const actualChecksum = Utils.checksum(result);
+        if (checksum !== actualChecksum) {
+            // throw new Error('Invalid Faction!');
+        }
+        return GameStateParser.toGameState(result);
     }
 
     static async getLadder() {

@@ -21,7 +21,7 @@ export class RoundStateParser {
                 ParserEnumUtils.writeHexId(entity.hexId, buff);
             }
         }
-        return buff.buildBuffer();
+        return buff.buildBuffer(null);
     }
 
     static toRoundState(buffer: Uint8Array): RoundState {

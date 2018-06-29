@@ -104,8 +104,9 @@ export class Component extends React.Component<Props, State> {
                             }}
                         />
                     </div>
-                    <div className="radar">
+                    <div className={`radar-outer`}>
                         <img className="radar-icon" src={imageUrl} />
+                        <div className={`radar radar-${entity.factionId}`} />
                     </div>
                 </div>
             </div>
@@ -115,23 +116,11 @@ export class Component extends React.Component<Props, State> {
     private renderActions(entity: GameEntity) {
         if (entity.busy) {
             return (
-                <span>
+                <span style={{color: '#cccccc', fontSize: 22}}>
                     Busy for {entity.busy.ticks} more tick{entity.busy.ticks === 1 ? '' : 's'}
                 </span>
             );
         }
-        /*
-                        <div className={`button action-button`}>Attack</div>
-                        <div className={`button action-button`}>Move</div>
-                        <div className={`button action-button`}>Mine</div>*/
-
-        const selectedButton = HexConstants.isMobile
-            ? {
-                  border: 'solid 3px black'
-              }
-            : {
-                  border: 'solid 5px black'
-              };
 
         const attackCount = this.getActionCount(entity, 'attack');
         const moveCount = this.getActionCount(entity, 'move');
@@ -147,17 +136,17 @@ export class Component extends React.Component<Props, State> {
                 return (
                     <Fragment>
                         <div
-                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'attack')}
-                        >
-                            Attack {attackCount > 0 && <Badge count={attackCount} />}
-                        </div>
-                        <div
                             className={`button action-button ${selected === 'move' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
                             Move {moveCount > 0 && <Badge count={moveCount} />}
                         </div>
+                        <div
+                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
+                            onClick={() => this.props.startEntityAction(entity, 'attack')}
+                        >
+                            Attack {attackCount > 0 && <Badge count={attackCount} />}
+                        </div>{' '}
                         <div
                             className={`button action-button ${selected === 'mine' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'mine')}
@@ -170,16 +159,16 @@ export class Component extends React.Component<Props, State> {
                 return (
                     <Fragment>
                         <div
-                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'attack')}
-                        >
-                            Attack {attackCount > 0 && <Badge count={attackCount} />}
-                        </div>
-                        <div
                             className={`button action-button ${selected === 'move' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
                             Move {moveCount > 0 && <Badge count={moveCount} />}
+                        </div>{' '}
+                        <div
+                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
+                            onClick={() => this.props.startEntityAction(entity, 'attack')}
+                        >
+                            Attack {attackCount > 0 && <Badge count={attackCount} />}
                         </div>
                         <div className={`fake-button`}>&nbsp;</div>
                     </Fragment>
@@ -189,16 +178,16 @@ export class Component extends React.Component<Props, State> {
                 return (
                     <Fragment>
                         <div
-                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'attack')}
-                        >
-                            Attack {attackCount > 0 && <Badge count={attackCount} />}
-                        </div>
-                        <div
                             className={`button action-button ${selected === 'move' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'move')}
                         >
                             Move {moveCount > 0 && <Badge count={moveCount} />}
+                        </div>
+                        <div
+                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
+                            onClick={() => this.props.startEntityAction(entity, 'attack')}
+                        >
+                            Attack {attackCount > 0 && <Badge count={attackCount} />}
                         </div>
                         <div className={`fake-button`}>&nbsp;</div>
                     </Fragment>
@@ -210,19 +199,19 @@ export class Component extends React.Component<Props, State> {
                             className={`button action-button ${selected === 'spawn-infantry' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'spawn-infantry')}
                         >
-                            Infantry {spawnInfantryCount > 0 && <Badge count={spawnInfantryCount} />}
+                            Spawn Infantry {spawnInfantryCount > 0 && <Badge count={spawnInfantryCount} />}
                         </div>
                         <div
                             className={`button action-button ${selected === 'spawn-tank' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'spawn-tank')}
                         >
-                            Tank {spawnTankCount > 0 && <Badge count={spawnTankCount} />}
+                            Spawn Tank {spawnTankCount > 0 && <Badge count={spawnTankCount} />}
                         </div>
                         <div
                             className={`button action-button ${selected === 'spawn-plane' && 'selected-button'}`}
                             onClick={() => this.props.startEntityAction(entity, 'spawn-plane')}
                         >
-                            Plane {spawnPlaneCount > 0 && <Badge count={spawnPlaneCount} />}
+                            Spawn Plane {spawnPlaneCount > 0 && <Badge count={spawnPlaneCount} />}
                         </div>
                     </Fragment>
                 );

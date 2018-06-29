@@ -114,22 +114,21 @@
 '/ fix mongodb connection bug
 '/ fix round outcome
 '/ fix faction stats
-
+'/ encrypt faction
 
 gameplay
   units youve participated in, howd they do
   show replay of turns
-  test redux order with and without thunk
   hot units
     units that move all the time
   how many players voted last round
   randomize factionid
   handle utc time
     offset from server time?
-
+  add checksum to faction encryption
   better bases tab
   better colors scale for vote
-  emoji for hold the fort, attack west, need resrouces
+  emoji for hold the fort, attack west, need resources
   trend of faction stats
 
 endgame
@@ -138,7 +137,6 @@ endgame
     bot flag in user
     needs good name for ladder
   what happens when all factories for a faction is destroyed
-  encrypt faction
   mobile support
   update images
   sell

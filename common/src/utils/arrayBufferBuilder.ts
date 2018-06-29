@@ -1,3 +1,6 @@
+///<reference path="../types/aesjs.d.ts"/>
+
+import * as aesjs from 'aes-js';
 import {Utils} from './utils';
 
 export class ArrayBufferBuilder {
@@ -70,7 +73,7 @@ export class ArrayBufferBuilder {
         });
     }
 
-    buildBuffer(): Buffer {
+    buildBuffer(encryptionToken: number[]): Buffer {
         const size = Utils.sum(this.array, a => a.size / 8);
         const buffer = new ArrayBuffer(size);
         const view = new DataView(buffer);
@@ -121,6 +124,22 @@ export class ArrayBufferBuilder {
                 }
             }
         }
+
+        if (encryptionToken) {
+            const checksum = Utils.checksum(new Uint8Array(buffer));
+
+            const aesCtr = new aesjs.ModeOfOperation.ctr(encryptionToken);
+            const encryptedBytes = aesCtr.encrypt(new Uint8Array(buffer));
+
+            const readyBytes = new ArrayBuffer(Utils.roundUpTo8(encryptedBytes.length + 8));
+            new Uint8Array(readyBytes).set(encryptedBytes);
+
+            new Float64Array(readyBytes)[0] = checksum;
+
+            console.log(buffer.byteLength, checksum);
+            return new Buffer(readyBytes);
+        }
+
         return Buffer.from(buffer);
     }
 

@@ -56,6 +56,7 @@ export class Utils {
         }
         return result;
     }
+
     static flattenArray<T>(arrays: T[][]): T[] {
         return Array.prototype.concat.apply([], arrays);
     }
@@ -154,7 +155,28 @@ export class Utils {
     }
 
     static randomElement<T>(array: T[]) {
-        const number = Math.floor(Math.random() * (array.length - 1));
-        return array[number];
+        const n = Math.floor(Math.random() * (array.length - 1));
+        return array[n];
+    }
+
+    static range(start: number, finish: number) {
+        const r: number[] = [];
+        for (let i = start; i < finish; i++) {
+            r.push(i);
+        }
+        return r;
+    }
+
+    static checksum(a: Uint8Array): number {
+        const len = a.length;
+        let fnv = 0;
+        for (let i = 0; i < len; i++) {
+            fnv = (fnv + (((fnv << 1) + (fnv << 4) + (fnv << 7) + (fnv << 8) + (fnv << 24)) >>> 0)) ^ (a[i] & 0xff);
+        }
+        return fnv >>> 0;
+    }
+
+    static roundUpTo8(value: number) {
+        return value + (8 - (value % 8));
     }
 }

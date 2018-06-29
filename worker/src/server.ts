@@ -1,5 +1,7 @@
-import {Worker} from './worker';
+///<reference path="../../common/src/types/aesjs.d.ts"/>
+
 import {Setup} from './setup';
+import {Worker} from './worker';
 
 if (process.argv[2] === 'setup') {
     Setup.start();

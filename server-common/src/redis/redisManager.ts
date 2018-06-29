@@ -58,6 +58,18 @@ export class RedisManager {
         });
     }
 
+    setString(key: string, value: string): Promise<string> {
+        return new Promise((res, rej) => {
+            this.client.set(this.getKey(key), value, (err, result) => {
+                if (err) {
+                    rej(err);
+                    return;
+                }
+                res();
+            });
+        });
+    }
+
     set<T>(key: string, value: T): Promise<void> {
         return new Promise((res, rej) => {
             this.client.set(this.getKey(key), JSON.stringify(value), (err, result) => {

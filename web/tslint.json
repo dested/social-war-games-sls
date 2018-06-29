@@ -20,6 +20,7 @@
     "no-empty-interface": false,
     "max-classes-per-file": false,
     "no-unused-expression": false,
+    "no-reference": false,
     "interface-name": [
       true,
       "never-prefix"

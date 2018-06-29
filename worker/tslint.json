@@ -8,6 +8,8 @@
   "jsRules": {
   },
   "rules": {
+    "no-reference": false,
+    "radix": false,
     "no-console": false,
     "member-ordering": false,
     "no-bitwise": false,

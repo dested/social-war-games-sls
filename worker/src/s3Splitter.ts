@@ -1,21 +1,36 @@
+import {EntityDetails, Factions, GameEntity, OfFaction, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
+import {Point, PointHashKey} from '@swg-common/hex/hex';
+import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState, GameStateEntity, GameStateResource} from '@swg-common/models/gameState';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
-import {S3Manager} from '@swg-server-common/s3/s3Manager';
-import {Point, PointHashKey} from '@swg-common/hex/hex';
-import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
-import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
-import {EntityDetails, Factions, GameEntity, OfFaction, PlayableFactionId} from '@swg-common/game/entityDetail';
-import {GameLayout} from '@swg-common/models/gameLayout';
-import {SocketManager} from './socketManager';
-import {RoundStateParser} from '@swg-common/parsers/roundStateParser';
 import {GameStateParser} from '@swg-common/parsers/gameStateParser';
+import {RoundStateParser} from '@swg-common/parsers/roundStateParser';
+import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
+import {Utils} from '@swg-common/utils/utils';
+import {RedisManager} from '@swg-server-common/redis/redisManager';
+import {S3Manager} from '@swg-server-common/s3/s3Manager';
+import * as aesjs from 'aes-js';
+import {SocketManager} from './socketManager';
 
 export class S3Splitter {
+    static async generateFactionTokens(redisManager: RedisManager, generation: number): Promise<OfFaction<string>> {
+        const tokens: OfFaction<string> = {} as any;
+        for (const faction of Factions) {
+            tokens[faction] = Utils.range(0, 16)
+                .map(a => Math.floor(Math.random() * 254) + 1)
+                .join('.');
+            await redisManager.setString(`faction-token-${generation}-${faction}`, tokens[faction]);
+        }
+        return tokens;
+    }
+
     static async output(
         game: GameModel,
         layout: GameLayout,
         gameState: GameState,
         roundState: RoundState,
+        factionTokens: OfFaction<string>,
         outputGameState: boolean
     ) {
         // console.time('faction split');
@@ -35,8 +50,7 @@ export class S3Splitter {
 
             const factionEntities = gameState.entities[faction];
 
-            for (let i = 0; i < factionEntities.length; i++) {
-                const entity = factionEntities[i];
+            for (const entity of factionEntities) {
                 const entityDetails = EntityDetails[entity.entityType];
                 const radius = Math.max(
                     entityDetails.attackRadius,
@@ -55,10 +69,15 @@ export class S3Splitter {
                 visibleHexes
             );
 
-            const gameStateJson = GameStateParser.fromGameState(factionGameState);
+            const gameStateJson = GameStateParser.fromGameState(
+                factionGameState,
+                factionTokens[faction].split('.').map(a => parseInt(a))
+            );
             const roundStateJson = RoundStateParser.fromRoundState(factionRoundState);
             if (outputGameState) {
-                await S3Manager.uploadBytes(`game-state-${faction}.swg`, gameStateJson,false);
+                // await this.redisManager.set(`faction-token-${generation}-${1}`, ``);
+
+                await S3Manager.uploadBytes(`game-state-${faction}.swg`, gameStateJson, false);
             }
             /*await*/
             SocketManager.publish(`round-state-${faction}`, roundStateJson);
@@ -97,11 +116,8 @@ export class S3Splitter {
             }
         }
 
-        for (let i = 0; i < Factions.length; i++) {
-            const faction = Factions[i];
-            for (let i = 0; i < entities[faction].length; i++) {
-                const entity = entities[faction][i];
-
+        for (const faction of Factions) {
+            for (const entity of entities[faction]) {
                 if (visibleHexes.exists(entity)) {
                     if (faction !== factionId) {
                         visibleEntities[faction].push({...entity, busy: null});

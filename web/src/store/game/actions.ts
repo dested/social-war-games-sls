@@ -292,7 +292,11 @@ export class GameThunks {
 
             const layout = await DataService.getLayout();
             dispatch(GameActions.setGameLayout(layout));
-            const localGameState = await DataService.getGameState(appState.user.factionId);
+
+            const userDetails = await DataService.currentUserDetails();
+            dispatch(GameActions.updateUserDetails(userDetails));
+
+            const localGameState = await DataService.getGameState(appState.user.factionId, userDetails.factionToken);
             dispatch(GameActions.setGameState(localGameState));
             SocketUtils.connect(
                 appState.user.id,
@@ -328,8 +332,6 @@ export class GameThunks {
             gameState.smallGameRenderer.forceRender();
 
             dispatch(GameActions.setGameReady());
-            const userDetails = await DataService.currentUserDetails();
-            dispatch(GameActions.updateUserDetails(userDetails));
         };
     }
 
@@ -339,9 +341,10 @@ export class GameThunks {
         if (roundState.generation !== gameState.game.generation) {
             dispatch(GameActions.selectEntity(null));
             dispatch(GameActions.resetLocalVotes());
-            const localGameState = await DataService.getGameState(appState.user.factionId);
             const userDetails = await DataService.currentUserDetails();
             dispatch(GameActions.updateUserDetails(userDetails));
+
+            const localGameState = await DataService.getGameState(appState.user.factionId, userDetails.factionToken);
 
             game = GameLogic.buildGameFromState(gameState.layout, localGameState);
             Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);

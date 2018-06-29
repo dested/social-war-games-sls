@@ -147,7 +147,8 @@ export class Worker {
                     'game-generation'
                 )}`
             );
-            await S3Splitter.output(game, game.layout, newGameState, roundState, true);
+            const factionTokens = await S3Splitter.generateFactionTokens(this.redisManager, game.generation);
+            await S3Splitter.output(game, game.layout, newGameState, roundState, factionTokens, true);
 
             await this.redisManager.set('game-state', newGameState);
             await this.redisManager.set('stop', false);
@@ -185,7 +186,6 @@ export class Worker {
                 if (entity.healthRegenStep >= details.healthRegenRate) {
                     if (entity.health < details.health) {
                         entity.health++;
-                        entity.healthRegenStep = 0;
                     }
                     entity.healthRegenStep = 0;
                 }
@@ -239,6 +239,7 @@ export class Worker {
                 layout,
                 gameState,
                 StateManager.buildRoundState(gameState.generation, voteCounts),
+                null,
                 false
             );
             console.timeEnd('round update');
