@@ -4,10 +4,13 @@ import {HttpUser} from '@swg-common/models/http/httpUser';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {RoundState} from '@swg-common/models/roundState';
 import * as React from 'react';
+import {Fragment} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {withRouter} from 'react-router-dom';
-import {UI, UIActions} from '../store/actions';
+import {GameRenderer} from '../drawing/gameRenderer';
+import {SmallGameRenderer} from '../drawing/smallGameRenderer';
+import {UI} from '../store/actions';
 import {SwgStore} from '../store/reducers';
 import {UIThunks} from '../store/ui/actions';
 import {UIConstants} from '../utils/uiConstants';
@@ -21,6 +24,8 @@ interface Props extends RouteComponentProps<{}> {
     votingError?: VoteResult;
     ui: UI;
     setUI: typeof UIThunks.setUI;
+    gameRenderer: GameRenderer;
+    smallGameRenderer: SmallGameRenderer;
 }
 
 interface State {}
@@ -34,44 +39,60 @@ export class Component extends React.Component<Props, State> {
 
     render() {
         return (
-            <div
-                style={{
-                    position: 'absolute',
-                    left: UIConstants.miniMapWidth + 3,
-                    bottom: UIConstants.progressBarHeight,
-                    display: 'flex'
-                }}
-            >
-                <div
-                    onClick={() => this.setUI('FactionStats')}
-                    className={'bottom-button'}
-                    style={{backgroundColor: '#f3ecea'}}
-                >
-                    Factions Stats
+            <Fragment>
+                <div>
+                    <canvas
+                        id="minimap"
+                        style={{
+                            position: 'absolute',
+                            left: 0,
+                            bottom: 0
+                        }}
+                        ref={e => this.props.smallGameRenderer.start(e, this.props.gameRenderer)}
+                        width={window.innerWidth}
+                        height={UIConstants.miniMapHeight()}
+                    />
                 </div>
-                <div
-                    onClick={() => this.setUI('RoundStats')}
-                    className={'bottom-button'}
-                    style={{backgroundColor: '#f3ecea'}}
+
+                {/*<div
+                    style={{
+                        position: 'absolute',
+                        left: UIConstants.miniMapWidth + 3,
+                        bottom: UIConstants.progressBarHeight,
+                        display: 'flex'
+                    }}
                 >
-                    Round Stats
-                </div>
-                <div
-                    onClick={() => this.setUI('Bases')}
-                    className={'bottom-button'}
-                    style={{backgroundColor: '#f3ecea'}}
-                >
-                    Bases
-                </div>
-                <div
-                    onClick={() => this.setUI('Ladder')}
-                    className={'bottom-button'}
-                    style={{backgroundColor: '#f3ecea'}}
-                >
-                    Ladder
-                </div>
-                {this.props.userDetails && this.renderVoteDetails()}
-            </div>
+                    <div
+                        onClick={() => this.setUI('FactionStats')}
+                        className={'bottom-button'}
+                        style={{backgroundColor: '#f3ecea'}}
+                    >
+                        Factions Stats
+                    </div>
+                    <div
+                        onClick={() => this.setUI('RoundStats')}
+                        className={'bottom-button'}
+                        style={{backgroundColor: '#f3ecea'}}
+                    >
+                        Round Stats
+                    </div>
+                    <div
+                        onClick={() => this.setUI('Bases')}
+                        className={'bottom-button'}
+                        style={{backgroundColor: '#f3ecea'}}
+                    >
+                        Bases
+                    </div>
+                    <div
+                        onClick={() => this.setUI('Ladder')}
+                        className={'bottom-button'}
+                        style={{backgroundColor: '#f3ecea'}}
+                    >
+                        Ladder
+                    </div>
+                    {this.props.userDetails && this.renderVoteDetails()}
+                </div>*/}
+            </Fragment>
         );
     }
 

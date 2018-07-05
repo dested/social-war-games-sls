@@ -57,8 +57,10 @@ export class Component extends React.Component<Props, State> {
             <div className={`main-window`}>
                 <div className={`window-border main-window-border`}>
                     <div className={`flex-row`}>
-                        <div className={`main-window-title`}>{this.props.ui}</div>
-                        <div className={`main-window-title-right`} />
+                        <div className="main-window-title-holder">
+                            <div className={`main-window-title-border`} />
+                            <div className={`main-window-title`}>{this.props.ui}</div>
+                        </div>
                     </div>
 
                     <div className={`main-window-inner`}>

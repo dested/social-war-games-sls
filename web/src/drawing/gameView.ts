@@ -79,23 +79,29 @@ export class GameView {
         const gutter = 0.2;
         const reverseGutter = 1 - gutter;
 
-        if (this.x < -window.innerWidth * gutter) {
-            this.x = -window.innerWidth * gutter;
+        if (this.x < -this.width * gutter) {
+            this.x = -this.width * gutter;
         }
-        if (this.y < -window.innerHeight * gutter) {
-            this.y = -window.innerHeight * gutter;
+        if (this.y < -this.height * gutter) {
+            this.y = -this.height * gutter;
         }
-        if (this.x > this.game.grid.boundsWidth * DrawingOptions.default.width - window.innerWidth * reverseGutter) {
-            this.x = this.game.grid.boundsWidth * DrawingOptions.default.width - window.innerWidth * reverseGutter;
+
+        if (this.x > this.game.grid.boundsWidth * DrawingOptions.default.width - this.width * reverseGutter) {
+            this.x = this.game.grid.boundsWidth * DrawingOptions.default.width - this.width * reverseGutter;
         }
 
         if (
             this.y >
-            (this.game.grid.boundsHeight * DrawingOptions.default.height * 3) / 4 - window.innerHeight * reverseGutter
+            (this.game.grid.boundsHeight * DrawingOptions.default.height * 3) / 4 - this.height * reverseGutter
         ) {
             this.y =
-                (this.game.grid.boundsHeight * DrawingOptions.default.height * 3) / 4 -
-                window.innerHeight * reverseGutter;
+                (this.game.grid.boundsHeight * DrawingOptions.default.height * 3) / 4 - this.height * reverseGutter;
         }
+    }
+
+    setBounds(w: number, h: number) {
+        this.width = w;
+        this.height = h;
+        this.clamp();
     }
 }

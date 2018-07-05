@@ -133,7 +133,7 @@ gameplay
 
 endgame
   balance units
-  build bots    
+  build bots
     bot flag in user
     needs good name for ladder
   what happens when all factories for a faction is destroyed
@@ -148,8 +148,7 @@ low priority
   figure out memory leak
   prevote junk in gamelogic
   clean up constants
-    colors 
-  unify tsconfig
+    colors
   make better use of caching in server
   implement tree shaking so server code doesnt make it to the client
     except window shit

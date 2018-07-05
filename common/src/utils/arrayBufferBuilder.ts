@@ -157,9 +157,7 @@ export class ArrayBufferReader {
     private dv: DataView;
 
     constructor(buffer: ArrayBuffer | ArrayBufferLike, decryptToken?: number[]) {
-
         if (decryptToken) {
-
             const aesCtr = new aesjs.ModeOfOperation.ctr(decryptToken);
             const checksum = new Float64Array(buffer)[0];
             const length = new Uint32Array(buffer)[2];

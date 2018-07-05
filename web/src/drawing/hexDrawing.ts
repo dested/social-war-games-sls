@@ -78,7 +78,6 @@ export class Drawing {
         let x = 0;
         let y = 0;
         const c = axial.toCube();
-
         if (options.orientation === Drawing.Orientation.FlatTop) {
             x = (c.x * options.width * 3) / 4;
             y = (c.z + c.x / 2) * options.height;

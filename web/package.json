@@ -35,6 +35,7 @@
     "@types/redux": "^3.6.0",
     "@types/redux-thunk": "^2.1.0",
     "css-loader": "^0.28.11",
+    "file-loader": "^1.1.11",
     "less": "^3.0.4",
     "less-loader": "^4.1.0",
     "prettier": "^1.13.5",

@@ -11,7 +11,7 @@ import {UserDetails} from '@swg-common/models/http/userDetails';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {DoubleHashArray} from '@swg-common/utils/hashArray';
 import {DataService} from '../../dataServices';
-import {loadEntities} from '../../drawing/gameAssets';
+import {loadEntities, loadUI} from '../../drawing/gameAssets';
 import {GameRenderer} from '../../drawing/gameRenderer';
 import {Drawing, DrawingOptions} from '../../drawing/hexDrawing';
 import {SmallGameRenderer} from '../../drawing/smallGameRenderer';
@@ -308,8 +308,8 @@ export class GameThunks {
             // const roundState = await DataService.getRoundState(appState.user.factionId);
             const game = GameLogic.buildGameFromState(layout, localGameState);
 
-            HexConstants.smallHeight = (UIConstants.miniMapHeight / game.grid.boundsHeight) * 1.3384;
-            HexConstants.smallWidth = UIConstants.miniMapWidth / game.grid.boundsWidth;
+            HexConstants.smallHeight = ((UIConstants.miniMapHeight() - 100) / game.grid.boundsHeight) * 1.3384;
+            HexConstants.smallWidth = UIConstants.miniMapWidth() / game.grid.boundsWidth;
 
             DrawingOptions.defaultSmall = {
                 width: HexConstants.smallWidth,
@@ -348,16 +348,16 @@ export class GameThunks {
 
             game = GameLogic.buildGameFromState(gameState.layout, localGameState);
             Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
+            gameState.smallGameRenderer.processMiniMap(game);
         }
 
         dispatch(GameThunks.processRoundState(game, roundState));
-
-        gameState.smallGameRenderer.forceRender();
     }
 
     static startLoading() {
         return async (dispatch: Dispatcher, getState: () => SwgStore) => {
             loadEntities();
+            loadUI();
             HexagonTypes.preloadTypes().map(a => HexImages.hexTypeToImage(a.type, a.subType));
         };
     }

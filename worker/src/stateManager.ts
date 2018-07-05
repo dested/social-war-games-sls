@@ -1,9 +1,9 @@
-import {VoteCountResult} from '@swg-server-common/db/models/dbVote';
-import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
-import {Config} from '@swg-server-common/config';
-import {GameState, GameStateEntity} from '@swg-common/models/gameState';
 import {GameModel} from '@swg-common/../../common/src/game/gameLogic';
 import {OfFaction} from '@swg-common/game/entityDetail';
+import {GameState, GameStateEntity} from '@swg-common/models/gameState';
+import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
+import {Config} from '@swg-server-common/config';
+import {VoteCountResult} from '@swg-server-common/db/models/dbVote';
 
 export class StateManager {
     static buildRoundState(generation: number, voteCounts: VoteCountResult[]): RoundState {
@@ -36,7 +36,7 @@ export class StateManager {
             })),
             entities: game.entities.reduce(
                 (entities, ent) => {
-                    if (!entities[ent.factionId]) entities[ent.factionId] = [];
+                    if (!entities[ent.factionId]) { entities[ent.factionId] = []; }
                     entities[ent.factionId].push({
                         x: ent.x,
                         y: ent.y,

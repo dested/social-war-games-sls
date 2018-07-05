@@ -1,20 +1,25 @@
 import {GameHexagon} from '@swg-common/game/gameHexagon';
+import {GameModel} from '@swg-common/game/gameLogic';
+import {Grid} from '@swg-common/hex/hex';
 import {Manager, Pan} from 'hammerjs';
 import {getStore} from '../store';
 import {Dispatcher} from '../store/actions';
 import {SwgStore} from '../store/reducers';
 import {AnimationUtils} from '../utils/animationUtils';
+import {ColorUtils} from '../utils/colorUtils';
 import {DebounceUtils} from '../utils/debounceUtils';
 import {HexColors} from '../utils/hexColors';
 import {HexConstants} from '../utils/hexConstants';
 import {HexImages} from '../utils/hexImages';
 import {UIConstants} from '../utils/uiConstants';
+import {UIAssets} from './gameAssets';
 import {GameRenderer} from './gameRenderer';
 import {GameView} from './gameView';
 import {Drawing, DrawingOptions} from './hexDrawing';
 
 export class SmallGameRenderer {
-    private canvas: HTMLCanvasElement;
+    minimapCanvas: HTMLCanvasElement;
+    canvas: HTMLCanvasElement;
     private context: CanvasRenderingContext2D;
     private gameRenderer: GameRenderer;
 
@@ -56,13 +61,14 @@ export class SmallGameRenderer {
         this.canvas = canvas;
         this.context = this.canvas.getContext('2d');
 
+        this.minimapCanvas = document.createElement('canvas');
+
         const manager = new Manager(this.canvas); // const swipe = new Swipe();
         manager.add(new Hammer.Tap({taps: 1}));
         manager.add(new Hammer.Pan({}));
 
         const goToPosition = (e: HammerInput, force: boolean) => {
-            const store = getStore();
-            const state = store.getState();
+            const state = getStore().getState();
             if (!state.gameState) {
                 return;
             }
@@ -100,7 +106,11 @@ export class SmallGameRenderer {
             DebounceUtils.wait('small-pan', 16, () => goToPosition(e, true));
         });
 
-        this.forceRender();
+        setInterval(() => {
+            this.forceRender();
+        }, 1000 / 10);
+
+        this.processMiniMap(getStore().getState().gameState.game);
     }
 
     forceRender() {
@@ -127,12 +137,174 @@ export class SmallGameRenderer {
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.save();
 
-        const hexes = grid.hexes;
+        const shrinko = 100;
+        const scaleY = (UIAssets.Radar.height + shrinko) / canvas.height;
 
+        const timerLeftStart = UIAssets.Radar.width / scaleY;
+        const timerMiddleStart = timerLeftStart + UIAssets.TimerLeft.width / scaleY;
+        const timerRightStart = canvas.width - UIAssets.TimerRight.width / scaleY;
+
+        const timerTopStart = canvas.height - UIAssets.TimerLeft.height / scaleY;
+        const timerTopRimStart = timerTopStart - 10 / scaleY;
+        const timerTopStartWithoutTransparent = canvas.height - (UIAssets.TimerLeft.height / scaleY) * 0.8;
+
+        const timerWidth = canvas.width - UIAssets.Radar.width / scaleY;
+        const timerHeight = UIAssets.TimerLeft.height / scaleY;
+
+        const buttonStartX = 500 / scaleY - 5;
+        const buttonScaleX = 4000 / (canvas.width - buttonStartX);
+
+        const textSize = (UIAssets.BottomButtonFirst.height / scaleY) * 0.7;
+        const smallTextSize = (UIAssets.BottomButtonFirst.height / scaleY) * 0.4;
+
+        const buttons = [
+            {
+                asset: UIAssets.BottomButtonFirst,
+                left: buttonStartX,
+                top: timerTopRimStart - UIAssets.BottomButtonFirst.height / scaleY,
+                text: 'FACTIONS',
+                color: '#494949',
+                textX: UIAssets.BottomButtonFirst.width / buttonScaleX / 2,
+                textY: UIAssets.BottomButtonFirst.height / scaleY / 2 + 6,
+                font: `${textSize}px Teko`
+            },
+            {
+                asset: UIAssets.BottomButton,
+                left: buttonStartX + (UIAssets.BottomButton.width - 54) / buttonScaleX,
+                top: timerTopRimStart - UIAssets.BottomButton.height / scaleY,
+                text: 'ROUND',
+                color: '#494949',
+                textX: UIAssets.BottomButton.width / buttonScaleX / 2,
+                textY: UIAssets.BottomButton.height / scaleY / 2 + 6,
+                font: `${textSize}px Teko`
+            },
+            {
+                asset: UIAssets.BottomButton,
+                left: buttonStartX + ((UIAssets.BottomButton.width - 54) / buttonScaleX) * 2,
+                top: timerTopRimStart - UIAssets.BottomButton.height / scaleY,
+                text: 'BASES',
+                color: '#494949',
+                textX: UIAssets.BottomButton.width / buttonScaleX / 2,
+                textY: UIAssets.BottomButton.height / scaleY / 2 + 6,
+                font: `${textSize}px Teko`
+            },
+            {
+                asset: UIAssets.BottomButton,
+                left: buttonStartX + ((UIAssets.BottomButton.width - 54) / buttonScaleX) * 3,
+                top: timerTopRimStart - UIAssets.BottomButton.height / scaleY,
+                text: 'LADDER',
+                color: '#494949',
+                textX: UIAssets.BottomButton.width / buttonScaleX / 2,
+                textY: UIAssets.BottomButton.height / scaleY / 2 + 6,
+                font: `${textSize}px Teko`
+            },
+            {
+                asset: UIAssets.BottomButtonLast,
+                left: buttonStartX + ((UIAssets.BottomButtonLast.width - 54) / buttonScaleX) * 4,
+                top: timerTopRimStart - UIAssets.BottomButtonLast.height / scaleY,
+                text: '3 VOTES LEFT',
+                color: '#ff2222',
+                textX: UIAssets.BottomButton.width / buttonScaleX / 2 + 15,
+                textY: UIAssets.BottomButton.height / scaleY / 2 + 7,
+                font: `${smallTextSize}px Teko`
+            }
+        ];
+
+        context.save();
+        context.translate(0, shrinko * 0.75);
+        context.drawImage(this.minimapCanvas, 0, 0);
+        context.restore();
+
+        const unselectedFont = '#494949';
+        const selectedFont = '#3FB88A';
+
+        for (let i = buttons.length - 1; i >= 0; i--) {
+            const button = buttons[i];
+            context.drawImage(
+                button.asset.image,
+                button.left,
+                button.top,
+                button.asset.width / buttonScaleX,
+                button.asset.height / scaleY
+            );
+            context.fillStyle = button.color;
+            context.strokeStyle = button.color;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.font = button.font;
+            context.fillText(button.text, button.left + button.textX, button.top + button.textY);
+            // context.strokeText(button.text, button.left + button.textX, button.top + button.textY);
+        }
+
+        context.drawImage(
+            UIAssets.Radar.image,
+            0,
+            canvas.height - UIAssets.Radar.height / scaleY,
+            UIAssets.Radar.width / scaleY,
+            UIAssets.Radar.height / scaleY
+        );
+
+        const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
+
+        context.fillStyle = '#494949';
+        context.fillRect(timerLeftStart + 10, timerTopStartWithoutTransparent, timerWidth, timerHeight);
+        context.fillStyle = ColorUtils.lerpColor('#00FF00', '#FF0000', Math.min(percent, 1));
+        context.fillRect(timerLeftStart + 10, timerTopStartWithoutTransparent, timerWidth * percent, timerHeight);
+
+        context.fillStyle = '#D7D7D7';
+        context.fillRect(timerLeftStart - 1, timerTopRimStart, timerWidth, 11 / scaleY);
+
+        for (let i = timerLeftStart; i < canvas.width; i += UIAssets.TimeShadow.width / scaleY) {
+            context.drawImage(
+                UIAssets.TimeShadow.image,
+                i,
+                timerTopStart - 10 / scaleY - 9 / scaleY,
+                Math.min(canvas.width, UIAssets.TimeShadow.width / scaleY),
+                UIAssets.TimeShadow.height / scaleY
+            );
+        }
+
+        context.drawImage(
+            UIAssets.TimerLeft.image,
+            timerLeftStart,
+            timerTopStart,
+            UIAssets.TimerLeft.width / scaleY,
+            UIAssets.TimerLeft.height / scaleY
+        );
+
+        for (let i = timerMiddleStart; i < timerRightStart; i += UIAssets.TimerMiddle.width / scaleY) {
+            context.drawImage(
+                UIAssets.TimerMiddle.image,
+                i,
+                timerTopStart,
+                Math.min(timerRightStart - i, UIAssets.TimerMiddle.width / scaleY),
+                UIAssets.TimerMiddle.height / scaleY
+            );
+        }
+
+        context.drawImage(
+            UIAssets.TimerRight.image,
+            timerRightStart,
+            timerTopStart,
+            UIAssets.TimerRight.width / scaleY,
+            UIAssets.TimerRight.height / scaleY
+        );
+
+        context.restore();
+    }
+
+    processMiniMap(game: GameModel) {
+        const grid = game.grid;
+        const context = this.minimapCanvas.getContext('2d');
+        this.minimapCanvas.width = HexConstants.smallWidth * game.grid.boundsWidth;
+        this.minimapCanvas.height = HexConstants.smallHeight * game.grid.boundsHeight;
+        context.clearRect(0, 0, this.minimapCanvas.width, this.minimapCanvas.height);
+        const hexes = grid.hexes;
         for (const hexagon of hexes) {
             const hasEntity = game.entities.get1(hexagon);
 
             context.fillStyle = hexagon.tileType.color;
+
             context.fillRect(
                 hexagon.smallCenter.x - HexConstants.smallWidth / 2,
                 hexagon.smallCenter.y - HexConstants.smallHeight / 2,
@@ -168,9 +340,7 @@ export class SmallGameRenderer {
                 HexConstants.smallWidth,
                 HexConstants.smallHeight
             );
-*/
+    */
         }
-
-        context.restore();
     }
 }

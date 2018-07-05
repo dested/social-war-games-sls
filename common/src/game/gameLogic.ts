@@ -130,11 +130,10 @@ export class GameLogic {
         }
 
         for (const faction of Factions) {
-
             for (let base = 0; base < numberOfBasesPerFaction; base++) {
                 const x = Math.round(Math.random() * (grid.boundsWidth - 14) + 7);
                 const y = Math.round(Math.random() * (grid.boundsHeight - 14) + 7);
-                const center = grid.easyBounds(x, y);
+                const center = grid.easyPoint(x, y);
                 const baseHexes = grid.getCircle(center, baseRadius);
                 for (const hex of baseHexes) {
                     hex.setFactionId(faction, 3);
@@ -249,11 +248,20 @@ export class GameLogic {
             }
         }
 
+        const allHexes = grid.getCircle(grid.easyPoint(boardWidth / 2, boardHeight / 2), boardWidth / 2);
+        const allHexes7In = grid.getCircle(grid.easyPoint(boardWidth / 2, boardHeight / 2), boardWidth / 2 - 7);
+
+        for (let i = grid.hexes.array.length - 1; i >= 0; i--) {
+            const hex = grid.hexes.array[i];
+            if (!allHexes.includes(hex)) {
+                grid.hexes.removeItem(hex);
+            }
+        }
+
         let tries = 0;
 
         const factionCenters: Point[] = [];
-        for (let i = 0; i < Factions.length; i++) {
-            const faction = Factions[i];
+        for (const faction of Factions) {
             const myFactionCenters: Point[] = [];
 
             for (let base = 0; base < numberOfBasesPerFaction; base++) {
@@ -262,9 +270,7 @@ export class GameLogic {
                     return;
                 }
 
-                const x = Math.round(Math.random() * (grid.boundsWidth - 14) + 7);
-                const y = Math.round(Math.random() * (grid.boundsHeight - 14) + 7);
-                const center = grid.easyBounds(x, y);
+                const center = Utils.randomElement(allHexes7In);
 
                 if (factionCenters.some(a => grid.getDistance({x: center.x, y: center.y}, a) < baseRadius * 2.5)) {
                     base--;
@@ -361,10 +367,7 @@ export class GameLogic {
         }
 
         for (let i = 0; i < 0; i++) {
-            const start = grid.easyBounds(
-                Math.floor(Math.random() * grid.boundsWidth),
-                Math.floor(Math.random() * grid.boundsHeight)
-            );
+            const start = Utils.randomElement(allHexes);
 
             const far = grid.getRange(
                 grid.getHexAt(start),
@@ -711,8 +714,8 @@ export class GameLogic {
                 if (toResource) {
                     return VoteResult.MoveSpotNotEmpty;
                 }
-                for (let index = 0; index < path.length; index++) {
-                    for (const gameHexagon of game.grid.getCircle(path[index], 1)) {
+                for (const pItem of path) {
+                    for (const gameHexagon of game.grid.getCircle(pItem, 1)) {
                         gameHexagon.setFactionId(fromEntity.factionId, 3);
                     }
                 }
@@ -738,8 +741,8 @@ export class GameLogic {
                         hexId: vote.hexId
                     };
                 } else {
-                    for (let index = 0; index < path.length; index++) {
-                        for (const gameHexagon of game.grid.getCircle(path[index], 1)) {
+                    for (const pItem of path) {
+                        for (const gameHexagon of game.grid.getCircle(pItem, 1)) {
                             gameHexagon.setFactionId(fromEntity.factionId, 3);
                         }
                     }

@@ -10,6 +10,7 @@
     "inlineSourceMap": true,
     "strict": true,
     "noImplicitAny": true,
+    "lib": ["esnext","dom"],
     "allowJs": true,
     "strictPropertyInitialization": false,
     "outDir": "./bin",

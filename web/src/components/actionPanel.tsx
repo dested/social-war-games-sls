@@ -29,7 +29,8 @@ interface Props extends RouteComponentProps<{}> {
     startEntityAction: typeof GameThunks.startEntityAction;
 }
 
-interface State {}
+interface State {
+}
 
 export class Component extends React.Component<Props, State> {
     constructor(props: Props, context: any) {
@@ -60,8 +61,8 @@ export class Component extends React.Component<Props, State> {
 
         return (
             <div className={`window-z action-window small-action-window`}>
-                <div className="window-border action-window-left small-action-window-left" />
-                <div className="window-border action-window-right small-action-window-right" />
+                <div className="window-border action-window-left small-action-window-left"/>
+                <div className="window-border action-window-right small-action-window-right"/>
                 <div className="action-window-inner">
                     <div className="action-health-bar-outer">
                         <div
@@ -73,7 +74,7 @@ export class Component extends React.Component<Props, State> {
                         />
                     </div>
                     <div className="radar">
-                        <img className="radar-icon" src={GameAssets[resource.resourceType].imageUrl} />
+                        <img className="radar-icon" src={GameAssets[resource.resourceType].imageUrl}/>
                     </div>
                 </div>
             </div>
@@ -91,8 +92,8 @@ export class Component extends React.Component<Props, State> {
 
         return (
             <div className={`flex-row window-z action-window ${!myEntity && 'small-action-window'}`}>
-                <div className={`window-border action-window-left ${!myEntity && 'small-action-window-left'}`} />
-                <div className={`window-border action-window-right ${!myEntity && 'small-action-window-right'}`} />
+                <div className={`window-border action-window-left ${!myEntity && 'small-action-window-left'}`}/>
+                <div className={`window-border action-window-right ${!myEntity && 'small-action-window-right'}`}/>
                 <div className="action-window-inner">
                     {myEntity && <div className="black-box action-list-box">{this.renderActions(entity)}</div>}
                     <div className="action-health-bar-outer">
@@ -105,8 +106,11 @@ export class Component extends React.Component<Props, State> {
                         />
                     </div>
                     <div className={`radar-outer`}>
-                        <img className="radar-icon" src={imageUrl} />
-                        <div className={`radar radar-${entity.factionId}`} />
+                        <img className="radar-icon" src={imageUrl}/>
+                        <div
+                            className={`radar radar-${entity.factionId}`}
+                            style={{backgroundImage: 'url(./assets/ui/small-radar.png)'}}
+                        />
                     </div>
                 </div>
             </div>
@@ -135,40 +139,55 @@ export class Component extends React.Component<Props, State> {
             case 'infantry':
                 return (
                     <Fragment>
-                        <div
-                            className={`button action-button ${selected === 'move' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'move')}
-                        >
-                            Move {moveCount > 0 && <Badge count={moveCount} />}
+                        <div className={`action-button-holder`}>
+                            <div
+                                className={`button action-button ${selected === 'move' && 'selected-button'}`}
+                                onClick={() => this.props.startEntityAction(entity, 'move')}
+                            >
+                                Move
+                            </div>
+                            {moveCount > 0 && <Badge count={moveCount}/>}
                         </div>
-                        <div
-                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'attack')}
-                        >
-                            Attack {attackCount > 0 && <Badge count={attackCount} />}
-                        </div>{' '}
-                        <div
-                            className={`button action-button ${selected === 'mine' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'mine')}
-                        >
-                            Mine {mineCount > 0 && <Badge count={mineCount} />}
+                        <div className="action-button-holder">
+                            <div
+                                className={`button action-button ${selected === 'attack' && 'selected-button'}`}
+                                onClick={() => this.props.startEntityAction(entity, 'attack')}
+                            >
+                                Attack
+                            </div>
+                            {attackCount > 0 && <Badge count={attackCount}/>}
+                        </div>
+                        <div className="action-button-holder">
+                            <div
+                                className={`button action-button ${selected === 'mine' && 'selected-button'}`}
+                                onClick={() => this.props.startEntityAction(entity, 'mine')}
+                            >
+                                Mine
+                            </div>
+                            {mineCount > 0 && <Badge count={mineCount}/>}
                         </div>
                     </Fragment>
                 );
             case 'tank':
                 return (
                     <Fragment>
-                        <div
-                            className={`button action-button ${selected === 'move' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'move')}
-                        >
-                            Move {moveCount > 0 && <Badge count={moveCount} />}
-                        </div>{' '}
-                        <div
-                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'attack')}
-                        >
-                            Attack {attackCount > 0 && <Badge count={attackCount} />}
+                        <div className="action-button-holder">
+                            <div
+                                className={`button action-button ${selected === 'move' && 'selected-button'}`}
+                                onClick={() => this.props.startEntityAction(entity, 'move')}
+                            >
+                                Move
+                            </div>
+                            {moveCount > 0 && <Badge count={moveCount}/>}
+                        </div>
+                        <div className="action-button-holder">
+                            <div
+                                className={`button action-button ${selected === 'attack' && 'selected-button'}`}
+                                onClick={() => this.props.startEntityAction(entity, 'attack')}
+                            >
+                                Attack
+                            </div>
+                            {attackCount > 0 && <Badge count={attackCount}/>}
                         </div>
                         <div className={`fake-button`}>&nbsp;</div>
                     </Fragment>
@@ -177,41 +196,57 @@ export class Component extends React.Component<Props, State> {
             case 'plane':
                 return (
                     <Fragment>
-                        <div
-                            className={`button action-button ${selected === 'move' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'move')}
-                        >
-                            Move {moveCount > 0 && <Badge count={moveCount} />}
+                        <div className="action-button-holder">
+                            <div
+                                className={`button action-button ${selected === 'move' && 'selected-button'}`}
+                                onClick={() => this.props.startEntityAction(entity, 'move')}
+                            >
+                                Move
+                            </div>
+                            {moveCount > 0 && <Badge count={moveCount}/>}
                         </div>
-                        <div
-                            className={`button action-button ${selected === 'attack' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'attack')}
-                        >
-                            Attack {attackCount > 0 && <Badge count={attackCount} />}
+                        <div className="action-button-holder">
+                            <div
+                                className={`button action-button ${selected === 'attack' && 'selected-button'}`}
+                                onClick={() => this.props.startEntityAction(entity, 'attack')}
+                            >
+                                Attack
+                            </div>
+                            {attackCount > 0 && <Badge count={attackCount}/>}
                         </div>
+
                         <div className={`fake-button`}>&nbsp;</div>
                     </Fragment>
                 );
             case 'factory':
                 return (
                     <Fragment>
-                        <div
-                            className={`button action-button ${selected === 'spawn-infantry' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'spawn-infantry')}
-                        >
-                            Spawn Infantry {spawnInfantryCount > 0 && <Badge count={spawnInfantryCount} />}
+                        <div className={`action-button-holder`}>
+                            <div
+                                className={`button action-button ${selected === 'spawn-infantry' && 'selected-button'}`}
+                                onClick={() => this.props.startEntityAction(entity, 'spawn-infantry')}
+                            >
+                                Spawn Infantry
+                            </div>
+                            {spawnInfantryCount > 0 && <Badge count={spawnInfantryCount}/>}
                         </div>
-                        <div
-                            className={`button action-button ${selected === 'spawn-tank' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'spawn-tank')}
-                        >
-                            Spawn Tank {spawnTankCount > 0 && <Badge count={spawnTankCount} />}
+                        <div className="action-button-holder">
+                            <div
+                                className={`button action-button ${selected === 'spawn-tank' && 'selected-button'}`}
+                                onClick={() => this.props.startEntityAction(entity, 'spawn-tank')}
+                            >
+                                Spawn Tank
+                            </div>
+                            {spawnTankCount > 0 && <Badge count={spawnTankCount}/>}
                         </div>
-                        <div
-                            className={`button action-button ${selected === 'spawn-plane' && 'selected-button'}`}
-                            onClick={() => this.props.startEntityAction(entity, 'spawn-plane')}
-                        >
-                            Spawn Plane {spawnPlaneCount > 0 && <Badge count={spawnPlaneCount} />}
+                        <div className="action-button-holder">
+                            <div
+                                className={`button action-button ${selected === 'spawn-plane' && 'selected-button'}`}
+                                onClick={() => this.props.startEntityAction(entity, 'spawn-plane')}
+                            >
+                                Spawn Plane
+                            </div>
+                            {spawnPlaneCount > 0 && <Badge count={spawnPlaneCount}/>}
                         </div>
                     </Fragment>
                 );
@@ -229,17 +264,19 @@ export let Badge: SFC<{count: number}> = ({count}) => {
     return (
         <span
             style={{
-                position: 'absolute',
                 borderRadius: '50%',
+                width: '34px',
+                height: '34px',
+                margin: '5px',
+                color: 'white',
                 background: '#9b2d2d',
-                top: '-.5em',
-                right: '-.5em',
                 padding: '.5em',
                 fontSize: '16px',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                textAlign: 'center'
             }}
         >
-            {count}
+            {count > 9 ? '9+' : count}
         </span>
     );
 };

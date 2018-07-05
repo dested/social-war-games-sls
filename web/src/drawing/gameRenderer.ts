@@ -17,7 +17,7 @@ import {GameView} from './gameView';
 import {Drawing, DrawingOptions} from './hexDrawing';
 
 export class GameRenderer {
-    private canvas: HTMLCanvasElement;
+    canvas: HTMLCanvasElement;
     private context: CanvasRenderingContext2D;
     view: GameView;
 
@@ -415,39 +415,6 @@ export class GameRenderer {
 
         context.restore();
 
-        const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
-
-        if (HexConstants.isMobile) {
-            context.fillStyle = 'grey';
-            context.fillRect(
-                0,
-                canvas.height - UIConstants.progressBarHeight,
-                canvas.width,
-                UIConstants.progressBarHeight
-            );
-            context.fillStyle = ColorUtils.lerpColor('#00FF00', '#FF0000', Math.min(percent, 1));
-            context.fillRect(
-                0,
-                canvas.height - UIConstants.progressBarHeight,
-                canvas.width * percent,
-                UIConstants.progressBarHeight
-            );
-        } else {
-            context.fillStyle = 'grey';
-            context.fillRect(
-                UIConstants.miniMapWidth,
-                canvas.height - UIConstants.progressBarHeight,
-                canvas.width - UIConstants.miniMapWidth,
-                UIConstants.progressBarHeight
-            );
-            context.fillStyle = ColorUtils.lerpColor('#00FF00', '#FF0000', Math.min(percent, 1));
-            context.fillRect(
-                UIConstants.miniMapWidth,
-                canvas.height - UIConstants.progressBarHeight,
-                (canvas.width - UIConstants.miniMapWidth) * percent,
-                UIConstants.progressBarHeight
-            );
-        }
     }
 
     roundRectHash: {[key: string]: HTMLCanvasElement} = {};

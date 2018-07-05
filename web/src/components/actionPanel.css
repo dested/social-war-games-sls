@@ -63,7 +63,14 @@
 }
 
 .action-button {
-    width: calc(100% - 12px)
+    flex: 1;
+}
+
+.action-button-holder {
+    align-self: normal;
+    flex-direction: row;
+    display: flex;
+    padding:5px;
 }
 
 .action-list-box {
@@ -111,7 +118,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: inset 0px 0 10px 2px rgba(0, 0, 0, 0.6), 0 0 4px 2px rgba(0, 0, 0, 0.7);
+    background-size: 165px 165px;
+    background-repeat: no-repeat;
 }
 
 .radar-icon {
@@ -123,17 +131,5 @@
     right: 0;
     top: 0;
     bottom: 0;
-}
-
-.radar-1 {
-    background: radial-gradient(ellipse at top left, rgba(205, 45, 54, .4) 0%, rgba(251, 56, 66, .8) 100%);
-}
-
-.radar-2 {
-    background: radial-gradient(ellipse at top left, rgba(165, 219, 50, .4) 0%, rgba(199, 255, 53, .8) 100%);
-}
-
-.radar-3 {
-    background: radial-gradient(ellipse at top left, rgba(131, 49, 183, .4) 0%, rgba(178, 55, 236, .8) 100%);
 }
 

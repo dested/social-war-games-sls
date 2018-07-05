@@ -100,7 +100,7 @@ export class Grid<T extends Hexagon = Hexagon> {
         this.hexes = new HashArray<T, Point>(PointHashKey);
     }
 
-    easyBounds(x: number, y: number): Axial {
+    easyPoint(x: number, y: number): Axial {
         x = Math.round(x);
         y = Math.round(y);
         return new Axial(x - Math.floor(y / 2), y);
@@ -193,7 +193,7 @@ export class Grid<T extends Hexagon = Hexagon> {
         const hexes: T[] = [];
 
         for (wd = (wd + 1) / 2; ; ) {
-            let hex = this.getHexAt(this.easyBounds(x0, y0));
+            let hex = this.getHexAt(this.easyPoint(x0, y0));
             if (hex) {
                 hexes.push(hex);
             }
@@ -201,7 +201,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             x2 = x0;
             if (2 * e2 >= -dx) {
                 for (e2 += dy, y2 = y0; e2 < ed * wd && (y1 != y2 || dx > dy); e2 += dx) {
-                    hex = this.getHexAt(this.easyBounds(x0, (y2 += sy)));
+                    hex = this.getHexAt(this.easyPoint(x0, (y2 += sy)));
                     if (hex) {
                         hexes.push(hex);
                     }
@@ -215,7 +215,7 @@ export class Grid<T extends Hexagon = Hexagon> {
             }
             if (2 * e2 <= dy) {
                 for (e2 = dx - e2; e2 < ed * wd && (x1 != x2 || dx < dy); e2 += dy) {
-                    hex = this.getHexAt(this.easyBounds((x2 += sx), y0));
+                    hex = this.getHexAt(this.easyPoint((x2 += sx), y0));
                     if (hex) {
                         hexes.push(hex);
                     }
