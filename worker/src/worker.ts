@@ -442,6 +442,7 @@ export class Worker {
                             `${FactionNames[toEntity.factionId]}'s ` +
                             `{toEntityId:${EntityTypeNames[toEntity.entityType]}} ` +
                             `(at {toHexId:${toHex.x},${toHex.y}}) ${result}. `,
+                        action: vote.action,
                         factionId: fromEntity.factionId,
                         fromEntityId: fromEntity.id,
                         toEntityId: toEntity.id,
@@ -456,6 +457,7 @@ export class Worker {
                             `{fromEntityId:${EntityTypeNames[fromEntity.entityType]}} ` +
                             `attacked our {toEntityId:${EntityTypeNames[toEntity.entityType]}} ` +
                             `(at {toHexId:${toHex.x},${toHex.y}}) ${result}. `,
+                        action: vote.action,
                         factionId: toEntity.factionId,
                         fromEntityId: fromEntity.id,
                         toEntityId: toEntity.id,
@@ -474,6 +476,7 @@ export class Worker {
                         note:
                             `Our {fromEntityId:${EntityTypeNames[fromEntity.entityType]}} ` +
                             `moved ${distance} space${distance === 1 ? '' : 's'} ${direction}.`,
+                        action: vote.action,
                         factionId: fromEntity.factionId,
                         fromEntityId: fromEntity.id,
                         toEntityId: null,
@@ -506,6 +509,7 @@ export class Worker {
                 return [
                     {
                         note: `We mined ${resourceCount} resource at {toHexId:${toHex.x},${toHex.y}}. ` + remaining,
+                        action: vote.action,
                         factionId: fromEntity.factionId,
                         fromEntityId: fromEntity.id,
                         toEntityId: null,
@@ -542,6 +546,7 @@ export class Worker {
                             `Our {fromEntityId:${EntityTypeNames.factory}} ` +
                             `has begun constructing a new ${spawnName}. ` +
                             `It will be ready in ${turns} rounds.`,
+                        action: vote.action,
                         factionId: fromEntity.factionId,
                         fromEntityId: fromEntity.id,
                         toEntityId: null,

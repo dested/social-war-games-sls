@@ -1,4 +1,4 @@
-import {EntityAction, GameEntity} from '@swg-common/game/entityDetail';
+import {ActionRoute, EntityAction, GameEntity} from '@swg-common/game/entityDetail';
 import {GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {GameResource} from '@swg-common/game/gameResource';
 import {VoteResult} from '@swg-common/game/voteResult';
@@ -6,6 +6,7 @@ import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {RoundState} from '@swg-common/models/roundState';
+import {VoteNote} from '@swg-common/models/voteNote';
 import {GameRenderer} from '../../drawing/gameRenderer';
 import {SmallGameRenderer} from '../../drawing/smallGameRenderer';
 import {GameAction, GameActionOptions} from './actions';
@@ -32,6 +33,7 @@ export interface GameStore {
     gameState?: GameState;
     gameReady?: boolean;
     layout?: GameLayout;
+    lastRoundActions?: ActionRoute[];
 }
 
 export default function gameReducer(state: GameStore = initialState, action: GameAction): GameStore {
@@ -138,6 +140,12 @@ export default function gameReducer(state: GameStore = initialState, action: Gam
                 selectedEntity: action.entity,
                 selectedEntityAction: action.action,
                 viableHexIds: action.viableHexIds
+            };
+        }
+        case GameActionOptions.SetLastRoundActions: {
+            return {
+                ...state,
+                lastRoundActions: action.actions
             };
         }
         case GameActionOptions.SelectResource: {

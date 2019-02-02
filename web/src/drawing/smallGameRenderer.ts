@@ -3,8 +3,9 @@ import {GameModel} from '@swg-common/game/gameLogic';
 import {Grid} from '@swg-common/hex/hex';
 import {Manager, Pan} from 'hammerjs';
 import {getStore} from '../store';
-import {Dispatcher} from '../store/actions';
+import {Dispatcher, UIActions, UIThunks} from '../store/actions';
 import {SwgStore} from '../store/reducers';
+import {UI} from '../store/ui/actions';
 import {AnimationUtils} from '../utils/animationUtils';
 import {ColorUtils} from '../utils/colorUtils';
 import {DebounceUtils} from '../utils/debounceUtils';
@@ -12,7 +13,7 @@ import {HexColors} from '../utils/hexColors';
 import {HexConstants} from '../utils/hexConstants';
 import {HexImages} from '../utils/hexImages';
 import {UIConstants} from '../utils/uiConstants';
-import {UIAssets} from './gameAssets';
+import {UIAsset, UIAssets} from './gameAssets';
 import {GameRenderer} from './gameRenderer';
 import {GameView} from './gameView';
 import {Drawing, DrawingOptions} from './hexDrawing';
@@ -22,6 +23,19 @@ export class SmallGameRenderer {
     canvas: HTMLCanvasElement;
     private context: CanvasRenderingContext2D;
     private gameRenderer: GameRenderer;
+    private buttons: {
+        asset: UIAsset;
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+        text: string;
+        color: string;
+        textX: number;
+        textY: number;
+        font: string;
+        ui: UI;
+    }[];
 
     tapHex(hexagon: GameHexagon, force: boolean) {
         const gameRendererView = this.gameRenderer.view;
@@ -57,6 +71,7 @@ export class SmallGameRenderer {
         if (this.canvas) {
             return;
         }
+
         this.gameRenderer = gameRenderer;
         this.canvas = canvas;
         this.context = this.canvas.getContext('2d');
@@ -78,11 +93,32 @@ export class SmallGameRenderer {
             const elemRect = e.target.getBoundingClientRect();
             const offsetX = elemRect.left - bodyRect.left;
             const offsetY = elemRect.top - bodyRect.top;
-
             const position = {
                 x: e.center.x - offsetX,
                 y: e.center.y - offsetY
             };
+
+            for (const button of this.buttons) {
+                if (
+                    position.x > button.left &&
+                    position.x < button.left + button.width &&
+                    position.y > button.top &&
+                    position.y < button.top + button.height
+                ) {
+                    const store = getStore();
+                    if (store.getState().uiState.ui === button.ui) {
+                        store.dispatch(UIThunks.setUI('None'));
+                    } else {
+                        store.dispatch(UIThunks.setUI(button.ui));
+                    }
+                    return false;
+                }
+            }
+
+            if (position.x > this.minimapCanvas.width) {
+                return false;
+            }
+            position.y -= 100 * 0.75;
 
             const distances = game.grid.hexes.array.map(h => ({
                 h,
@@ -156,57 +192,73 @@ export class SmallGameRenderer {
 
         const textSize = (UIAssets.BottomButtonFirst.height / scaleY) * 0.7;
         const smallTextSize = (UIAssets.BottomButtonFirst.height / scaleY) * 0.4;
+        const votesLeft = state.gameState.userDetails.maxVotes - state.gameState.userDetails.voteCount;
 
-        const buttons = [
+        this.buttons = [
             {
                 asset: UIAssets.BottomButtonFirst,
                 left: buttonStartX,
                 top: timerTopRimStart - UIAssets.BottomButtonFirst.height / scaleY,
+                width: UIAssets.BottomButtonFirst.width / buttonScaleX,
+                height: UIAssets.BottomButtonFirst.height / scaleY,
                 text: 'FACTIONS',
                 color: '#494949',
                 textX: UIAssets.BottomButtonFirst.width / buttonScaleX / 2,
                 textY: UIAssets.BottomButtonFirst.height / scaleY / 2 + 6,
-                font: `${textSize}px Teko`
+                font: `${textSize}px Teko`,
+                ui: 'FactionStats'
             },
             {
                 asset: UIAssets.BottomButton,
                 left: buttonStartX + (UIAssets.BottomButton.width - 54) / buttonScaleX,
                 top: timerTopRimStart - UIAssets.BottomButton.height / scaleY,
+                width: UIAssets.BottomButton.width / buttonScaleX,
+                height: UIAssets.BottomButton.height / scaleY,
                 text: 'ROUND',
                 color: '#494949',
                 textX: UIAssets.BottomButton.width / buttonScaleX / 2,
                 textY: UIAssets.BottomButton.height / scaleY / 2 + 6,
-                font: `${textSize}px Teko`
+                font: `${textSize}px Teko`,
+                ui: 'RoundStats'
             },
             {
                 asset: UIAssets.BottomButton,
                 left: buttonStartX + ((UIAssets.BottomButton.width - 54) / buttonScaleX) * 2,
                 top: timerTopRimStart - UIAssets.BottomButton.height / scaleY,
+                width: UIAssets.BottomButton.width / buttonScaleX,
+                height: UIAssets.BottomButton.height / scaleY,
                 text: 'BASES',
                 color: '#494949',
                 textX: UIAssets.BottomButton.width / buttonScaleX / 2,
                 textY: UIAssets.BottomButton.height / scaleY / 2 + 6,
-                font: `${textSize}px Teko`
+                font: `${textSize}px Teko`,
+                ui: 'Bases'
             },
             {
                 asset: UIAssets.BottomButton,
                 left: buttonStartX + ((UIAssets.BottomButton.width - 54) / buttonScaleX) * 3,
                 top: timerTopRimStart - UIAssets.BottomButton.height / scaleY,
+                width: UIAssets.BottomButton.width / buttonScaleX,
+                height: UIAssets.BottomButton.height / scaleY,
                 text: 'LADDER',
                 color: '#494949',
                 textX: UIAssets.BottomButton.width / buttonScaleX / 2,
                 textY: UIAssets.BottomButton.height / scaleY / 2 + 6,
-                font: `${textSize}px Teko`
+                font: `${textSize}px Teko`,
+                ui: 'Ladder'
             },
             {
                 asset: UIAssets.BottomButtonLast,
                 left: buttonStartX + ((UIAssets.BottomButtonLast.width - 54) / buttonScaleX) * 4,
                 top: timerTopRimStart - UIAssets.BottomButtonLast.height / scaleY,
-                text: '3 VOTES LEFT',
+                width: UIAssets.BottomButtonLast.width / buttonScaleX,
+                height: UIAssets.BottomButtonLast.height / scaleY,
+                text: `${votesLeft} Vote${votesLeft === 1 ? '' : 's'} Left`.toUpperCase(),
                 color: '#ff2222',
                 textX: UIAssets.BottomButton.width / buttonScaleX / 2 + 15,
                 textY: UIAssets.BottomButton.height / scaleY / 2 + 7,
-                font: `${smallTextSize}px Teko`
+                font: `${smallTextSize}px Teko`,
+                ui: 'Votes'
             }
         ];
 
@@ -215,25 +267,16 @@ export class SmallGameRenderer {
         context.drawImage(this.minimapCanvas, 0, 0);
         context.restore();
 
-        const unselectedFont = '#494949';
         const selectedFont = '#3FB88A';
 
-        for (let i = buttons.length - 1; i >= 0; i--) {
-            const button = buttons[i];
-            context.drawImage(
-                button.asset.image,
-                button.left,
-                button.top,
-                button.asset.width / buttonScaleX,
-                button.asset.height / scaleY
-            );
-            context.fillStyle = button.color;
-            context.strokeStyle = button.color;
+        for (let i = this.buttons.length - 1; i >= 0; i--) {
+            const button = this.buttons[i];
+            context.drawImage(button.asset.image, button.left, button.top, button.width, button.height);
+            context.fillStyle = state.uiState.ui === button.ui ? selectedFont : button.color;
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             context.font = button.font;
             context.fillText(button.text, button.left + button.textX, button.top + button.textY);
-            // context.strokeText(button.text, button.left + button.textX, button.top + button.textY);
         }
 
         context.drawImage(

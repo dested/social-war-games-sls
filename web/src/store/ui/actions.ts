@@ -5,7 +5,7 @@ import {DataService} from '../../dataServices';
 import {Dispatcher} from '../actions';
 import {SwgStore} from '../reducers';
 
-export type UI = 'None' | 'FactionStats' | 'RoundStats' | 'Ladder' | 'Bases';
+export type UI = 'None' | 'FactionStats' | 'RoundStats' | 'Ladder' | 'Bases'|'Votes';
 export enum UIActionOptions {
     SetUI = 'SetUI',
     SetLadder = 'SetLadder',

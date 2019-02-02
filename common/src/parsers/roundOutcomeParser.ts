@@ -34,6 +34,7 @@ export class RoundOutcomeParser {
 
         buff.addInt16(roundOutcome.notes.length);
         for (const note of roundOutcome.notes) {
+            buff.addUint8(ParserEnumUtils.actionToInt(note.action));
             buff.addInt32(note.fromEntityId);
             buff.addInt32(note.toEntityId || -1);
             ParserEnumUtils.writeHexId(note.toHexId, buff);
@@ -88,6 +89,7 @@ export class RoundOutcomeParser {
         const notes: VoteNote[] = [];
 
         for (let i = 0; i < notesLength; i++) {
+            const action = ParserEnumUtils.intToAction(reader.readUint8());
             const fromEntityId = reader.readInt32();
             let toEntityId = reader.readInt32();
             if (toEntityId === -1) {
@@ -99,6 +101,7 @@ export class RoundOutcomeParser {
             const voteCount = reader.readInt16();
             const note = reader.readString();
             notes.push({
+                action,
                 fromEntityId,
                 toEntityId,
                 toHexId,

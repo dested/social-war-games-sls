@@ -2,11 +2,11 @@ import {EntityType} from '@swg-common/game/entityDetail';
 import {ResourceType} from '@swg-common/game/gameResource';
 import {ImageUtils} from '../utils/imageUtils';
 
-interface GameAsset extends UIAsset {
+export interface GameAsset extends UIAsset {
     centerX: number;
     centerY: number;
 }
-interface UIAsset {
+export interface UIAsset {
     image: HTMLImageElement;
     imageUrl: string;
     width: number;

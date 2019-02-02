@@ -7,11 +7,15 @@ import * as jwt from "jsonwebtoken";
 import { Event } from "../utils/models";
 import { HttpResponse, respond } from "../utils/respond";
 
+interface UserDetailsResponse {
+  voteCount: number;
+  maxVotes: number;
+  factionToken: string;
+}
+
 export async function userDetailsHandler(
   event: Event<UserDetailsRequestBody>
-): Promise<
-  HttpResponse<{ voteCount: number; maxVotes: number; factionToken: string }>
-> {
+): Promise<HttpResponse<UserDetailsResponse>> {
   console.log("auth", event);
   if (!event.headers || !event.headers.Authorization) {
     return respond(403, { error: "auth" });

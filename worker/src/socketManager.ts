@@ -7,7 +7,7 @@ export class SocketManager {
     static open() {
         AWS.config.region = Config.awsIotRegion;
         this.iotData = new AWS.IotData({
-            endpoint: `a11r7webls2miq.iot.us-west-2.amazonaws.com`,
+            endpoint: `a11r7webls2miq-ats.iot.us-west-2.amazonaws.com`,
             credentials: new AWS.CognitoIdentityCredentials({
                 IdentityPoolId: 'us-west-2:d4f63ed5-7b82-4389-b987-1f8bb7b6ed97',
             }),

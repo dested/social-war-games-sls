@@ -27,7 +27,7 @@ module.exports = env => {
             // env === 'deploy' && new UglifyJsPlugin(),
             env === 'deploy' &&
                 new SshWebpackPlugin({
-                    host: 'ec2-18-237-177-36.us-west-2.compute.amazonaws.com',
+                    host: 'ec2-54-185-137-216.us-west-2.compute.amazonaws.com',
                     port: '22',
                     username: 'ec2-user',
                     privateKey: fs.readFileSync('C:\\junk\\certs\\aws-dested.ppk'),

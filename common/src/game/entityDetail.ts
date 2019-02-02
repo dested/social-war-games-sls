@@ -1,3 +1,5 @@
+import {GameHexagon} from './gameHexagon';
+
 export interface EntityDetail {
     type: EntityType;
     solid: boolean;
@@ -12,6 +14,15 @@ export interface EntityDetail {
     healthRegenRate: number;
 }
 
+export interface ActionRoute {
+    fromHex: GameHexagon;
+    toHex: GameHexagon;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    action: EntityAction;
+}
 export type EntityAction = 'attack' | 'move' | 'spawn-infantry' | 'spawn-tank' | 'spawn-plane' | 'mine';
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
 export type Faction = '0' | '9' | PlayableFactionId;

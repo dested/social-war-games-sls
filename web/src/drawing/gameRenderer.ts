@@ -182,7 +182,7 @@ export class GameRenderer {
             if (Math.abs(this.swipeVelocity.x) > 0) {
                 const sign = Utils.mathSign(this.swipeVelocity.x);
                 this.swipeVelocity.x += 0.7 * -sign;
-                if (Utils.mathSign(this.swipeVelocity.x) != sign) {
+                if (Utils.mathSign(this.swipeVelocity.x) !== sign) {
                     this.swipeVelocity.x = 0;
                 }
             }
@@ -190,7 +190,7 @@ export class GameRenderer {
             if (Math.abs(this.swipeVelocity.y) > 0) {
                 const sign = Utils.mathSign(this.swipeVelocity.y);
                 this.swipeVelocity.y += 0.7 * -sign;
-                if (Utils.mathSign(this.swipeVelocity.y) != sign) {
+                if (Utils.mathSign(this.swipeVelocity.y) !== sign) {
                     this.swipeVelocity.y = 0;
                 }
             }
@@ -352,8 +352,7 @@ export class GameRenderer {
                 let strokedColor = hexagon.lines[0].color;
                 context.beginPath();
                 context.strokeStyle = strokedColor;
-                for (let i = 0; i < hexagon.lines.length; i++) {
-                    const line = hexagon.lines[i];
+                for (const line of hexagon.lines) {
                     if (line.color !== strokedColor) {
                         context.stroke();
                         context.beginPath();
@@ -367,8 +366,44 @@ export class GameRenderer {
             }
         }
 
-        for (let i = 0; i < game.resources.array.length; i++) {
-            const resource = game.resources.array[i];
+        if (state.gameState.lastRoundActions) {
+            for (const action of state.gameState.lastRoundActions) {
+                if (!action.toHex) {
+                    continue;
+                }
+                const fromHex = action.fromHex;
+                const toHex = action.toHex;
+
+                if (!hexes.includes(fromHex) && !hexes.includes(toHex)) {
+                    continue;
+                }
+                switch (action.action) {
+                    case 'move':
+                        context.strokeStyle = 'blue';
+                        break;
+                    case 'attack':
+                        context.strokeStyle = 'red';
+                        break;
+                    case 'mine':
+                        context.strokeStyle = 'green';
+                        break;
+                    case 'spawn-infantry':
+                    case 'spawn-tank':
+                    case 'spawn-plane':
+                        context.strokeStyle = 'purple';
+                        break;
+                }
+                context.beginPath();
+                context.lineWidth = 5;
+                context.lineCap = 'round';
+                context.moveTo(action.x1, action.y1);
+                context.lineTo(action.x2, action.y2);
+                context.stroke();
+                context.closePath();
+            }
+        }
+
+        for (const resource of game.resources) {
             const hex = grid.getHexAt(resource);
             const asset = GameAssets[resource.resourceType];
 
@@ -414,7 +449,6 @@ export class GameRenderer {
         }
 
         context.restore();
-
     }
 
     roundRectHash: {[key: string]: HTMLCanvasElement} = {};

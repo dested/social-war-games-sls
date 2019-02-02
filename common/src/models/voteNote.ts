@@ -1,7 +1,8 @@
-import {PlayableFactionId} from '../game/entityDetail';
+import {EntityAction, PlayableFactionId} from '../game/entityDetail';
 
 export interface VoteNote {
     note: string;
+    action: EntityAction;
     fromEntityId: number;
     factionId: PlayableFactionId;
     toEntityId?: number;

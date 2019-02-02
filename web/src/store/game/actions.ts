@@ -1,4 +1,4 @@
-import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
+import {ActionRoute, EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {GameResource} from '@swg-common/game/gameResource';
@@ -9,6 +9,7 @@ import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
+import {VoteNote} from '@swg-common/models/voteNote';
 import {DoubleHashArray} from '@swg-common/utils/hashArray';
 import {DataService} from '../../dataServices';
 import {loadEntities, loadUI} from '../../drawing/gameAssets';
@@ -26,6 +27,7 @@ export enum GameActionOptions {
     SetGameLayout = 'SetGameLayout',
     SetGameState = 'SetGameState',
     SetGameReady = 'SetGameReady',
+    SetLastRoundActions = 'setLastRoundActions',
 
     UpdateGame = 'UPDATE_GAME',
     UpdateUserDetails = 'UPDATE_USER_DETAILS',
@@ -52,6 +54,11 @@ export interface SetEntityActionAction {
 export interface SelectEntityAction {
     type: GameActionOptions.SelectEntity;
     entity: GameEntity;
+}
+
+export interface SetLastRoundActionsAction {
+    type: GameActionOptions.SetLastRoundActions;
+    actions: ActionRoute[];
 }
 
 export interface SetGameLayoutAction {
@@ -128,6 +135,7 @@ export interface VotingAction {
 export type GameAction =
     | SelectEntityAction
     | SetGameRendererAction
+    | SetLastRoundActionsAction
     | VotingAction
     | AddLocalVoteAction
     | RemoveLocalVoteAction
@@ -250,6 +258,13 @@ export class GameActions {
             imagesLoading
         };
     }
+
+    static setLastRoundActions(actions: ActionRoute[]): SetLastRoundActionsAction {
+        return {
+            type: GameActionOptions.SetLastRoundActions,
+            actions
+        };
+    }
 }
 
 export class GameThunks {
@@ -337,7 +352,7 @@ export class GameThunks {
 
     private static async getNewState(roundState: RoundState, dispatch: Dispatcher, getState: () => SwgStore) {
         const {gameState, uiState, appState} = getState();
-        let game = gameState.game;
+        let oldGame = gameState.game;
         if (roundState.generation !== gameState.game.generation) {
             dispatch(GameActions.selectEntity(null));
             dispatch(GameActions.resetLocalVotes());
@@ -346,12 +361,52 @@ export class GameThunks {
 
             const localGameState = await DataService.getGameState(appState.user.factionId, userDetails.factionToken);
 
-            game = GameLogic.buildGameFromState(gameState.layout, localGameState);
+            const game = GameLogic.buildGameFromState(gameState.layout, localGameState);
             Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
             gameState.smallGameRenderer.processMiniMap(game);
+            const factionRoundStats = await DataService.getFactionRoundStats(
+                game.generation - 1,
+                appState.user.factionId
+            );
+
+            if (factionRoundStats.notes) {
+                const grid = game.grid;
+                const hexIdParse = /(-?\d*)-(-?\d*)/;
+                const route: ActionRoute[] = [];
+
+                for (const note of factionRoundStats.notes) {
+                    if (!note.toHexId) {
+                        continue;
+                    }
+                    const fromHexId = hexIdParse.exec(note.fromHexId);
+                    const fromHex = grid.getHexAt({x: parseInt(fromHexId[1]), y: parseInt(fromHexId[2])});
+
+                    const toHexId = hexIdParse.exec(note.toHexId);
+                    const toHex = grid.getHexAt({x: parseInt(toHexId[1]), y: parseInt(toHexId[2])});
+
+                    const entityHash = GameLogic.getEntityHash(note.action, oldGame);
+                    const path = game.grid.findPath(fromHex, toHex, entityHash);
+                    for (let i = 0; i < path.length - 1; i++) {
+                        const f = path[i];
+                        const t = path[i + 1];
+                        route.push({
+                            fromHex,
+                            toHex,
+                            x1: f.center.x,
+                            y1: f.center.y,
+                            x2: t.center.x,
+                            y2: t.center.y,
+                            action: note.action
+                        });
+                    }
+                }
+                dispatch(GameActions.setLastRoundActions(route));
+            }
+
+            oldGame = game;
         }
 
-        dispatch(GameThunks.processRoundState(game, roundState));
+        dispatch(GameThunks.processRoundState(oldGame, roundState));
     }
 
     static startLoading() {

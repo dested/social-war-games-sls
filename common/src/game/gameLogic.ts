@@ -507,24 +507,7 @@ export class GameLogic {
             return VoteResult.ToHexNotFound;
         }
 
-        let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
-
-        switch (vote.action) {
-            case 'attack':
-                entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
-                break;
-            case 'move':
-                entityHash = game.entities;
-                break;
-            case 'mine':
-                entityHash = game.entities;
-                break;
-            case 'spawn-infantry':
-            case 'spawn-tank':
-            case 'spawn-plane':
-                entityHash = game.entities;
-                break;
-        }
+        const entityHash = this.getEntityHash(vote.action, game);
 
         const path = game.grid.findPath(fromHex, toHex, entityHash);
         if (path.length === 0) {
@@ -638,24 +621,7 @@ export class GameLogic {
         if (!toHex) {
             return VoteResult.ToHexNotFound;
         }
-        let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
-
-        switch (vote.action) {
-            case 'attack':
-                entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
-                break;
-            case 'move':
-                entityHash = game.entities;
-                break;
-            case 'mine':
-                entityHash = game.entities;
-                break;
-            case 'spawn-infantry':
-            case 'spawn-tank':
-            case 'spawn-plane':
-                entityHash = game.entities;
-                break;
-        }
+        const entityHash = this.getEntityHash(vote.action, game);
 
         const path = game.grid.findPath(fromHex, toHex, entityHash);
         if (path.length === 0) {
@@ -818,6 +784,28 @@ export class GameLogic {
         }
 
         return VoteResult.Success;
+    }
+
+    static getEntityHash(action: EntityAction, game: GameModel) {
+        let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
+
+        switch (action) {
+            case 'attack':
+                entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
+                break;
+            case 'move':
+                entityHash = game.entities;
+                break;
+            case 'mine':
+                entityHash = game.entities;
+                break;
+            case 'spawn-infantry':
+            case 'spawn-tank':
+            case 'spawn-plane':
+                entityHash = game.entities;
+                break;
+        }
+        return entityHash;
     }
 
     static getFactionId(factions: string, index: number): Faction {

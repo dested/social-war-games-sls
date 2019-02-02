@@ -12,7 +12,7 @@ const params = {
     WebSocket: (window as any).WebSocket,
     credentials: AWS.config.credentials,
     region: 'us-west-2',
-    endpoint: 'a11r7webls2miq.iot.us-west-2.amazonaws.com'
+    endpoint: 'a11r7webls2miq-ats.iot.us-west-2.amazonaws.com'
 };
 
 export class SocketUtils {

@@ -116,6 +116,7 @@
 '/ fix faction stats
 '/ encrypt faction
 '/ add checksum to faction encryption
+'/ implement tree shaking so server code doesnt make it to the client
 
 gameplay
   units youve participated in, howd they do
@@ -150,8 +151,6 @@ low priority
   clean up constants
     colors
   make better use of caching in server
-  implement tree shaking so server code doesnt make it to the client
-    except window shit
   update progress bar to be less realistic
   show game under login/register screen
   cleanup login screen
@@ -168,7 +167,6 @@ low priority
   figure out a way to prevent multiple accounts
     prevent fake email addresses
     ip based?
-  encrypt faction
   mobile support
  
 

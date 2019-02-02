@@ -8,7 +8,7 @@ export function respond<T>(statusCode: 200, body: T): HttpResponse<T>;
 export function respond<T>(
   statusCode: number,
   body: { error: string }
-): HttpResponse<{ error: string }>;
+): HttpResponse<any>;
 export function respond<T>(
   statusCode: number,
   body: T | { error: string }
