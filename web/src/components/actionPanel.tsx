@@ -289,7 +289,7 @@ export let ActionPanel = connect(
     selectedResource: state.gameState.selectedResource,
     selectedEntityAction: state.gameState.selectedEntityAction,
   }),
-  (dispatch: Dispatcher) => ({
+  {
     startEntityAction: GameThunks.startEntityAction,
-  })
+  }
 )(withRouter(Component));

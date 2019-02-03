@@ -1,7 +1,7 @@
 export interface HttpResponse<T> {
   statusCode: number;
   headers: any;
-  body: T | {error: string};
+  body: string;
 }
 
 export function respond<T>(statusCode: 200, body: T): HttpResponse<T>;
@@ -14,6 +14,6 @@ export function respond<T>(statusCode: number, body: T | {error: string}): HttpR
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
     },
-    body,
+    body: JSON.stringify(body),
   };
 }

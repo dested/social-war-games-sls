@@ -231,7 +231,7 @@ export class GameRenderer {
     const vwidth = this.view.widthSlop;
     const vheight = this.view.heightSlop;
 
-    const hexes = grid.hexes.filter(
+    const visibleHexes = grid.hexes.filter(
       hexagon =>
         hexagon.center.x > vx &&
         hexagon.center.x < vx + vwidth &&
@@ -239,7 +239,7 @@ export class GameRenderer {
         hexagon.center.y < vy + vheight
     );
 
-    for (const hexagon of hexes) {
+    for (const hexagon of visibleHexes) {
       context.drawImage(
         HexImages.hexTypeToImage(hexagon.tileType.type, hexagon.tileType.subType),
         hexagon.center.x - HexConstants.width / 2,
@@ -251,7 +251,7 @@ export class GameRenderer {
     const viableHexIds = state.gameState.viableHexIds || {};
 
     context.strokeStyle = HexColors.defaultBorder;
-    for (const hexagon of hexes) {
+    for (const hexagon of visibleHexes) {
       const isViableHex = viableHexIds[hexagon.id];
       const hasEntity = game.entities.get1(hexagon);
       context.lineWidth = isViableHex ? 4 : 2;
@@ -293,7 +293,7 @@ export class GameRenderer {
 
     const selectedVoteEntity = selectedEntity && roundState.entities[selectedEntity.id];
 
-    for (const hexagon of hexes) {
+    for (const hexagon of visibleHexes) {
       const isViableHex = viableHexIds[hexagon.id];
       const hasEntity = game.entities.get1(hexagon);
 
@@ -371,8 +371,7 @@ export class GameRenderer {
         }
         const fromHex = action.fromHex;
         const toHex = action.toHex;
-
-        if (!hexes.includes(fromHex) && !hexes.includes(toHex)) {
+        if (!visibleHexes.includes(fromHex) && !visibleHexes.includes(toHex)) {
           continue;
         }
         switch (action.action) {

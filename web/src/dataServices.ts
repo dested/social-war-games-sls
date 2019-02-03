@@ -38,7 +38,7 @@ export class DataService {
     }
     const json = await response.json();
     if (json.statusCode === 200) {
-      return json.body;
+      return JSON.parse(json.body);
     } else {
       throw new Error();
     }
@@ -63,7 +63,7 @@ export class DataService {
     }
     const json = await response.json();
     if (json.statusCode === 200) {
-      return json.body;
+      return JSON.parse(json.body);
     } else {
       throw new Error();
     }
@@ -87,7 +87,7 @@ export class DataService {
       body: JSON.stringify(vote),
     });
     const json = await response.json();
-    return json.body;
+    return JSON.parse(json.body);
   }
 
   static async currentUserDetails(): Promise<UserDetails> {
@@ -103,7 +103,7 @@ export class DataService {
     });
 
     const json = await response.json();
-    return json.body;
+    return JSON.parse(json.body);
   }
 
   static async getLayout() {
@@ -142,7 +142,7 @@ export class DataService {
       },
     });
     const json = await response.json();
-    return json.body;
+    return JSON.parse(json.body);
   }
 
   static async getFactionStats(generation: number): Promise<FactionStats[]> {
@@ -153,7 +153,7 @@ export class DataService {
         'Content-Type': 'application/json',
       },
     });
-    return await response.json();
+    return JSON.parse(await response.json());
   }
 
   static async getFactionRoundStats(generation: number, factionId: PlayableFactionId) {

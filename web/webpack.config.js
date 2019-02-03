@@ -7,7 +7,7 @@ module.exports = env => {
     entry: './src/main.tsx',
     // devtool: 'inline-source-map',
     output: {
-      filename: './bundle.js'
+      publicPath: "dist/"
     },
     ...(process.env.WEBPACK_SERVE ? {mode: 'development'} : {}),
     resolve: {

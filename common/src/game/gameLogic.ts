@@ -29,7 +29,7 @@ export interface ProcessedVote {
 }
 
 export interface GameModel {
-  factionDetails: {[key in PlayableFactionId]: FactionDetail};
+  factionDetails: { [key in PlayableFactionId]: FactionDetail };
   roundStart: number;
   roundEnd: number;
   layout: GameLayout;
@@ -366,7 +366,7 @@ export class GameLogic {
       const far = grid.getRange(
         grid.getHexAt(start),
         Math.floor(Math.random() * 80) + 30,
-        new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id)
+        new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id),
       );
 
       const number = Math.floor((far.length / 4) * 3 + (far.length / 4) * Math.random());
@@ -421,7 +421,7 @@ export class GameLogic {
       const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), hex.id, hex.x, hex.y);
       gameHexagon.setFactionId(
         GameLogic.getFactionId(gameState.factions, i),
-        GameLogic.getFactionDuration(gameState.factions, i)
+        GameLogic.getFactionDuration(gameState.factions, i),
       );
       grid.hexes.push(gameHexagon);
     }
@@ -528,7 +528,7 @@ export class GameLogic {
         break;
     }
 
-    if (path.length > range) {
+    if (path.length - 1 > range) {
       return VoteResult.PathOutOfRange;
     }
 
@@ -642,7 +642,7 @@ export class GameLogic {
         break;
     }
 
-    if (path.length > range) {
+    if (path.length - 1 > range) {
       return VoteResult.PathOutOfRange;
     }
 

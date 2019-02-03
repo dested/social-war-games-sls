@@ -15,7 +15,6 @@
     "module": "commonjs",
     "inlineSourceMap": true,
     "strictNullChecks": false,
-    "declaration": true,
     "pretty": true,
     "noEmit": true,
     "moduleResolution": "node",

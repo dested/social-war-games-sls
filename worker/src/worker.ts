@@ -308,8 +308,9 @@ export class Worker {
       return 100;
     };
 
-    const notes = Utils.mapMany(winningVotes.sort((a, b) => actionToWeight(a.action) - actionToWeight(b.action)), a =>
-      this.buildNote(a, game, preVoteEntities, preVoteResources)
+    const notes = Utils.mapMany(
+      /**/ winningVotes.sort((a, b) => actionToWeight(a.action) - actionToWeight(b.action)),
+      a => this.buildNote(a, game, preVoteEntities, preVoteResources)
     );
 
     const userStatsGrouped = Utils.arrayToDictionary(userStats, a => a._id.userId);

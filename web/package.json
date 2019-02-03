@@ -8,7 +8,7 @@
     "lint": "npx tslint -p tsconfig.json --fix",
     "verify": "tsc --noEmit",
     "pre": "npm run tsc & npm run pretty & npm run lint",
-    "dev": "webpack  --mode=development --progress --hide-modules --watch",
+    "dev": "webpack-dev-server --mode=development --progress --hide-modules --watch",
     "prod": "webpack  --mode=production --progress --hide-modules ",
     "deploy": "webpack  --mode=production --progress --hide-modules --env=deploy"
   },
@@ -38,20 +38,21 @@
     "file-loader": "^1.1.11",
     "less": "^3.0.4",
     "less-loader": "^4.1.0",
+    "prettier": "^1.16.3",
     "style-loader": "^0.21.0",
     "tcm": "^1.0.15",
-    "uglifyjs-webpack-plugin": "^1.2.6",
-    "webpack-cli": "^3.0.8",
-    "webpack-dev-server": "^3.1.4",
-    "webpack-node-externals": "^1.7.2",
+    "terser": "^3.14.1",
     "ts-loader": "^5.3.3",
-    "prettier": "^1.16.3",
-    "typescript": "^3.3.1",
     "tslint": "^5.12.1",
     "tslint-config-prettier": "^1.17.0",
-    "tslint-plugin-prettier": "^2.0.1",
     "tslint-eslint-rules": "^5.4.0",
+    "tslint-plugin-prettier": "^2.0.1",
     "tslint-react": "^3.6.0",
-    "webpack": "^4.29.0"
+    "typescript": "^3.3.1",
+    "uglifyjs-webpack-plugin": "^1.2.6",
+    "webpack": "^4.29.0",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "^3.1.4",
+    "webpack-node-externals": "^1.7.2"
   }
 }

@@ -360,6 +360,7 @@ export class Grid<T extends Hexagon = Hexagon> {
           path.push(current);
           current = current.parent;
         }
+        path.push(current);
         return path.map(x => x.hex).reverse();
       }
 

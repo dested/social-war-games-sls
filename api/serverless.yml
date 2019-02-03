@@ -16,6 +16,7 @@ service: swg
 plugins:
   - serverless-webpack
   - serverless-domain-manager
+  - serverless-offline
 
 custom:
   webpack:
@@ -27,6 +28,9 @@ custom:
     basePath: ''
     stage: ${self:provider.stage}
     createRoute53Record: true
+  serverless-offline:
+    host: 0.0.0.0
+    port: 5103
 
 provider:
   name: aws

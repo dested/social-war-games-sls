@@ -7,7 +7,8 @@
     "pretty": "npx prettier \"*/**/*.ts*\"  --config .prettierrc --write",
     "lint": "npx tslint -p tsconfig.json --fix",
     "verify": "tsc --noEmit",
-    "deploy": "sls deploy"
+    "deploy": "sls deploy",
+    "local": "sls offline"
   },
   "author": "",
   "license": "ISC",
@@ -41,6 +42,7 @@
     "serverless": "^1.27.3",
     "serverless-domain-manager": "^2.4.0",
     "serverless-webpack": "^5.2.0",
+    "serverless-offline": "^4.2.1",
     "ts-loader": "^5.3.3",
     "prettier": "^1.16.3",
     "typescript": "^3.3.1",
