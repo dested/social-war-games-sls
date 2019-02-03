@@ -2,7 +2,7 @@ import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameModel} from '@swg-common/game/gameLogic';
 import {Manager, Pan} from 'hammerjs';
 import {gameStore} from '../store/game/store';
-import {UI, uiStore} from '../store/ui/store';
+import {UI, UIStore, uiStore} from '../store/ui/store';
 import {AnimationUtils} from '../utils/animationUtils';
 import {ColorUtils} from '../utils/colorUtils';
 import {DebounceUtils} from '../utils/debounceUtils';
@@ -99,9 +99,9 @@ export class SmallGameRenderer {
           position.y < button.top + button.height
         ) {
           if (uiStore.ui === button.ui) {
-            uiStore.setUI('None');
+            UIStore.setUI('None');
           } else {
-            uiStore.setUI(button.ui);
+            UIStore.setUI(button.ui);
           }
           return false;
         }

@@ -4,7 +4,7 @@ import {GameResource} from '@swg-common/game/gameResource';
 import {Utils} from '@swg-common/utils/utils';
 import {Manager, Pan, Tap} from 'hammerjs';
 import {GameStore, gameStore} from '../store/game/store';
-import {uiStore} from '../store/ui/store';
+import {UIStore, uiStore} from '../store/ui/store';
 import {AnimationUtils} from '../utils/animationUtils';
 import {ColorUtils} from '../utils/colorUtils';
 import {HexColors} from '../utils/hexColors';
@@ -131,7 +131,7 @@ export class GameRenderer {
     });
 
     manager.on('panstart', e => {
-      uiStore.setUI('None');
+      UIStore.setUI('None');
 
       this.swipeVelocity.x = this.swipeVelocity.y = 0;
       startX = e.center.x;
@@ -143,14 +143,14 @@ export class GameRenderer {
     manager.on('panend', e => {});
 
     manager.on('swipe', (ev: {velocityX: number; velocityY: number}) => {
-      uiStore.setUI('None');
+      UIStore.setUI('None');
       this.swipeVelocity.x = ev.velocityX * 10;
       this.swipeVelocity.y = ev.velocityY * 10;
     });
 
     manager.on('tap', e => {
       this.swipeVelocity.x = this.swipeVelocity.y = 0;
-      uiStore.setUI('None');
+      UIStore.setUI('None');
       if (!gameStore.gameState) {
         return;
       }
@@ -353,40 +353,38 @@ export class GameRenderer {
       }
     }
 
-    if (gameStore.lastRoundActions) {
-      for (const action of gameStore.lastRoundActions) {
-        if (!action.toHex) {
-          continue;
-        }
-        const fromHex = action.fromHex;
-        const toHex = action.toHex;
-        if (!visibleHexes.includes(fromHex) && !visibleHexes.includes(toHex)) {
-          continue;
-        }
-        switch (action.action) {
-          case 'move':
-            context.strokeStyle = 'blue';
-            break;
-          case 'attack':
-            context.strokeStyle = 'red';
-            break;
-          case 'mine':
-            context.strokeStyle = 'green';
-            break;
-          case 'spawn-infantry':
-          case 'spawn-tank':
-          case 'spawn-plane':
-            context.strokeStyle = 'purple';
-            break;
-        }
-        context.beginPath();
-        context.lineWidth = 5;
-        context.lineCap = 'round';
-        context.moveTo(action.x1, action.y1);
-        context.lineTo(action.x2, action.y2);
-        context.stroke();
-        context.closePath();
+    for (const action of gameStore.lastRoundActions) {
+      if (!action.toHex) {
+        continue;
       }
+      const fromHex = action.fromHex;
+      const toHex = action.toHex;
+      if (!visibleHexes.includes(fromHex) && !visibleHexes.includes(toHex)) {
+        continue;
+      }
+      switch (action.action) {
+        case 'move':
+          context.strokeStyle = 'blue';
+          break;
+        case 'attack':
+          context.strokeStyle = 'red';
+          break;
+        case 'mine':
+          context.strokeStyle = 'green';
+          break;
+        case 'spawn-infantry':
+        case 'spawn-tank':
+        case 'spawn-plane':
+          context.strokeStyle = 'purple';
+          break;
+      }
+      context.beginPath();
+      context.lineWidth = 5;
+      context.lineCap = 'round';
+      context.moveTo(action.x1, action.y1);
+      context.lineTo(action.x2, action.y2);
+      context.stroke();
+      context.closePath();
     }
 
     for (const resource of game.resources) {

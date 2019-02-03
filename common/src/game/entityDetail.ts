@@ -15,6 +15,7 @@ export interface EntityDetail {
 }
 
 export interface ActionRoute {
+  generation: number;
   fromHex: GameHexagon;
   toHex: GameHexagon;
   x1: number;

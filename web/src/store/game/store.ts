@@ -9,6 +9,7 @@ import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {RoundState} from '@swg-common/models/roundState';
+import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {DoubleHashArray} from '@swg-common/utils/hashArray';
 import {action, observable} from 'mobx';
 import {DataService} from '../../dataServices';
@@ -21,6 +22,7 @@ import {HexImages} from '../../utils/hexImages';
 import {SocketUtils} from '../../utils/socketUtils';
 import {UIConstants} from '../../utils/uiConstants';
 import {mainStore} from '../main/store';
+import {uiStore} from '../ui/store';
 
 export class GameStore {
   @observable game?: GameModel;
@@ -40,7 +42,7 @@ export class GameStore {
   @observable gameState?: GameState;
   @observable gameReady?: boolean;
   @observable layout?: GameLayout;
-  @observable lastRoundActions?: ActionRoute[];
+  @observable lastRoundActions?: ActionRoute[] = [];
 
   @action selectEntity(entity: GameEntity) {
     this.selectedEntity = entity;
@@ -120,6 +122,43 @@ export class GameStore {
     this.selectedEntity = undefined;
     this.selectedEntityAction = undefined;
     this.viableHexIds = undefined;
+  }
+
+  @action setLastRoundActionsFromNotes(factionRoundStats: FactionRoundStats, oldGame: GameModel, game: GameModel) {
+    if (factionRoundStats && factionRoundStats.notes) {
+      const grid = game.grid;
+      const hexIdParse = /(-?\d*)-(-?\d*)/;
+      const route: ActionRoute[] = gameStore.lastRoundActions.filter(a => a.generation > factionRoundStats.generation);
+
+      for (const note of factionRoundStats.notes) {
+        if (!note.toHexId) {
+          continue;
+        }
+        const fromHexId = hexIdParse.exec(note.fromHexId);
+        const fromHex = grid.getHexAt({x: parseInt(fromHexId[1]), y: parseInt(fromHexId[2])});
+
+        const toHexId = hexIdParse.exec(note.toHexId);
+        const toHex = grid.getHexAt({x: parseInt(toHexId[1]), y: parseInt(toHexId[2])});
+
+        const entityHash = GameLogic.getEntityHash(note.action, oldGame);
+        const path = game.grid.findPath(fromHex, toHex, entityHash);
+        for (let i = 0; i < path.length - 1; i++) {
+          const f = path[i];
+          const t = path[i + 1];
+          route.push({
+            generation: factionRoundStats.generation,
+            fromHex,
+            toHex,
+            x1: f.center.x,
+            y1: f.center.y,
+            x2: t.center.x,
+            y2: t.center.y,
+            action: note.action,
+          });
+        }
+      }
+      gameStore.setLastRoundActions(route);
+    }
   }
 
   static processRoundState(game: GameModel, roundState: RoundState) {
@@ -206,41 +245,7 @@ export class GameStore {
       Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
       gameStore.smallGameRenderer.processMiniMap(game);
       const factionRoundStats = await DataService.getFactionRoundStats(game.generation - 1, mainStore.user.factionId);
-
-      if (factionRoundStats.notes) {
-        const grid = game.grid;
-        const hexIdParse = /(-?\d*)-(-?\d*)/;
-        const route: ActionRoute[] = [];
-
-        for (const note of factionRoundStats.notes) {
-          if (!note.toHexId) {
-            continue;
-          }
-          const fromHexId = hexIdParse.exec(note.fromHexId);
-          const fromHex = grid.getHexAt({x: parseInt(fromHexId[1]), y: parseInt(fromHexId[2])});
-
-          const toHexId = hexIdParse.exec(note.toHexId);
-          const toHex = grid.getHexAt({x: parseInt(toHexId[1]), y: parseInt(toHexId[2])});
-
-          const entityHash = GameLogic.getEntityHash(note.action, oldGame);
-          const path = game.grid.findPath(fromHex, toHex, entityHash);
-          for (let i = 0; i < path.length - 1; i++) {
-            const f = path[i];
-            const t = path[i + 1];
-            route.push({
-              fromHex,
-              toHex,
-              x1: f.center.x,
-              y1: f.center.y,
-              x2: t.center.x,
-              y2: t.center.y,
-              action: note.action,
-            });
-          }
-        }
-        gameStore.setLastRoundActions(route);
-      }
-
+      gameStore.setLastRoundActionsFromNotes(factionRoundStats, oldGame, game);
       oldGame = game;
     }
 

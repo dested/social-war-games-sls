@@ -1,3 +1,5 @@
+import {ActionRoute} from '@swg-common/game/entityDetail';
+import {GameLogic} from '@swg-common/game/gameLogic';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {LadderResponse} from '@swg-common/models/http/userController';
 import {FactionRoundStats} from '@swg-common/models/roundStats';
@@ -14,7 +16,7 @@ export class UIStore {
   @observable ladder?: LadderResponse;
   @observable factionRoundStats?: FactionRoundStats;
 
-  @action setUI(ui: UI) {
+  @action private setUI(ui: UI) {
     this.ui = ui;
   }
   @action setFactionStats(factionStats: FactionStats[]) {
@@ -25,6 +27,7 @@ export class UIStore {
   }
   @action setFactionRoundStats(factionRoundStats: FactionRoundStats) {
     this.factionRoundStats = factionRoundStats;
+    gameStore.setLastRoundActionsFromNotes(factionRoundStats, gameStore.game, gameStore.game);
   }
 
   static async setUI(ui: UI) {
