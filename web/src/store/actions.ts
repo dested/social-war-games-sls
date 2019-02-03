@@ -7,4 +7,4 @@ export * from './app/actions';
 export * from './game/actions';
 export * from './ui/actions';
 
-export type Dispatcher = Dispatch<AppAction | GameAction | UIAction, {}>;
+export type Dispatcher = any;

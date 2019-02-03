@@ -1,27 +1,7 @@
 {
+  "extends": "../tsconfig",
   "compilerOptions": {
-    "noEmitOnError": false,
-    "experimentalDecorators": true,
-    "allowUnreachableCode": true,
-    "strict": true,
-    "target": "es2015",
-    "module": "commonjs",
-    "inlineSourceMap": true,
-    "strictNullChecks": false,
-    "declaration": true,
-    "pretty": true,
-    "noEmit": true,
-    "moduleResolution": "node",
-    "strictPropertyInitialization": false,
-    "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
-    "outDir": "./bin",
-    "skipLibCheck": true,
-    "paths": {
-      "@swg-common/*":["../../common/src/*"]
-    }
-  },
-  "include": [
-    "./src/**/*.ts"
-  ]
+    "outDir": "./bin"
+  }
 }

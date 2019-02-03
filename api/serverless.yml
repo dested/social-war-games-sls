@@ -38,14 +38,17 @@ provider:
 functions:
   vote:
     handler: handler.vote
+    memorySize: 256
     events:
       - http:
           path: vote
           method: post
           integration: lambda
           cors: true
+
   user-details:
     handler: handler.userDetails
+    memorySize: 256
     events:
       - http:
           path: user-details

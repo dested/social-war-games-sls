@@ -4,13 +4,13 @@ import {default as gameReducer, GameStore} from './game/reducers';
 import {default as uiReducer, UIStore} from './ui/reducers';
 
 export interface SwgStore {
-    appState: AppStore;
-    gameState: GameStore;
-    uiState: UIStore;
+  appState: AppStore;
+  gameState: GameStore;
+  uiState: UIStore;
 }
 
 export default combineReducers<SwgStore>({
-    appState: appReducer,
-    gameState: gameReducer,
-    uiState: uiReducer
+  appState: appReducer,
+  gameState: gameReducer,
+  uiState: uiReducer,
 });

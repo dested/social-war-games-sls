@@ -1,23 +1,7 @@
 {
+  "extends": "../tsconfig",
   "compilerOptions": {
-    "noEmitOnError": false,
-    "experimentalDecorators": true,
-    "allowUnreachableCode": true,
-    "strict": true,
-    "target": "es2015",
-    "noImplicitAny": true,
-    "module": "commonjs",
-    "inlineSourceMap": true,
-    "strictNullChecks": false,
-    "declaration": true,
-    "pretty": true,
-    "noEmit": true,
-    "moduleResolution": "node",
-    "strictPropertyInitialization": false,
-    "allowSyntheticDefaultImports": true,
     "baseUrl": "./src",
-    "outDir": "./bin",
-    "skipLibCheck": true
-  },
-  "include": ["./src/**/*.ts"]
+    "outDir": "./bin"
+  }
 }

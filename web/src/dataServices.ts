@@ -17,154 +17,154 @@ import * as aesjs from 'aes-js';
 import {getStore} from './store';
 
 export class DataService {
-    private static apiServer: string = 'https://api.socialwargames.com';
-    private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
+  private static apiServer: string = 'https://api.socialwargames.com';
+  private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
 
-    static async login(email: string, password: string): Promise<JwtGetUserResponse> {
-        const response = await fetch(this.apiServer + '/login', {
-            method: 'POST',
-            body: JSON.stringify({
-                email,
-                password
-            }),
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-        if (!response.ok) {
-            // or check for response.status
-            throw new Error(response.statusText);
-        }
-        const json = await response.json();
-        if (json.statusCode === 200) {
-            return json.body;
-        } else {
-            throw new Error();
-        }
+  static async login(email: string, password: string): Promise<JwtGetUserResponse> {
+    const response = await fetch(this.apiServer + '/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      // or check for response.status
+      throw new Error(response.statusText);
     }
-
-    static async register(email: string, userName: string, password: string): Promise<JwtGetUserResponse> {
-        const response = await fetch(this.apiServer + '/register', {
-            method: 'POST',
-            body: JSON.stringify({
-                email,
-                userName,
-                password
-            }),
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-        if (!response.ok) {
-            // or check for response.status
-            throw new Error(response.statusText);
-        }
-        const json = await response.json();
-        if (json.statusCode === 200) {
-            return json.body;
-        } else {
-            throw new Error();
-        }
+    const json = await response.json();
+    if (json.statusCode === 200) {
+      return json.body;
+    } else {
+      throw new Error();
     }
+  }
 
-    static async vote(vote: {
-        entityId: number;
-        action: EntityAction;
-        generation: number;
-        hexId: string;
-    }): Promise<VoteResponse> {
-        const state = getStore().getState();
-
-        const response = await fetch(this.apiServer + '/vote', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                Authorization: 'Bearer ' + state.appState.jwt
-            },
-            body: JSON.stringify(vote)
-        });
-        const json = await response.json();
-        return json.body;
+  static async register(email: string, userName: string, password: string): Promise<JwtGetUserResponse> {
+    const response = await fetch(this.apiServer + '/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        email,
+        userName,
+        password,
+      }),
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      // or check for response.status
+      throw new Error(response.statusText);
     }
-
-    static async currentUserDetails(): Promise<UserDetails> {
-        const state = getStore().getState();
-
-        const response = await fetch(this.apiServer + '/user-details', {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                Authorization: 'Bearer ' + state.appState.jwt
-            }
-        });
-
-        const json = await response.json();
-        return json.body;
+    const json = await response.json();
+    if (json.statusCode === 200) {
+      return json.body;
+    } else {
+      throw new Error();
     }
+  }
 
-    static async getLayout() {
-        const response = await fetch(this.s3Server + '/layout.swg', {
-            method: 'GET',
-            headers: {
-                Accept: 'application/octet-stream',
-                'Content-Type': 'application/octet-stream'
-            }
-        });
-        const arrayBuffer = await response.arrayBuffer();
-        return GameLayoutParser.toGameLayout(arrayBuffer);
-    }
+  static async vote(vote: {
+    entityId: number;
+    action: EntityAction;
+    generation: number;
+    hexId: string;
+  }): Promise<VoteResponse> {
+    const state = getStore().getState();
 
-    static async getGameState(factionId: PlayableFactionId, factionToken: string): Promise<GameState> {
-        const response = await fetch(`${this.s3Server}/game-state-${factionId}.swg?bust=${+new Date()}`, {
-            method: 'GET',
-            headers: {
-                Accept: 'application/octet-stream',
-                'Content-Type': 'application/octet-stream'
-            }
-        });
-        const arrayBuffer = await response.arrayBuffer();
-        return GameStateParser.toGameState(arrayBuffer, factionToken.split('.').map(a => parseInt(a)));
-    }
+    const response = await fetch(this.apiServer + '/vote', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + state.appState.jwt,
+      },
+      body: JSON.stringify(vote),
+    });
+    const json = await response.json();
+    return json.body;
+  }
 
-    static async getLadder() {
-        const state = getStore().getState();
+  static async currentUserDetails(): Promise<UserDetails> {
+    const state = getStore().getState();
 
-        const response = await fetch(this.apiServer + '/ladder', {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                ...(state.appState.jwt ? {Authorization: 'Bearer ' + state.appState.jwt} : {})
-            }
-        });
-        const json = await response.json();
-        return json.body;
-    }
+    const response = await fetch(this.apiServer + '/user-details', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + state.appState.jwt,
+      },
+    });
 
-    static async getFactionStats(generation: number): Promise<FactionStats[]> {
-        const response = await fetch(`${this.s3Server}/faction-stats.json?bust=${generation}`, {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-        return await response.json();
-    }
+    const json = await response.json();
+    return json.body;
+  }
 
-    static async getFactionRoundStats(generation: number, factionId: PlayableFactionId) {
-        const response = await fetch(`${this.s3Server}/round-outcomes/round-outcome-${generation}-${factionId}.swg`, {
-            method: 'GET',
-            headers: {
-                Accept: 'application/octet-stream',
-                'Content-Type': 'application/octet-stream'
-            }
-        });
-        const arrayBuffer = await response.arrayBuffer();
-        return RoundOutcomeParser.toRoundStats(arrayBuffer);
-    }
+  static async getLayout() {
+    const response = await fetch(this.s3Server + '/layout.swg', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/octet-stream',
+        'Content-Type': 'application/octet-stream',
+      },
+    });
+    const arrayBuffer = await response.arrayBuffer();
+    return GameLayoutParser.toGameLayout(arrayBuffer);
+  }
+
+  static async getGameState(factionId: PlayableFactionId, factionToken: string): Promise<GameState> {
+    const response = await fetch(`${this.s3Server}/game-state-${factionId}.swg?bust=${+new Date()}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/octet-stream',
+        'Content-Type': 'application/octet-stream',
+      },
+    });
+    const arrayBuffer = await response.arrayBuffer();
+    return GameStateParser.toGameState(arrayBuffer, factionToken.split('.').map(a => parseInt(a)));
+  }
+
+  static async getLadder() {
+    const state = getStore().getState();
+
+    const response = await fetch(this.apiServer + '/ladder', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...(state.appState.jwt ? {Authorization: 'Bearer ' + state.appState.jwt} : {}),
+      },
+    });
+    const json = await response.json();
+    return json.body;
+  }
+
+  static async getFactionStats(generation: number): Promise<FactionStats[]> {
+    const response = await fetch(`${this.s3Server}/faction-stats.json?bust=${generation}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+    return await response.json();
+  }
+
+  static async getFactionRoundStats(generation: number, factionId: PlayableFactionId) {
+    const response = await fetch(`${this.s3Server}/round-outcomes/round-outcome-${generation}-${factionId}.swg`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/octet-stream',
+        'Content-Type': 'application/octet-stream',
+      },
+    });
+    const arrayBuffer = await response.arrayBuffer();
+    return RoundOutcomeParser.toRoundStats(arrayBuffer);
+  }
 }

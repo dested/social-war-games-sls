@@ -4,9 +4,9 @@ import {Setup} from './setup';
 import {Worker} from './worker';
 
 if (process.argv[2] === 'setup') {
-    Setup.start();
+  Setup.start();
 } else if (process.argv[2] === 'work') {
-    Worker.start();
+  Worker.start();
 } else {
-    console.log('setup or work');
+  console.log('setup or work');
 }

@@ -1,28 +1,9 @@
 {
-  "compileOnSave": true,
+  "extends": "../tsconfig",
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "removeComments": false,
-    "skipLibCheck": true,
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "target": "es2015",
     "noEmit": true,
-    "lib": [
-      "dom",
-      "es2017",
-      "esnext.asynciterable"
-    ],
-    "outDir": "./dist/",
-    "inlineSourceMap": true,
     "baseUrl": "./src",
-    "jsx": "react",
-    "paths": {
-      "@swg-common/*":["../../common/src/*"]
-    }
-  },
-  "exclude": [
-    "node_modules"
-  ]
+    "outDir": "./bin",
+    "jsx": "react"
+  }
 }

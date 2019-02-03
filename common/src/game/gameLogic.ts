@@ -6,13 +6,13 @@ import {GameState} from '../models/gameState';
 import {DoubleHashArray, HashArray} from '../utils/hashArray';
 import {Utils} from '../utils/utils';
 import {
-    EntityAction,
-    EntityDetail,
-    EntityDetails,
-    Faction,
-    Factions,
-    GameEntity,
-    PlayableFactionId
+  EntityAction,
+  EntityDetail,
+  EntityDetails,
+  Faction,
+  Factions,
+  GameEntity,
+  PlayableFactionId,
 } from './entityDetail';
 import {FactionDetail} from './factionDetail';
 import {GameHexagon} from './gameHexagon';
@@ -21,798 +21,792 @@ import {HexagonTypes} from './hexagonTypes';
 import {VoteResult} from './voteResult';
 
 export interface ProcessedVote {
-    entityId: number;
-    action: EntityAction;
-    factionId: PlayableFactionId;
-    hexId: string;
-    voteCount?: number;
+  entityId: number;
+  action: EntityAction;
+  factionId: PlayableFactionId;
+  hexId: string;
+  voteCount?: number;
 }
 
 export interface GameModel {
-    factionDetails: {[key in PlayableFactionId]: FactionDetail};
-    roundStart: number;
-    roundEnd: number;
-    layout: GameLayout;
-    roundDuration: number;
-    grid: Grid<GameHexagon>;
-    resources: HashArray<GameResource, Point>;
-    entities: DoubleHashArray<GameEntity, Point, {id: number}>;
-    generation: number;
+  factionDetails: {[key in PlayableFactionId]: FactionDetail};
+  roundStart: number;
+  roundEnd: number;
+  layout: GameLayout;
+  roundDuration: number;
+  grid: Grid<GameHexagon>;
+  resources: HashArray<GameResource, Point>;
+  entities: DoubleHashArray<GameEntity, Point, {id: number}>;
+  generation: number;
 }
 
 export class GameLogic {
-    static calculateScore(game: GameModel, faction: PlayableFactionId): number {
-        const factionHexes = game.grid.hexes.map(a => a.factionId);
-        const hexCount = factionHexes.filter(a => a === faction).length;
-        const entities = game.entities.filter(a => a.factionId === faction);
+  static calculateScore(game: GameModel, faction: PlayableFactionId): number {
+    const factionHexes = game.grid.hexes.map(a => a.factionId);
+    const hexCount = factionHexes.filter(a => a === faction).length;
+    const entities = game.entities.filter(a => a.factionId === faction);
 
-        let score = 0;
+    let score = 0;
 
-        score += hexCount;
-        score += 3 * game.factionDetails[faction].resourceCount;
-        score += 5 * entities.filter(a => a.entityType === 'factory').length;
-        score += 3 * entities.filter(a => a.entityType === 'plane').length;
-        score += 2 * entities.filter(a => a.entityType === 'tank').length;
-        score += 1 * entities.filter(a => a.entityType === 'infantry').length;
+    score += hexCount;
+    score += 3 * game.factionDetails[faction].resourceCount;
+    score += 5 * entities.filter(a => a.entityType === 'factory').length;
+    score += 3 * entities.filter(a => a.entityType === 'plane').length;
+    score += 2 * entities.filter(a => a.entityType === 'tank').length;
+    score += 1 * entities.filter(a => a.entityType === 'infantry').length;
 
-        return score;
+    return score;
+  }
+
+  static calculateUserScore(userStats: DBUserRoundStats, currentGeneration: number): number {
+    let score = 0;
+    const generationsPerDay = (24 * 60 * 60) / Config.gameDuration;
+    const valuableGenerations = generationsPerDay * 2.5;
+    for (const r of userStats.roundsParticipated) {
+      let roundScore = 0;
+      roundScore += r.votesCast * 0.1;
+      roundScore += r.votesWon * 0.5;
+      roundScore += r.damageDone * 3;
+      roundScore += r.unitsDestroyed * 6;
+      roundScore += r.unitsCreated * 4;
+      roundScore += r.resourcesMined * 3.5;
+      roundScore += r.distanceMoved * 1.2;
+
+      const genDiff = currentGeneration - r.generation;
+      const worth = (valuableGenerations - genDiff) / valuableGenerations;
+      score += roundScore / worth;
+    }
+    return Math.round(score);
+  }
+
+  static id = 0;
+
+  static nextId(entities: GameEntity[]): number {
+    while (true) {
+      const random = Math.floor(Math.random() * 10000);
+      if (!entities.find(a => a.id === random)) {
+        return random;
+      }
+    }
+  }
+
+  static createDebugGame(): GameModel {
+    const entitiesPerBase = [
+      EntityDetails.factory,
+      EntityDetails.tank,
+      EntityDetails.tank,
+      EntityDetails.tank,
+      EntityDetails.tank,
+      EntityDetails.tank,
+      EntityDetails.tank,
+      EntityDetails.tank,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.plane,
+      EntityDetails.plane,
+      EntityDetails.plane,
+      EntityDetails.plane,
+    ];
+
+    const baseRadius = 5;
+    const numberOfBasesPerFaction = 15;
+    const boardWidth = 200;
+    const boardHeight = 200;
+
+    const grid = new Grid<GameHexagon>(0, 0, boardWidth, boardHeight);
+
+    const entities: GameEntity[] = [];
+
+    for (let y = 0; y < grid.boundsHeight; y++) {
+      for (let x = -Math.floor(y / 2); x < grid.boundsWidth - Math.floor(y / 2); x++) {
+        grid.hexes.push(new GameHexagon(HexagonTypes.dirt(HexagonTypes.randomSubType()), `${x}-${y}`, x, y));
+      }
     }
 
-    static calculateUserScore(userStats: DBUserRoundStats, currentGeneration: number): number {
-        let score = 0;
-        const generationsPerDay = (24 * 60 * 60) / Config.gameDuration;
-        const valuableGenerations = generationsPerDay * 2.5;
-        for (const r of userStats.roundsParticipated) {
-            let roundScore = 0;
-            roundScore += r.votesCast * 0.1;
-            roundScore += r.votesWon * 0.5;
-            roundScore += r.damageDone * 3;
-            roundScore += r.unitsDestroyed * 6;
-            roundScore += r.unitsCreated * 4;
-            roundScore += r.resourcesMined * 3.5;
-            roundScore += r.distanceMoved * 1.2;
-
-            const genDiff = currentGeneration - r.generation;
-            const worth = (valuableGenerations - genDiff) / valuableGenerations;
-            score += roundScore / worth;
+    for (const faction of Factions) {
+      for (let base = 0; base < numberOfBasesPerFaction; base++) {
+        const x = Math.round(Math.random() * (grid.boundsWidth - 14) + 7);
+        const y = Math.round(Math.random() * (grid.boundsHeight - 14) + 7);
+        const center = grid.easyPoint(x, y);
+        const baseHexes = grid.getCircle(center, baseRadius);
+        for (const hex of baseHexes) {
+          hex.setFactionId(faction, 3);
         }
-        return Math.round(score);
+        const innerBaseHexes = grid.getCircle(center, baseRadius - 1);
+
+        entities.push({
+          id: this.nextId(entities),
+          factionId: faction,
+          health: 1,
+          x: center.x,
+          y: center.y,
+          entityType: entitiesPerBase[0].type,
+          healthRegenStep: entitiesPerBase[0].healthRegenRate,
+        });
+
+        for (let i = 1; i < entitiesPerBase.length; i++) {
+          const hex = innerBaseHexes[Math.floor(Math.random() * innerBaseHexes.length)];
+          if (entities.find(a => a.x === hex.x && a.y === hex.y)) {
+            i--;
+            continue;
+          }
+          entities.push({
+            id: this.nextId(entities),
+            factionId: faction,
+            health: 1,
+            x: hex.x,
+            y: hex.y,
+            entityType: entitiesPerBase[i].type,
+            healthRegenStep: 0,
+          });
+        }
+      }
     }
 
-    static id = 0;
+    const resourceLimits: {type: ResourceType; count: number}[] = [
+      {type: 'bronze', count: 80},
+      {type: 'silver', count: 40},
+      {type: 'gold', count: 20},
+    ];
 
-    static nextId(entities: GameEntity[]): number {
-        while (true) {
-            const random = Math.floor(Math.random() * 10000);
-            if (!entities.find(a => a.id === random)) {
-                return random;
-            }
-        }
-    }
+    const resources: GameResource[] = [];
 
-    static createDebugGame(): GameModel {
-        const entitiesPerBase = [
-            EntityDetails.factory,
-            EntityDetails.tank,
-            EntityDetails.tank,
-            EntityDetails.tank,
-            EntityDetails.tank,
-            EntityDetails.tank,
-            EntityDetails.tank,
-            EntityDetails.tank,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.plane,
-            EntityDetails.plane,
-            EntityDetails.plane,
-            EntityDetails.plane
-        ];
+    for (const resource of resourceLimits) {
+      for (let i = 0; i < resource.count; i++) {
+        const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
 
-        const baseRadius = 5;
-        const numberOfBasesPerFaction = 15;
-        const boardWidth = 200;
-        const boardHeight = 200;
-
-        const grid = new Grid<GameHexagon>(0, 0, boardWidth, boardHeight);
-
-        const entities: GameEntity[] = [];
-
-        for (let y = 0; y < grid.boundsHeight; y++) {
-            for (let x = -Math.floor(y / 2); x < grid.boundsWidth - Math.floor(y / 2); x++) {
-                grid.hexes.push(new GameHexagon(HexagonTypes.dirt(HexagonTypes.randomSubType()), `${x}-${y}`, x, y));
-            }
-        }
-
-        for (const faction of Factions) {
-            for (let base = 0; base < numberOfBasesPerFaction; base++) {
-                const x = Math.round(Math.random() * (grid.boundsWidth - 14) + 7);
-                const y = Math.round(Math.random() * (grid.boundsHeight - 14) + 7);
-                const center = grid.easyPoint(x, y);
-                const baseHexes = grid.getCircle(center, baseRadius);
-                for (const hex of baseHexes) {
-                    hex.setFactionId(faction, 3);
-                }
-                const innerBaseHexes = grid.getCircle(center, baseRadius - 1);
-
-                entities.push({
-                    id: this.nextId(entities),
-                    factionId: faction,
-                    health: 1,
-                    x: center.x,
-                    y: center.y,
-                    entityType: entitiesPerBase[0].type,
-                    healthRegenStep: entitiesPerBase[0].healthRegenRate
-                });
-
-                for (let i = 1; i < entitiesPerBase.length; i++) {
-                    const hex = innerBaseHexes[Math.floor(Math.random() * innerBaseHexes.length)];
-                    if (entities.find(a => a.x === hex.x && a.y === hex.y)) {
-                        i--;
-                        continue;
-                    }
-                    entities.push({
-                        id: this.nextId(entities),
-                        factionId: faction,
-                        health: 1,
-                        x: hex.x,
-                        y: hex.y,
-                        entityType: entitiesPerBase[i].type,
-                        healthRegenStep: 0
-                    });
-                }
-            }
-        }
-
-        const resourceLimits: {type: ResourceType; count: number}[] = [
-            {type: 'bronze', count: 80},
-            {type: 'silver', count: 40},
-            {type: 'gold', count: 20}
-        ];
-
-        const resources: GameResource[] = [];
-
-        for (const resource of resourceLimits) {
-            for (let i = 0; i < resource.count; i++) {
-                const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
-
-                const resourceDetail = ResourceDetails[resource.type];
-                const gameResource: GameResource = {
-                    x: center.x,
-                    y: center.y,
-                    resourceType: resource.type,
-                    currentCount: resourceDetail.startingCount
-                };
-                center.setTileType(HexagonTypes.get(center.tileType.type, '1'));
-                resources.push(gameResource);
-            }
-        }
-
-        const factionDetails = {
-            '1': {
-                resourceCount: 10
-            },
-            '2': {
-                resourceCount: 10
-            },
-            '3': {
-                resourceCount: 10
-            }
+        const resourceDetail = ResourceDetails[resource.type];
+        const gameResource: GameResource = {
+          x: center.x,
+          y: center.y,
+          resourceType: resource.type,
+          currentCount: resourceDetail.startingCount,
         };
-
-        return {
-            roundDuration: Config.gameDuration,
-            roundStart: +new Date(),
-            roundEnd: +new Date() + Config.gameDuration,
-            generation: 10000001,
-            resources: HashArray.create(resources, PointHashKey),
-            entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
-            factionDetails,
-            layout: null,
-            grid
-        };
+        center.setTileType(HexagonTypes.get(center.tileType.type, '1'));
+        resources.push(gameResource);
+      }
     }
 
-    static createGame(): GameModel {
-        const entitiesPerBase = [
-            EntityDetails.factory,
-            EntityDetails.tank,
-            EntityDetails.tank,
-            EntityDetails.tank,
-            EntityDetails.tank,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.infantry,
-            EntityDetails.plane
-        ];
+    const factionDetails = {
+      '1': {
+        resourceCount: 10,
+      },
+      '2': {
+        resourceCount: 10,
+      },
+      '3': {
+        resourceCount: 10,
+      },
+    };
 
-        const baseRadius = 5;
-        const numberOfBasesPerFaction = 9;
-        const boardWidth = 200;
-        const boardHeight = 200;
+    return {
+      roundDuration: Config.gameDuration,
+      roundStart: +new Date(),
+      roundEnd: +new Date() + Config.gameDuration,
+      generation: 10000001,
+      resources: HashArray.create(resources, PointHashKey),
+      entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
+      factionDetails,
+      layout: null,
+      grid,
+    };
+  }
 
-        const grid = new Grid<GameHexagon>(0, 0, boardWidth, boardHeight);
+  static createGame(): GameModel {
+    const entitiesPerBase = [
+      EntityDetails.factory,
+      EntityDetails.tank,
+      EntityDetails.tank,
+      EntityDetails.tank,
+      EntityDetails.tank,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.infantry,
+      EntityDetails.plane,
+    ];
 
-        const entities: GameEntity[] = [];
+    const baseRadius = 5;
+    const numberOfBasesPerFaction = 9;
+    const boardWidth = 200;
+    const boardHeight = 200;
 
-        for (let y = 0; y < grid.boundsHeight; y++) {
-            for (let x = -Math.floor(y / 2); x < grid.boundsWidth - Math.floor(y / 2); x++) {
-                grid.hexes.push(new GameHexagon(HexagonTypes.dirt(HexagonTypes.randomSubType()), `${x}-${y}`, x, y));
-            }
-        }
+    const grid = new Grid<GameHexagon>(0, 0, boardWidth, boardHeight);
 
-        const allHexes = grid.getCircle(grid.easyPoint(boardWidth / 2, boardHeight / 2), boardWidth / 2);
-        const allHexes7In = grid.getCircle(grid.easyPoint(boardWidth / 2, boardHeight / 2), boardWidth / 2 - 7);
+    const entities: GameEntity[] = [];
 
-        for (let i = grid.hexes.array.length - 1; i >= 0; i--) {
-            const hex = grid.hexes.array[i];
-            if (!allHexes.includes(hex)) {
-                grid.hexes.removeItem(hex);
-            }
-        }
-
-        let tries = 0;
-
-        const factionCenters: Point[] = [];
-        for (const faction of Factions) {
-            const myFactionCenters: Point[] = [];
-
-            for (let base = 0; base < numberOfBasesPerFaction; base++) {
-                if (tries > 100) {
-                    console.log('try again');
-                    return;
-                }
-
-                const center = Utils.randomElement(allHexes7In);
-
-                if (factionCenters.some(a => grid.getDistance({x: center.x, y: center.y}, a) < baseRadius * 2.5)) {
-                    base--;
-                    tries++;
-                    continue;
-                }
-
-                if (
-                    myFactionCenters.some(a => grid.getDistance({x: center.x, y: center.y}, a) < baseRadius * 2.5 * 3)
-                ) {
-                    base--;
-                    tries++;
-                    continue;
-                }
-                myFactionCenters.push(center);
-                factionCenters.push(center);
-                const baseHexes = grid.getCircle(center, baseRadius);
-                for (const hex of baseHexes) {
-                    hex.setFactionId(faction, 3);
-                }
-                const innerBaseHexes = grid.getCircle(center, baseRadius - 1);
-
-                entities.push({
-                    id: this.nextId(entities),
-                    factionId: faction,
-                    health: entitiesPerBase[0].health,
-                    x: center.x,
-                    y: center.y,
-                    entityType: entitiesPerBase[0].type,
-                    healthRegenStep: entitiesPerBase[0].healthRegenRate
-                });
-
-                for (let i = 1; i < entitiesPerBase.length; i++) {
-                    const hex = innerBaseHexes[Math.floor(Math.random() * innerBaseHexes.length)];
-                    if (entities.find(a => a.x === hex.x && a.y === hex.y)) {
-                        i--;
-                        continue;
-                    }
-                    entities.push({
-                        id: this.nextId(entities),
-                        factionId: faction,
-                        health: entitiesPerBase[i].health,
-                        x: hex.x,
-                        y: hex.y,
-                        entityType: entitiesPerBase[i].type,
-                        healthRegenStep: entitiesPerBase[i].healthRegenRate
-                    });
-                }
-            }
-        }
-
-        for (let i = 0; i < 120; i++) {
-            const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
-            const type = Utils.random(60)
-                ? HexagonTypes.grass
-                : Utils.random(50)
-                    ? HexagonTypes.clay
-                    : HexagonTypes.stone;
-
-            for (const gameHexagon of grid.getCircle(center, Math.floor(Math.random() * 8))) {
-                if (Utils.random(100 - grid.getDistance(gameHexagon, center) * 2)) {
-                    gameHexagon.setTileType(type(HexagonTypes.randomSubType()));
-                }
-            }
-        }
-
-        const resourceLimits: {type: ResourceType; count: number}[] = [
-            {type: 'bronze', count: 80},
-            {type: 'silver', count: 40},
-            {type: 'gold', count: 20}
-        ];
-
-        const resources: GameResource[] = [];
-
-        for (const resource of resourceLimits) {
-            for (let i = 0; i < resource.count; i++) {
-                const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
-
-                if (factionCenters.some(a => grid.getDistance({x: center.x, y: center.y}, a) <= baseRadius + 1)) {
-                    i--;
-                    continue;
-                }
-
-                const resourceDetail = ResourceDetails[resource.type];
-                const gameResource: GameResource = {
-                    x: center.x,
-                    y: center.y,
-                    resourceType: resource.type,
-                    currentCount: resourceDetail.startingCount
-                };
-                center.setTileType(HexagonTypes.get(center.tileType.type, '1'));
-                resources.push(gameResource);
-            }
-        }
-
-        for (let i = 0; i < 0; i++) {
-            const start = Utils.randomElement(allHexes);
-
-            const far = grid.getRange(
-                grid.getHexAt(start),
-                Math.floor(Math.random() * 80) + 30,
-                new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id)
-            );
-
-            const number = Math.floor((far.length / 4) * 3 + (far.length / 4) * Math.random());
-            const end = far[number];
-
-            const line = grid.getThickLine(start, end, Math.floor(Math.random() * 4) + 3);
-
-            if (line.some(a => a.factionId !== '0')) {
-                i--;
-                continue;
-            }
-
-            for (const gameHexagon of line) {
-                if (Utils.random(95)) {
-                    gameHexagon.setTileType(HexagonTypes.water(HexagonTypes.randomSubType()));
-                }
-            }
-        }
-
-        const factionDetails = {
-            '1': {
-                resourceCount: 10
-            },
-            '2': {
-                resourceCount: 10
-            },
-            '3': {
-                resourceCount: 10
-            }
-        };
-
-        return {
-            roundDuration: Config.gameDuration,
-            roundStart: +new Date(),
-            roundEnd: +new Date() + Config.gameDuration,
-            generation: 1,
-            resources: HashArray.create(resources, PointHashKey),
-            entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
-            factionDetails,
-            layout: null,
-            grid
-        };
+    for (let y = 0; y < grid.boundsHeight; y++) {
+      for (let x = -Math.floor(y / 2); x < grid.boundsWidth - Math.floor(y / 2); x++) {
+        grid.hexes.push(new GameHexagon(HexagonTypes.dirt(HexagonTypes.randomSubType()), `${x}-${y}`, x, y));
+      }
     }
 
-    static buildGameFromState(layout: GameLayout, gameState: GameState): GameModel {
-        const grid = new Grid<GameHexagon>(0, 0, layout.boardWidth, layout.boardHeight);
+    const allHexes = grid.getCircle(grid.easyPoint(boardWidth / 2, boardHeight / 2), boardWidth / 2);
+    const allHexes7In = grid.getCircle(grid.easyPoint(boardWidth / 2, boardHeight / 2), boardWidth / 2 - 7);
 
-        grid.hexes = new HashArray<GameHexagon, Point>(PointHashKey);
-
-        for (let i = 0; i < layout.hexes.length; i++) {
-            const hex = layout.hexes[i];
-            const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), hex.id, hex.x, hex.y);
-            gameHexagon.setFactionId(
-                GameLogic.getFactionId(gameState.factions, i),
-                GameLogic.getFactionDuration(gameState.factions, i)
-            );
-            grid.hexes.push(gameHexagon);
-        }
-
-        const resources: GameResource[] = gameState.resources.map(a => ({
-            x: a.x,
-            y: a.y,
-            resourceType: a.type,
-            currentCount: a.count
-        }));
-
-        const entities: GameEntity[] = [
-            ...gameState.entities['1'].map(a => ({
-                factionId: '1' as PlayableFactionId,
-                busy: a.busy,
-                id: a.id,
-                health: a.health,
-                x: a.x,
-                y: a.y,
-                entityType: a.entityType,
-                healthRegenStep: a.healthRegenStep
-            })),
-            ...gameState.entities['2'].map(a => ({
-                factionId: '2' as PlayableFactionId,
-                busy: a.busy,
-                id: a.id,
-                health: a.health,
-                x: a.x,
-                y: a.y,
-                entityType: a.entityType,
-                healthRegenStep: a.healthRegenStep
-            })),
-            ...gameState.entities['3'].map(a => ({
-                factionId: '3' as PlayableFactionId,
-                busy: a.busy,
-                id: a.id,
-                health: a.health,
-                x: a.x,
-                y: a.y,
-                entityType: a.entityType,
-                healthRegenStep: a.healthRegenStep
-            }))
-        ];
-
-        return {
-            roundDuration: gameState.roundDuration,
-            roundStart: gameState.roundStart,
-            roundEnd: gameState.roundEnd,
-            generation: gameState.generation,
-            factionDetails: gameState.factionDetails,
-            resources: HashArray.create(resources, PointHashKey),
-            entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
-            layout,
-            grid
-        };
+    for (let i = grid.hexes.array.length - 1; i >= 0; i--) {
+      const hex = grid.hexes.array[i];
+      if (!allHexes.includes(hex)) {
+        grid.hexes.removeItem(hex);
+      }
     }
 
-    static validateVote(game: GameModel, vote: ProcessedVote): VoteResult {
-        const fromEntity = game.entities.get2({id: vote.entityId});
-        if (!fromEntity) {
-            return VoteResult.EntityNotFound;
-        }
-        if (fromEntity.busy) {
-            return VoteResult.EntityIsBusy;
-        }
-        if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) {
-            return VoteResult.FactionMismatch;
-        }
+    let tries = 0;
 
-        const fromHex = game.grid.hexes.get(fromEntity);
-        if (!fromHex) {
-            return VoteResult.FromHexNotFound;
+    const factionCenters: Point[] = [];
+    for (const faction of Factions) {
+      const myFactionCenters: Point[] = [];
+
+      for (let base = 0; base < numberOfBasesPerFaction; base++) {
+        if (tries > 100) {
+          console.log('try again');
+          return;
         }
 
-        const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
-        if (!toHex) {
-            return VoteResult.ToHexNotFound;
+        const center = Utils.randomElement(allHexes7In);
+
+        if (factionCenters.some(a => grid.getDistance({x: center.x, y: center.y}, a) < baseRadius * 2.5)) {
+          base--;
+          tries++;
+          continue;
         }
 
-        const entityHash = this.getEntityHash(vote.action, game);
+        if (myFactionCenters.some(a => grid.getDistance({x: center.x, y: center.y}, a) < baseRadius * 2.5 * 3)) {
+          base--;
+          tries++;
+          continue;
+        }
+        myFactionCenters.push(center);
+        factionCenters.push(center);
+        const baseHexes = grid.getCircle(center, baseRadius);
+        for (const hex of baseHexes) {
+          hex.setFactionId(faction, 3);
+        }
+        const innerBaseHexes = grid.getCircle(center, baseRadius - 1);
 
-        const path = game.grid.findPath(fromHex, toHex, entityHash);
-        if (path.length === 0) {
-            return VoteResult.PathIsZero;
+        entities.push({
+          id: this.nextId(entities),
+          factionId: faction,
+          health: entitiesPerBase[0].health,
+          x: center.x,
+          y: center.y,
+          entityType: entitiesPerBase[0].type,
+          healthRegenStep: entitiesPerBase[0].healthRegenRate,
+        });
+
+        for (let i = 1; i < entitiesPerBase.length; i++) {
+          const hex = innerBaseHexes[Math.floor(Math.random() * innerBaseHexes.length)];
+          if (entities.find(a => a.x === hex.x && a.y === hex.y)) {
+            i--;
+            continue;
+          }
+          entities.push({
+            id: this.nextId(entities),
+            factionId: faction,
+            health: entitiesPerBase[i].health,
+            x: hex.x,
+            y: hex.y,
+            entityType: entitiesPerBase[i].type,
+            healthRegenStep: entitiesPerBase[i].healthRegenRate,
+          });
+        }
+      }
+    }
+
+    for (let i = 0; i < 120; i++) {
+      const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
+      const type = Utils.random(60) ? HexagonTypes.grass : Utils.random(50) ? HexagonTypes.clay : HexagonTypes.stone;
+
+      for (const gameHexagon of grid.getCircle(center, Math.floor(Math.random() * 8))) {
+        if (Utils.random(100 - grid.getDistance(gameHexagon, center) * 2)) {
+          gameHexagon.setTileType(type(HexagonTypes.randomSubType()));
+        }
+      }
+    }
+
+    const resourceLimits: {type: ResourceType; count: number}[] = [
+      {type: 'bronze', count: 80},
+      {type: 'silver', count: 40},
+      {type: 'gold', count: 20},
+    ];
+
+    const resources: GameResource[] = [];
+
+    for (const resource of resourceLimits) {
+      for (let i = 0; i < resource.count; i++) {
+        const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
+
+        if (factionCenters.some(a => grid.getDistance({x: center.x, y: center.y}, a) <= baseRadius + 1)) {
+          i--;
+          continue;
         }
 
-        const entityDetails = EntityDetails[fromEntity.entityType];
+        const resourceDetail = ResourceDetails[resource.type];
+        const gameResource: GameResource = {
+          x: center.x,
+          y: center.y,
+          resourceType: resource.type,
+          currentCount: resourceDetail.startingCount,
+        };
+        center.setTileType(HexagonTypes.get(center.tileType.type, '1'));
+        resources.push(gameResource);
+      }
+    }
 
-        let range = 0;
+    for (let i = 0; i < 0; i++) {
+      const start = Utils.randomElement(allHexes);
+
+      const far = grid.getRange(
+        grid.getHexAt(start),
+        Math.floor(Math.random() * 80) + 30,
+        new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id)
+      );
+
+      const number = Math.floor((far.length / 4) * 3 + (far.length / 4) * Math.random());
+      const end = far[number];
+
+      const line = grid.getThickLine(start, end, Math.floor(Math.random() * 4) + 3);
+
+      if (line.some(a => a.factionId !== '0')) {
+        i--;
+        continue;
+      }
+
+      for (const gameHexagon of line) {
+        if (Utils.random(95)) {
+          gameHexagon.setTileType(HexagonTypes.water(HexagonTypes.randomSubType()));
+        }
+      }
+    }
+
+    const factionDetails = {
+      '1': {
+        resourceCount: 10,
+      },
+      '2': {
+        resourceCount: 10,
+      },
+      '3': {
+        resourceCount: 10,
+      },
+    };
+
+    return {
+      roundDuration: Config.gameDuration,
+      roundStart: +new Date(),
+      roundEnd: +new Date() + Config.gameDuration,
+      generation: 1,
+      resources: HashArray.create(resources, PointHashKey),
+      entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
+      factionDetails,
+      layout: null,
+      grid,
+    };
+  }
+
+  static buildGameFromState(layout: GameLayout, gameState: GameState): GameModel {
+    const grid = new Grid<GameHexagon>(0, 0, layout.boardWidth, layout.boardHeight);
+
+    grid.hexes = new HashArray<GameHexagon, Point>(PointHashKey);
+
+    for (let i = 0; i < layout.hexes.length; i++) {
+      const hex = layout.hexes[i];
+      const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), hex.id, hex.x, hex.y);
+      gameHexagon.setFactionId(
+        GameLogic.getFactionId(gameState.factions, i),
+        GameLogic.getFactionDuration(gameState.factions, i)
+      );
+      grid.hexes.push(gameHexagon);
+    }
+
+    const resources: GameResource[] = gameState.resources.map(a => ({
+      x: a.x,
+      y: a.y,
+      resourceType: a.type,
+      currentCount: a.count,
+    }));
+
+    const entities: GameEntity[] = [
+      ...gameState.entities['1'].map(a => ({
+        factionId: '1' as PlayableFactionId,
+        busy: a.busy,
+        id: a.id,
+        health: a.health,
+        x: a.x,
+        y: a.y,
+        entityType: a.entityType,
+        healthRegenStep: a.healthRegenStep,
+      })),
+      ...gameState.entities['2'].map(a => ({
+        factionId: '2' as PlayableFactionId,
+        busy: a.busy,
+        id: a.id,
+        health: a.health,
+        x: a.x,
+        y: a.y,
+        entityType: a.entityType,
+        healthRegenStep: a.healthRegenStep,
+      })),
+      ...gameState.entities['3'].map(a => ({
+        factionId: '3' as PlayableFactionId,
+        busy: a.busy,
+        id: a.id,
+        health: a.health,
+        x: a.x,
+        y: a.y,
+        entityType: a.entityType,
+        healthRegenStep: a.healthRegenStep,
+      })),
+    ];
+
+    return {
+      roundDuration: gameState.roundDuration,
+      roundStart: gameState.roundStart,
+      roundEnd: gameState.roundEnd,
+      generation: gameState.generation,
+      factionDetails: gameState.factionDetails,
+      resources: HashArray.create(resources, PointHashKey),
+      entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
+      layout,
+      grid,
+    };
+  }
+
+  static validateVote(game: GameModel, vote: ProcessedVote): VoteResult {
+    const fromEntity = game.entities.get2({id: vote.entityId});
+    if (!fromEntity) {
+      return VoteResult.EntityNotFound;
+    }
+    if (fromEntity.busy) {
+      return VoteResult.EntityIsBusy;
+    }
+    if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) {
+      return VoteResult.FactionMismatch;
+    }
+
+    const fromHex = game.grid.hexes.get(fromEntity);
+    if (!fromHex) {
+      return VoteResult.FromHexNotFound;
+    }
+
+    const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
+    if (!toHex) {
+      return VoteResult.ToHexNotFound;
+    }
+
+    const entityHash = this.getEntityHash(vote.action, game);
+
+    const path = game.grid.findPath(fromHex, toHex, entityHash);
+    if (path.length === 0) {
+      return VoteResult.PathIsZero;
+    }
+
+    const entityDetails = EntityDetails[fromEntity.entityType];
+
+    let range = 0;
+    switch (vote.action) {
+      case 'attack':
+        range = entityDetails.attackRadius;
+        break;
+      case 'move':
+        range = entityDetails.moveRadius;
+        break;
+      case 'mine':
+        range = entityDetails.mineRadius;
+        break;
+      case 'spawn-infantry':
+      case 'spawn-tank':
+      case 'spawn-plane':
+        range = entityDetails.spawnRadius;
+        break;
+    }
+
+    if (path.length > range) {
+      return VoteResult.PathOutOfRange;
+    }
+
+    const toEntity = game.entities.get1(toHex);
+    const toResource = game.resources.get(toHex);
+
+    switch (vote.action) {
+      case 'attack':
+        if (!toEntity) {
+          return VoteResult.NoEntityToAttack;
+        }
+        if (toEntity.factionId === fromEntity.factionId) {
+          return VoteResult.AttackFactionMismatch;
+        }
+
+        break;
+      case 'move':
+        if (toEntity) {
+          return VoteResult.MoveSpotNotEmpty;
+        }
+        if (toResource) {
+          return VoteResult.MoveSpotNotEmpty;
+        }
+        break;
+      case 'mine':
+        if (!toResource) {
+          return VoteResult.NoResourceToMine;
+        }
+        break;
+      case 'spawn-infantry':
+      case 'spawn-tank':
+      case 'spawn-plane':
+        if (toEntity) {
+          return VoteResult.SpawnSpotNotEmpty;
+        }
+        if (toResource) {
+          return VoteResult.SpawnSpotNotEmpty;
+        }
+        if (entityDetails.spawnRadius === 0) {
+          return VoteResult.EntityCannotSpawn;
+        }
+        const resourceCount = game.factionDetails[fromEntity.factionId].resourceCount;
+        let spawnEntity: EntityDetail;
         switch (vote.action) {
-            case 'attack':
-                range = entityDetails.attackRadius;
-                break;
-            case 'move':
-                range = entityDetails.moveRadius;
-                break;
-            case 'mine':
-                range = entityDetails.mineRadius;
-                break;
-            case 'spawn-infantry':
-            case 'spawn-tank':
-            case 'spawn-plane':
-                range = entityDetails.spawnRadius;
-                break;
+          case 'spawn-infantry':
+            spawnEntity = EntityDetails.infantry;
+            break;
+          case 'spawn-tank':
+            spawnEntity = EntityDetails.tank;
+            break;
+          case 'spawn-plane':
+            spawnEntity = EntityDetails.plane;
+            break;
+        }
+        if (resourceCount < spawnEntity.spawnCost) {
+          return VoteResult.NotEnoughResources;
+        }
+        break;
+    }
+
+    return VoteResult.Success;
+  }
+
+  static processVote(game: GameModel, vote: ProcessedVote, fromBusy: boolean): VoteResult {
+    const fromEntity = game.entities.get2({id: vote.entityId});
+    if (!fromEntity) {
+      return VoteResult.EntityNotFound;
+    }
+
+    if (!fromBusy && fromEntity.busy) {
+      return VoteResult.EntityIsBusy;
+    }
+
+    if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) {
+      return VoteResult.FactionMismatch;
+    }
+
+    const fromHex = game.grid.hexes.get(fromEntity);
+    if (!fromHex) {
+      return VoteResult.FromHexNotFound;
+    }
+
+    const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
+    if (!toHex) {
+      return VoteResult.ToHexNotFound;
+    }
+    const entityHash = this.getEntityHash(vote.action, game);
+
+    const path = game.grid.findPath(fromHex, toHex, entityHash);
+    if (path.length === 0) {
+      return VoteResult.PathIsZero;
+    }
+
+    const entityDetails = EntityDetails[fromEntity.entityType];
+
+    let range = 0;
+    switch (vote.action) {
+      case 'attack':
+        range = entityDetails.attackRadius;
+        break;
+      case 'move':
+        range = entityDetails.moveRadius;
+        break;
+      case 'mine':
+        range = entityDetails.mineRadius;
+        break;
+      case 'spawn-infantry':
+      case 'spawn-tank':
+      case 'spawn-plane':
+        range = entityDetails.spawnRadius;
+        break;
+    }
+
+    if (path.length > range) {
+      return VoteResult.PathOutOfRange;
+    }
+
+    const toEntity = game.entities.get1(toHex);
+    const toResource = game.resources.get(toHex);
+
+    switch (vote.action) {
+      case 'attack':
+        if (!toEntity) {
+          return VoteResult.NoEntityToAttack;
         }
 
-        if (path.length > range) {
-            return VoteResult.PathOutOfRange;
+        if (toEntity.factionId === fromEntity.factionId) {
+          return VoteResult.AttackFactionMismatch;
         }
 
-        const toEntity = game.entities.get1(toHex);
-        const toResource = game.resources.get(toHex);
+        const damage = Math.floor(Math.random() * entityDetails.attackPower) + 1;
+        toEntity.health -= damage;
+        toEntity.healthRegenStep = 0;
+        if (toEntity.health <= 0) {
+          game.entities.removeItem(toEntity);
+        }
 
+        break;
+      case 'move':
+        if (toEntity) {
+          return VoteResult.MoveSpotNotEmpty;
+        }
+        if (toResource) {
+          return VoteResult.MoveSpotNotEmpty;
+        }
+        for (const pItem of path) {
+          for (const gameHexagon of game.grid.getCircle(pItem, 1)) {
+            gameHexagon.setFactionId(fromEntity.factionId, 3);
+          }
+        }
+
+        game.entities.moveKey1(fromEntity, fromEntity, toHex);
+
+        fromEntity.x = toHex.x;
+        fromEntity.y = toHex.y;
+
+        break;
+      case 'mine':
+        if (toEntity) {
+          return VoteResult.MoveSpotNotEmpty;
+        }
+        if (!toResource) {
+          return VoteResult.NoResourceToMine;
+        }
+
+        if (!fromBusy) {
+          fromEntity.busy = {
+            ticks: 1,
+            action: 'mine',
+            hexId: vote.hexId,
+          };
+        } else {
+          for (const pItem of path) {
+            for (const gameHexagon of game.grid.getCircle(pItem, 1)) {
+              gameHexagon.setFactionId(fromEntity.factionId, 3);
+            }
+          }
+          toResource.currentCount--;
+          if (toResource.currentCount <= 0) {
+            game.resources.removeItem(toResource);
+          }
+
+          switch (toResource.resourceType) {
+            case 'bronze':
+              game.factionDetails[fromEntity.factionId].resourceCount += 1;
+              break;
+            case 'silver':
+              game.factionDetails[fromEntity.factionId].resourceCount += 2;
+              break;
+            case 'gold':
+              game.factionDetails[fromEntity.factionId].resourceCount += 3;
+              break;
+          }
+        }
+
+        break;
+
+      case 'spawn-infantry':
+      case 'spawn-tank':
+      case 'spawn-plane':
+        if (toEntity) {
+          return VoteResult.SpawnSpotNotEmpty;
+        }
+        if (toResource) {
+          return VoteResult.SpawnSpotNotEmpty;
+        }
+        if (entityDetails.spawnRadius === 0) {
+          return VoteResult.EntityCannotSpawn;
+        }
+        const resourceCount = game.factionDetails[fromEntity.factionId].resourceCount;
+        let spawnEntity: EntityDetail;
         switch (vote.action) {
-            case 'attack':
-                if (!toEntity) {
-                    return VoteResult.NoEntityToAttack;
-                }
-                if (toEntity.factionId === fromEntity.factionId) {
-                    return VoteResult.AttackFactionMismatch;
-                }
-
-                break;
-            case 'move':
-                if (toEntity) {
-                    return VoteResult.MoveSpotNotEmpty;
-                }
-                if (toResource) {
-                    return VoteResult.MoveSpotNotEmpty;
-                }
-                break;
-            case 'mine':
-                if (!toResource) {
-                    return VoteResult.NoResourceToMine;
-                }
-                break;
-            case 'spawn-infantry':
-            case 'spawn-tank':
-            case 'spawn-plane':
-                if (toEntity) {
-                    return VoteResult.SpawnSpotNotEmpty;
-                }
-                if (toResource) {
-                    return VoteResult.SpawnSpotNotEmpty;
-                }
-                if (entityDetails.spawnRadius === 0) {
-                    return VoteResult.EntityCannotSpawn;
-                }
-                const resourceCount = game.factionDetails[fromEntity.factionId].resourceCount;
-                let spawnEntity: EntityDetail;
-                switch (vote.action) {
-                    case 'spawn-infantry':
-                        spawnEntity = EntityDetails.infantry;
-                        break;
-                    case 'spawn-tank':
-                        spawnEntity = EntityDetails.tank;
-                        break;
-                    case 'spawn-plane':
-                        spawnEntity = EntityDetails.plane;
-                        break;
-                }
-                if (resourceCount < spawnEntity.spawnCost) {
-                    return VoteResult.NotEnoughResources;
-                }
-                break;
+          case 'spawn-infantry':
+            spawnEntity = EntityDetails.infantry;
+            break;
+          case 'spawn-tank':
+            spawnEntity = EntityDetails.tank;
+            break;
+          case 'spawn-plane':
+            spawnEntity = EntityDetails.plane;
+            break;
+        }
+        if (resourceCount < spawnEntity.spawnCost) {
+          return VoteResult.NotEnoughResources;
         }
 
-        return VoteResult.Success;
+        if (!fromBusy) {
+          fromEntity.busy = {
+            ticks: spawnEntity.ticksToSpawn,
+            action: vote.action,
+            hexId: vote.hexId,
+          };
+        } else {
+          game.factionDetails[fromEntity.factionId].resourceCount -= spawnEntity.spawnCost;
+          game.entities.push({
+            x: toHex.x,
+            y: toHex.y,
+            factionId: fromEntity.factionId,
+            id: this.nextId(game.entities.array),
+            health: spawnEntity.health,
+            entityType: spawnEntity.type,
+            healthRegenStep: spawnEntity.healthRegenRate,
+          });
+        }
+
+        break;
     }
 
-    static processVote(game: GameModel, vote: ProcessedVote, fromBusy: boolean): VoteResult {
-        const fromEntity = game.entities.get2({id: vote.entityId});
-        if (!fromEntity) {
-            return VoteResult.EntityNotFound;
-        }
+    return VoteResult.Success;
+  }
 
-        if (!fromBusy && fromEntity.busy) {
-            return VoteResult.EntityIsBusy;
-        }
+  static getEntityHash(action: EntityAction, game: GameModel) {
+    let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
 
-        if (vote.factionId !== undefined && fromEntity.factionId !== vote.factionId) {
-            return VoteResult.FactionMismatch;
-        }
-
-        const fromHex = game.grid.hexes.get(fromEntity);
-        if (!fromHex) {
-            return VoteResult.FromHexNotFound;
-        }
-
-        const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
-        if (!toHex) {
-            return VoteResult.ToHexNotFound;
-        }
-        const entityHash = this.getEntityHash(vote.action, game);
-
-        const path = game.grid.findPath(fromHex, toHex, entityHash);
-        if (path.length === 0) {
-            return VoteResult.PathIsZero;
-        }
-
-        const entityDetails = EntityDetails[fromEntity.entityType];
-
-        let range = 0;
-        switch (vote.action) {
-            case 'attack':
-                range = entityDetails.attackRadius;
-                break;
-            case 'move':
-                range = entityDetails.moveRadius;
-                break;
-            case 'mine':
-                range = entityDetails.mineRadius;
-                break;
-            case 'spawn-infantry':
-            case 'spawn-tank':
-            case 'spawn-plane':
-                range = entityDetails.spawnRadius;
-                break;
-        }
-
-        if (path.length > range) {
-            return VoteResult.PathOutOfRange;
-        }
-
-        const toEntity = game.entities.get1(toHex);
-        const toResource = game.resources.get(toHex);
-
-        switch (vote.action) {
-            case 'attack':
-                if (!toEntity) {
-                    return VoteResult.NoEntityToAttack;
-                }
-
-                if (toEntity.factionId === fromEntity.factionId) {
-                    return VoteResult.AttackFactionMismatch;
-                }
-
-                const damage = Math.floor(Math.random() * entityDetails.attackPower) + 1;
-                toEntity.health -= damage;
-                toEntity.healthRegenStep = 0;
-                if (toEntity.health <= 0) {
-                    game.entities.removeItem(toEntity);
-                }
-
-                break;
-            case 'move':
-                if (toEntity) {
-                    return VoteResult.MoveSpotNotEmpty;
-                }
-                if (toResource) {
-                    return VoteResult.MoveSpotNotEmpty;
-                }
-                for (const pItem of path) {
-                    for (const gameHexagon of game.grid.getCircle(pItem, 1)) {
-                        gameHexagon.setFactionId(fromEntity.factionId, 3);
-                    }
-                }
-
-                game.entities.moveKey1(fromEntity, fromEntity, toHex);
-
-                fromEntity.x = toHex.x;
-                fromEntity.y = toHex.y;
-
-                break;
-            case 'mine':
-                if (toEntity) {
-                    return VoteResult.MoveSpotNotEmpty;
-                }
-                if (!toResource) {
-                    return VoteResult.NoResourceToMine;
-                }
-
-                if (!fromBusy) {
-                    fromEntity.busy = {
-                        ticks: 1,
-                        action: 'mine',
-                        hexId: vote.hexId
-                    };
-                } else {
-                    for (const pItem of path) {
-                        for (const gameHexagon of game.grid.getCircle(pItem, 1)) {
-                            gameHexagon.setFactionId(fromEntity.factionId, 3);
-                        }
-                    }
-                    toResource.currentCount--;
-                    if (toResource.currentCount <= 0) {
-                        game.resources.removeItem(toResource);
-                    }
-
-                    switch (toResource.resourceType) {
-                        case 'bronze':
-                            game.factionDetails[fromEntity.factionId].resourceCount += 1;
-                            break;
-                        case 'silver':
-                            game.factionDetails[fromEntity.factionId].resourceCount += 2;
-                            break;
-                        case 'gold':
-                            game.factionDetails[fromEntity.factionId].resourceCount += 3;
-                            break;
-                    }
-                }
-
-                break;
-
-            case 'spawn-infantry':
-            case 'spawn-tank':
-            case 'spawn-plane':
-                if (toEntity) {
-                    return VoteResult.SpawnSpotNotEmpty;
-                }
-                if (toResource) {
-                    return VoteResult.SpawnSpotNotEmpty;
-                }
-                if (entityDetails.spawnRadius === 0) {
-                    return VoteResult.EntityCannotSpawn;
-                }
-                const resourceCount = game.factionDetails[fromEntity.factionId].resourceCount;
-                let spawnEntity: EntityDetail;
-                switch (vote.action) {
-                    case 'spawn-infantry':
-                        spawnEntity = EntityDetails.infantry;
-                        break;
-                    case 'spawn-tank':
-                        spawnEntity = EntityDetails.tank;
-                        break;
-                    case 'spawn-plane':
-                        spawnEntity = EntityDetails.plane;
-                        break;
-                }
-                if (resourceCount < spawnEntity.spawnCost) {
-                    return VoteResult.NotEnoughResources;
-                }
-
-                if (!fromBusy) {
-                    fromEntity.busy = {
-                        ticks: spawnEntity.ticksToSpawn,
-                        action: vote.action,
-                        hexId: vote.hexId
-                    };
-                } else {
-                    game.factionDetails[fromEntity.factionId].resourceCount -= spawnEntity.spawnCost;
-                    game.entities.push({
-                        x: toHex.x,
-                        y: toHex.y,
-                        factionId: fromEntity.factionId,
-                        id: this.nextId(game.entities.array),
-                        health: spawnEntity.health,
-                        entityType: spawnEntity.type,
-                        healthRegenStep: spawnEntity.healthRegenRate
-                    });
-                }
-
-                break;
-        }
-
-        return VoteResult.Success;
+    switch (action) {
+      case 'attack':
+        entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
+        break;
+      case 'move':
+        entityHash = game.entities;
+        break;
+      case 'mine':
+        entityHash = game.entities;
+        break;
+      case 'spawn-infantry':
+      case 'spawn-tank':
+      case 'spawn-plane':
+        entityHash = game.entities;
+        break;
     }
+    return entityHash;
+  }
 
-    static getEntityHash(action: EntityAction, game: GameModel) {
-        let entityHash: DoubleHashArray<GameEntity, Point, {id: number}>;
+  static getFactionId(factions: string, index: number): Faction {
+    return factions.charAt(index * 2) as Faction;
+  }
 
-        switch (action) {
-            case 'attack':
-                entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
-                break;
-            case 'move':
-                entityHash = game.entities;
-                break;
-            case 'mine':
-                entityHash = game.entities;
-                break;
-            case 'spawn-infantry':
-            case 'spawn-tank':
-            case 'spawn-plane':
-                entityHash = game.entities;
-                break;
-        }
-        return entityHash;
-    }
-
-    static getFactionId(factions: string, index: number): Faction {
-        return factions.charAt(index * 2) as Faction;
-    }
-
-    static getFactionDuration(factions: string, index: number): number {
-        return parseInt(factions.charAt(index * 2 + 1));
-    }
+  static getFactionDuration(factions: string, index: number): number {
+    return parseInt(factions.charAt(index * 2 + 1));
+  }
 }

@@ -1,184 +1,184 @@
 export class HashArray<T extends TKey, TKey = T> {
-    [Symbol.iterator]() {
-        return this.array[Symbol.iterator]();
+  [Symbol.iterator]() {
+    return this.array[Symbol.iterator]();
+  }
+
+  constructor(public getKey: (t: TKey) => string) {
+    this.hash = {};
+    this.array = [];
+  }
+
+  hash: {[key: string]: T};
+  array: T[];
+
+  get length() {
+    return this.array.length;
+  }
+
+  [index: number]: never;
+
+  push(item: T) {
+    const key = this.getKey(item);
+    if (this.hash[key]) {
+      return;
     }
 
-    constructor(public getKey: (t: TKey) => string) {
-        this.hash = {};
-        this.array = [];
+    this.hash[key] = item;
+    this.array.push(item);
+  }
+
+  removeItem(item: T) {
+    const key = this.getKey(item);
+    if (!this.hash[key]) {
+      return;
     }
 
-    hash: {[key: string]: T};
-    array: T[];
+    const hashedItem = this.hash[key];
+    delete this.hash[key];
+    this.array.splice(this.array.indexOf(hashedItem), 1);
+  }
 
-    get length() {
-        return this.array.length;
+  pushRange(items: T[]) {
+    for (const item of items) {
+      this.push(item);
     }
+  }
 
-    [index: number]: never;
+  get(keyItem: TKey) {
+    return this.hash[this.getKey(keyItem)];
+  }
 
-    push(item: T) {
-        const key = this.getKey(item);
-        if (this.hash[key]) {
-            return;
-        }
+  exists(item: TKey) {
+    return this.hash[this.getKey(item)] !== undefined;
+  }
 
-        this.hash[key] = item;
-        this.array.push(item);
-    }
+  getIndex(index: number) {
+    return this.array[index];
+  }
 
-    removeItem(item: T) {
-        const key = this.getKey(item);
-        if (!this.hash[key]) {
-            return;
-        }
+  map<T2>(callbackfn: (value: T) => T2) {
+    return this.array.map(callbackfn);
+  }
 
-        const hashedItem = this.hash[key];
-        delete this.hash[key];
-        this.array.splice(this.array.indexOf(hashedItem), 1);
-    }
+  find(predicate: (value: T, index: number, obj: T[]) => boolean) {
+    return this.array.find(predicate);
+  }
 
-    pushRange(items: T[]) {
-        for (let i = 0; i < items.length; i++) {
-            this.push(items[i]);
-        }
-    }
+  reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U, initialValue: U) {
+    return this.array.reduce(callbackfn, initialValue);
+  }
 
-    get(keyItem: TKey) {
-        return this.hash[this.getKey(keyItem)];
-    }
+  filter(callbackfn: (value: T, index: number, array: T[]) => any): T[] {
+    return this.array.filter(callbackfn);
+  }
 
-    exists(item: TKey) {
-        return this.hash[this.getKey(item)] !== undefined;
-    }
-
-    getIndex(index: number) {
-        return this.array[index];
-    }
-
-    map<T2>(callbackfn: (value: T) => T2) {
-        return this.array.map(callbackfn);
-    }
-
-    find(predicate: (value: T, index: number, obj: T[]) => boolean) {
-        return this.array.find(predicate);
-    }
-
-    reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U, initialValue: U) {
-        return this.array.reduce(callbackfn, initialValue);
-    }
-
-    filter(callbackfn: (value: T, index: number, array: T[]) => any): T[] {
-        return this.array.filter(callbackfn);
-    }
-
-    static create<T extends TKey, TKey>(items: T[], getKey: (t: TKey) => string) {
-        const hashArray = new HashArray<T, TKey>(getKey);
-        hashArray.pushRange(items);
-        return hashArray;
-    }
+  static create<T extends TKey, TKey>(items: T[], getKey: (t: TKey) => string) {
+    const hashArray = new HashArray<T, TKey>(getKey);
+    hashArray.pushRange(items);
+    return hashArray;
+  }
 }
 
 export class DoubleHashArray<T extends TKey1 & TKey2, TKey1 = T, TKey2 = T> {
-    [Symbol.iterator]() {
-        return this.array[Symbol.iterator]();
+  [Symbol.iterator]() {
+    return this.array[Symbol.iterator]();
+  }
+
+  constructor(public getKey1: (t: TKey1) => string, public getKey2: (t: TKey2) => number) {
+    this.hash1 = {};
+    this.hash2 = {};
+    this.array = [];
+  }
+
+  hash1: {[key: string]: T};
+  hash2: {[key: number]: T};
+  array: T[];
+
+  get length() {
+    return this.array.length;
+  }
+
+  [index: number]: never;
+
+  push(item: T) {
+    const key1 = this.getKey1(item);
+    if (this.hash1[key1]) {
+      return;
     }
 
-    constructor(public getKey1: (t: TKey1) => string, public getKey2: (t: TKey2) => number) {
-        this.hash1 = {};
-        this.hash2 = {};
-        this.array = [];
+    this.hash1[key1] = item;
+
+    const key2 = this.getKey2(item);
+    this.hash2[key2] = item;
+    this.array.push(item);
+  }
+
+  removeItem(item: T) {
+    const key1 = this.getKey1(item);
+    if (!this.hash1[key1]) {
+      return;
     }
+    const hashedItem = this.hash1[key1];
+    const key2 = this.getKey2(item);
 
-    hash1: {[key: string]: T};
-    hash2: {[key: number]: T};
-    array: T[];
+    delete this.hash1[key1];
+    delete this.hash2[key2];
 
-    get length() {
-        return this.array.length;
+    this.array.splice(this.array.indexOf(hashedItem), 1);
+  }
+
+  pushRange(items: T[]) {
+    for (const item of items) {
+      this.push(item);
     }
+  }
 
-    [index: number]: never;
+  get1(keyItem: TKey1) {
+    return this.hash1[this.getKey1(keyItem)];
+  }
+  get2(keyItem: TKey2) {
+    return this.hash2[this.getKey2(keyItem)];
+  }
 
-    push(item: T) {
-        const key1 = this.getKey1(item);
-        if (this.hash1[key1]) {
-            return;
-        }
+  exists1(item: TKey1) {
+    return this.hash1[this.getKey1(item)] !== undefined;
+  }
+  exists2(item: TKey2) {
+    return this.hash2[this.getKey2(item)] !== undefined;
+  }
 
-        this.hash1[key1] = item;
+  getIndex(index: number) {
+    return this.array[index];
+  }
 
-        const key2 = this.getKey2(item);
-        this.hash2[key2] = item;
-        this.array.push(item);
-    }
+  map<T2>(callbackfn: (value: T) => T2) {
+    return this.array.map(callbackfn);
+  }
 
-    removeItem(item: T) {
-        const key1 = this.getKey1(item);
-        if (!this.hash1[key1]) {
-            return;
-        }
-        const hashedItem = this.hash1[key1];
-        const key2 = this.getKey2(item);
+  find(predicate: (value: T, index: number, obj: T[]) => boolean) {
+    return this.array.find(predicate);
+  }
 
-        delete this.hash1[key1];
-        delete this.hash2[key2];
+  reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U, initialValue: U) {
+    return this.array.reduce(callbackfn, initialValue);
+  }
 
-        this.array.splice(this.array.indexOf(hashedItem), 1);
-    }
+  filter(callbackfn: (value: T, index: number, array: T[]) => any): T[] {
+    return this.array.filter(callbackfn);
+  }
 
-    pushRange(items: T[]) {
-        for (let i = 0; i < items.length; i++) {
-            this.push(items[i]);
-        }
-    }
+  static create<T extends TKey1 & TKey2, TKey1, TKey2>(
+    items: T[],
+    getKey1: (t: TKey1) => string,
+    getKey2: (t: TKey2) => number
+  ) {
+    const hashArray = new DoubleHashArray<T, TKey1, TKey2>(getKey1, getKey2);
+    hashArray.pushRange(items);
+    return hashArray;
+  }
 
-    get1(keyItem: TKey1) {
-        return this.hash1[this.getKey1(keyItem)];
-    }
-    get2(keyItem: TKey2) {
-        return this.hash2[this.getKey2(keyItem)];
-    }
-
-    exists1(item: TKey1) {
-        return this.hash1[this.getKey1(item)] !== undefined;
-    }
-    exists2(item: TKey2) {
-        return this.hash2[this.getKey2(item)] !== undefined;
-    }
-
-    getIndex(index: number) {
-        return this.array[index];
-    }
-
-    map<T2>(callbackfn: (value: T) => T2) {
-        return this.array.map(callbackfn);
-    }
-
-    find(predicate: (value: T, index: number, obj: T[]) => boolean) {
-        return this.array.find(predicate);
-    }
-
-    reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U, initialValue: U) {
-        return this.array.reduce(callbackfn, initialValue);
-    }
-
-    filter(callbackfn: (value: T, index: number, array: T[]) => any): T[] {
-        return this.array.filter(callbackfn);
-    }
-
-    static create<T extends TKey1 & TKey2, TKey1, TKey2>(
-        items: T[],
-        getKey1: (t: TKey1) => string,
-        getKey2: (t: TKey2) => number
-    ) {
-        const hashArray = new DoubleHashArray<T, TKey1, TKey2>(getKey1, getKey2);
-        hashArray.pushRange(items);
-        return hashArray;
-    }
-
-    moveKey1(e: T, fromT1: TKey1, toT1: TKey1) {
-        delete this.hash1[this.getKey1(fromT1)];
-        this.hash1[this.getKey1(toT1)] = e;
-    }
+  moveKey1(e: T, fromT1: TKey1, toT1: TKey1) {
+    delete this.hash1[this.getKey1(fromT1)];
+    this.hash1[this.getKey1(toT1)] = e;
+  }
 }

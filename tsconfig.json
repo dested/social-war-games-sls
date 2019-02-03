@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "noEmitOnError": false,
+    "experimentalDecorators": true,
+    "allowUnreachableCode": true,
+    "strict": true,
+    "target": "es2015",
+    "lib": [
+      "esnext",
+      "dom",
+      "es2017",
+      "esnext.asynciterable"
+    ],
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "inlineSourceMap": true,
+    "strictNullChecks": false,
+    "declaration": true,
+    "pretty": true,
+    "noEmit": true,
+    "moduleResolution": "node",
+    "strictPropertyInitialization": false,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@swg-common/*": [
+        "../../common/src/*"
+      ],
+      "@swg-server-common/*": [
+        "../../server-common/src/*"
+      ]
+    }
+  }
+}

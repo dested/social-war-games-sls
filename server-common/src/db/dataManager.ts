@@ -4,67 +4,67 @@ import {Config} from '../config';
 import {QueryBuilder} from '../utils/queryBuilder';
 
 export class DataManager {
-    static dbConnection: Db;
+  static dbConnection: Db;
 
-    static async openDbConnection() {
-        if (!this.dbConnection || !(this.dbConnection.serverConfig as any).isConnected()) {
-            this.dbConnection = (await MongoClient.connect(Config.dbConnection)).db(Config.dbName);
-        }
+  static async openDbConnection() {
+    if (!this.dbConnection || !(this.dbConnection.serverConfig as any).isConnected()) {
+      this.dbConnection = (await MongoClient.connect(Config.dbConnection)).db(Config.dbName);
     }
+  }
 
-    static async closeDbConnection() {
-        if (this.dbConnection) {
-            await this.dbConnection.close();
-            this.dbConnection = undefined!;
-        }
+  static async closeDbConnection() {
+    if (this.dbConnection) {
+      await this.dbConnection.close();
+      this.dbConnection = undefined!;
     }
+  }
 }
 
 export class DocumentManager<T extends {_id: any}> {
-    query = new QueryBuilder<T>();
+  query = new QueryBuilder<T>();
 
-    constructor(private collectionName: string) {}
+  constructor(private collectionName: string) {}
 
-    async insertDocument(document: T): Promise<T> {
-        const result = await DataManager.dbConnection.collection(this.collectionName).insertOne(document);
-        document._id = result.insertedId;
-        return document;
-    }
+  async insertDocument(document: T): Promise<T> {
+    const result = await DataManager.dbConnection.collection(this.collectionName).insertOne(document);
+    document._id = result.insertedId;
+    return document;
+  }
 
-    async updateDocument(document: T): Promise<T> {
-        DataManager.dbConnection.collection(this.collectionName).findOneAndUpdate({_id: document._id}, document);
-        return document;
-    }
+  async updateDocument(document: T): Promise<T> {
+    DataManager.dbConnection.collection(this.collectionName).findOneAndUpdate({_id: document._id}, document);
+    return document;
+  }
 
-    async getOne(query: any): Promise<T> {
-        return await DataManager.dbConnection.collection(this.collectionName).findOne(query);
-    }
+  async getOne(query: any): Promise<T> {
+    return await DataManager.dbConnection.collection(this.collectionName).findOne(query);
+  }
 
-    async aggregate(query: any): Promise<any[]> {
-        return await DataManager.dbConnection
-            .collection(this.collectionName)
-            .aggregate(query)
-            .toArray();
-    }
+  async aggregate(query: any): Promise<any[]> {
+    return await DataManager.dbConnection
+      .collection(this.collectionName)
+      .aggregate(query)
+      .toArray();
+  }
 
-    async getById(id: string | ObjectID): Promise<T> {
-        const objectId: ObjectID = typeof id === 'string' ? new ObjectID(id) : id;
-        return await DataManager.dbConnection.collection(this.collectionName).findOne({_id: objectId});
-    }
+  async getById(id: string | ObjectID): Promise<T> {
+    const objectId: ObjectID = typeof id === 'string' ? new ObjectID(id) : id;
+    return await DataManager.dbConnection.collection(this.collectionName).findOne({_id: objectId});
+  }
 
-    async deleteMany(query: any): Promise<void> {
-        await DataManager.dbConnection.collection(this.collectionName).deleteMany(query);
-    }
+  async deleteMany(query: any): Promise<void> {
+    await DataManager.dbConnection.collection(this.collectionName).deleteMany(query);
+  }
 
-    async getAll(query: any): Promise<T[]> {
-        return (await DataManager.dbConnection.collection(this.collectionName).find(query)).toArray();
-    }
+  async getAll(query: any): Promise<T[]> {
+    return (await DataManager.dbConnection.collection(this.collectionName).find(query)).toArray();
+  }
 
-    async count(query: any): Promise<number> {
-        return await DataManager.dbConnection.collection(this.collectionName).count(query);
-    }
+  async count(query: any): Promise<number> {
+    return await DataManager.dbConnection.collection(this.collectionName).count(query);
+  }
 
-    async ensureIndex(spec: any, options: IndexOptions): Promise<string> {
-        return await DataManager.dbConnection.collection(this.collectionName).createIndex(spec, options);
-    }
+  async ensureIndex(spec: any, options: IndexOptions): Promise<string> {
+    return await DataManager.dbConnection.collection(this.collectionName).createIndex(spec, options);
+  }
 }

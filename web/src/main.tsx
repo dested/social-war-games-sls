@@ -13,18 +13,18 @@ import {Register} from './components/register';
 import {store} from './store';
 
 function run() {
-    ReactDOM.render(
-        <Provider store={store}>
-            <HashRouter>
-                <Fragment>
-                    <Route exact path="/" component={Game} />
-                    <Route path="/register" component={Register} />
-                    <Route path="/login" component={Login} />
-                </Fragment>
-            </HashRouter>
-        </Provider>,
-        document.getElementById('main')
-    );
+  ReactDOM.render(
+    <Provider store={store}>
+      <HashRouter>
+        <Fragment>
+          <Route exact path="/" component={Game} />
+          <Route path="/register" component={Register} />
+          <Route path="/login" component={Login} />
+        </Fragment>
+      </HashRouter>
+    </Provider>,
+    document.getElementById('main')
+  );
 }
 
 run();

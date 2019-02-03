@@ -1,5 +1,5 @@
 export interface UserDetails {
-    voteCount: number;
-    maxVotes: number;
-    factionToken: string;
+  voteCount: number;
+  maxVotes: number;
+  factionToken: string;
 }

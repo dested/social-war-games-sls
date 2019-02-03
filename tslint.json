@@ -10,6 +10,7 @@
   "rules": {
     "variable-name": false,
     "no-reference": false,
+    "forin": false,
     "radix": false,
     "no-console": false,
     "member-ordering": false,

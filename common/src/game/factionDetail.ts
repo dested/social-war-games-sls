@@ -1,3 +1,3 @@
 export interface FactionDetail {
-    resourceCount: number;
+  resourceCount: number;
 }
