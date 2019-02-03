@@ -1,17 +1,11 @@
-import {HttpUser} from '@swg-common/models/http/httpUser';
+import {inject, observer} from 'mobx-react';
 import * as React from 'react';
-import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Link, withRouter} from 'react-router-dom';
 import {DataService} from '../dataServices';
-import {Dispatcher} from '../store/actions';
-import {AppActions} from '../store/app/actions';
-import {SwgStore} from '../store/reducers';
+import {MainStoreName, MainStoreProps} from '../store/main/store';
 
-interface Props extends RouteComponentProps<{}> {
-  setJwt: (jwt: string) => void;
-  setUser: (user: HttpUser) => void;
-}
+interface Props extends RouteComponentProps<{}>, MainStoreProps {}
 
 interface State {
   email: string;
@@ -19,6 +13,8 @@ interface State {
   password: string;
 }
 
+@inject(MainStoreName)
+@observer
 class Component extends React.Component<Props, State> {
   constructor(props: Props, context: any) {
     super(props, context);
@@ -36,8 +32,8 @@ class Component extends React.Component<Props, State> {
     }
     try {
       const response = await DataService.register(this.state.email, this.state.userName, this.state.password);
-      this.props.setJwt(response.jwt);
-      this.props.setUser(response.user);
+      this.props.mainStore.setJwt(response.jwt);
+      this.props.mainStore.setUser(response.user);
       this.props.history.push('/');
     } catch (ex) {
       alert(ex);
@@ -85,10 +81,4 @@ class Component extends React.Component<Props, State> {
   }
 }
 
-export let Register = connect(
-  (state: SwgStore) => ({}),
-  (dispatch: Dispatcher) => ({
-    setJwt: (jwt: string) => void dispatch(AppActions.setJWT(jwt)),
-    setUser: (user: HttpUser) => void dispatch(AppActions.setUser(user)),
-  })
-)(withRouter(Component));
+export let Register = withRouter(Component);

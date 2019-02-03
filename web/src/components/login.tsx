@@ -1,21 +1,19 @@
+import {inject, observer} from 'mobx-react';
 import * as React from 'react';
-import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Link, withRouter} from 'react-router-dom';
 import {DataService} from '../dataServices';
-import {AppActions} from '../store/app/actions';
-import {SwgStore} from '../store/reducers';
+import {MainStoreName, MainStoreProps} from '../store/main/store';
 
-interface Props extends RouteComponentProps<{}> {
-  setJwt: typeof AppActions.setJWT;
-  setUser: typeof AppActions.setUser;
-}
+interface Props extends RouteComponentProps<{}>, MainStoreProps {}
 
 interface State {
   email: string;
   password: string;
 }
 
+@inject(MainStoreName)
+@observer
 class Component extends React.Component<Props, State> {
   constructor(props: Props, context: any) {
     super(props, context);
@@ -31,8 +29,8 @@ class Component extends React.Component<Props, State> {
       const response = await DataService.login(this.state.email, this.state.password);
       localStorage.setItem('jwt', response.jwt);
       localStorage.setItem('user', JSON.stringify(response.user));
-      this.props.setJwt(response.jwt);
-      this.props.setUser(response.user);
+      this.props.mainStore.setJwt(response.jwt);
+      this.props.mainStore.setUser(response.user);
       this.props.history.push('/');
     } catch (ex) {
       alert(ex);
@@ -77,7 +75,4 @@ class Component extends React.Component<Props, State> {
   }
 }
 
-export let Login = connect(
-  (state: SwgStore) => ({}),
-  {setJwt: AppActions.setJWT, setUser: AppActions.setUser}
-)(withRouter(Component));
+export let Login = withRouter(Component);

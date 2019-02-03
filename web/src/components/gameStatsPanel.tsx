@@ -1,35 +1,22 @@
-import {GameModel} from '@swg-common/game/gameLogic';
-import {VoteResult} from '@swg-common/game/voteResult';
-import {HttpUser} from '@swg-common/models/http/httpUser';
-import {UserDetails} from '@swg-common/models/http/userDetails';
-import {RoundState} from '@swg-common/models/roundState';
+import {inject, observer} from 'mobx-react';
 import * as React from 'react';
 import {Fragment} from 'react';
-import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {withRouter} from 'react-router-dom';
-import {GameRenderer} from '../drawing/gameRenderer';
 import {SmallGameRenderer} from '../drawing/smallGameRenderer';
-import {UI} from '../store/actions';
-import {SwgStore} from '../store/reducers';
-import {UIThunks} from '../store/ui/actions';
+import {GameStoreName, GameStoreProps} from '../store/game/store';
+import {MainStoreName, MainStoreProps} from '../store/main/store';
+import {UI, UIStore, UIStoreName, UIStoreProps} from '../store/ui/store';
 import {UIConstants} from '../utils/uiConstants';
 
-interface Props extends RouteComponentProps<{}> {
-  user?: HttpUser;
-  roundState?: RoundState;
-  userDetails?: UserDetails;
-  game?: GameModel;
-  isVoting?: boolean;
-  votingError?: VoteResult;
-  ui: UI;
-  setUI: typeof UIThunks.setUI;
-  gameRenderer: GameRenderer;
+interface Props extends RouteComponentProps<{}>, MainStoreProps, GameStoreProps, UIStoreProps {
   smallGameRenderer: SmallGameRenderer;
 }
 
 interface State {}
 
+@inject(MainStoreName, GameStoreName, UIStoreName)
+@observer
 export class Component extends React.Component<Props, State> {
   constructor(props: Props, context: any) {
     super(props, context);
@@ -48,7 +35,7 @@ export class Component extends React.Component<Props, State> {
               left: 0,
               bottom: 0,
             }}
-            ref={e => this.props.smallGameRenderer.start(e, this.props.gameRenderer)}
+            ref={e => this.props.smallGameRenderer.start(e, this.props.gameStore.gameRenderer)}
             width={window.innerWidth}
             height={UIConstants.miniMapHeight()}
           />
@@ -97,7 +84,7 @@ export class Component extends React.Component<Props, State> {
   }
 
   private renderVoteDetails() {
-    const votesLeft = this.props.userDetails.maxVotes - this.props.userDetails.voteCount;
+    const votesLeft = this.props.gameStore.userDetails.maxVotes - this.props.gameStore.userDetails.voteCount;
 
     return (
       <>
@@ -109,7 +96,7 @@ export class Component extends React.Component<Props, State> {
         >
           {`${votesLeft} Vote${votesLeft === 1 ? '' : 's'} Left`}
         </span>
-        {this.props.isVoting && (
+        {this.props.gameStore.isVoting && (
           <span
             className={'bottom-button'}
             style={{
@@ -119,7 +106,7 @@ export class Component extends React.Component<Props, State> {
             Vote Processing...
           </span>
         )}
-        {this.props.votingError && (
+        {this.props.gameStore.votingError && (
           <span
             style={{
               backgroundColor: '#f37d87',
@@ -133,23 +120,9 @@ export class Component extends React.Component<Props, State> {
     );
   }
 
-  private setUI(ui: UI) {
-    this.props.setUI(ui);
-  }
+  private setUI = async (ui: UI) => {
+    await UIStore.setUI(ui);
+  };
 }
 
-export let GameStatsPanel = connect(
-  (state: SwgStore) => ({
-    user: state.appState.user,
-    game: state.gameState.game,
-    roundState: state.gameState.localRoundState,
-    userDetails: state.gameState.userDetails,
-    isVoting: state.gameState.isVoting,
-    votingError: state.gameState.votingError,
-    gameRenderer: state.gameState.gameRenderer,
-    ui: state.uiState.ui,
-  }),
-  {
-    setUI: UIThunks.setUI,
-  }
-)(withRouter(Component));
+export let GameStatsPanel = withRouter(Component);

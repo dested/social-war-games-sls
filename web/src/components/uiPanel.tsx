@@ -1,46 +1,24 @@
 import {Factions, GameEntity} from '@swg-common/game/entityDetail';
-import {GameModel} from '@swg-common/game/gameLogic';
-import {VoteResult} from '@swg-common/game/voteResult';
 import {FactionStats} from '@swg-common/models/factionStats';
-import {HttpUser} from '@swg-common/models/http/httpUser';
-import {LadderResponse} from '@swg-common/models/http/userController';
-import {UserDetails} from '@swg-common/models/http/userDetails';
-import {RoundState} from '@swg-common/models/roundState';
-import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {VoteNote} from '@swg-common/models/voteNote';
-import {Utils} from '@swg-common/utils/utils';
-import {Fragment} from 'react';
+import {inject, observer} from 'mobx-react';
 import * as React from 'react';
-import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {withRouter} from 'react-router-dom';
 import {GameAssets} from '../drawing/gameAssets';
-import {GameRenderer} from '../drawing/gameRenderer';
-import {UI, UIActions, UIThunks} from '../store/actions';
-import {SwgStore} from '../store/reducers';
+import {GameStoreName, GameStoreProps} from '../store/game/store';
+import {MainStoreName, MainStoreProps} from '../store/main/store';
+import {UI, UIStore, UIStoreName, UIStoreProps} from '../store/ui/store';
 import {HexColors} from '../utils/hexColors';
-import {HexConstants} from '../utils/hexConstants';
 import {FactionStatsCanvas} from './factionStatsCanvas';
 import './uiPanel.css';
 
-interface Props extends RouteComponentProps<{}> {
-  user?: HttpUser;
-  roundState?: RoundState;
-  userDetails?: UserDetails;
-  game?: GameModel;
-
-  ui: UI;
-
-  ladder: LadderResponse;
-  factionStats: FactionStats[];
-  factionRoundStats: FactionRoundStats;
-  getFactionRoundStats: typeof UIThunks.getFactionRoundStats;
-
-  gameRenderer: GameRenderer;
-}
+interface Props extends RouteComponentProps<{}>, MainStoreProps, GameStoreProps, UIStoreProps {}
 
 interface State {}
 
+@inject(MainStoreName, GameStoreName, UIStoreName)
+@observer
 export class Component extends React.Component<Props, State> {
   constructor(props: Props, context: any) {
     super(props, context);
@@ -49,7 +27,7 @@ export class Component extends React.Component<Props, State> {
   }
 
   render() {
-    if (this.props.ui === 'None') {
+    if (this.props.uiStore.ui === 'None') {
       return null;
     }
 
@@ -59,15 +37,15 @@ export class Component extends React.Component<Props, State> {
           <div className={`flex-row`}>
             <div className="main-window-title-holder">
               <div className={`main-window-title-border`} />
-              <div className={`main-window-title`}>{this.props.ui}</div>
+              <div className={`main-window-title`}>{this.props.uiStore.ui}</div>
             </div>
           </div>
 
           <div className={`main-window-inner`}>
-            {(this.props.ui === 'Ladder' && this.renderLadder()) ||
-              (this.props.ui === 'FactionStats' && this.renderFactionStats()) ||
-              (this.props.ui === 'Bases' && this.renderBases()) ||
-              (this.props.ui === 'RoundStats' && this.renderRoundStats())}
+            {(this.props.uiStore.ui === 'Ladder' && this.renderLadder()) ||
+              (this.props.uiStore.ui === 'FactionStats' && this.renderFactionStats()) ||
+              (this.props.uiStore.ui === 'Bases' && this.renderBases()) ||
+              (this.props.uiStore.ui === 'RoundStats' && this.renderRoundStats())}
           </div>
         </div>
       </div>
@@ -75,13 +53,13 @@ export class Component extends React.Component<Props, State> {
   }
 
   private renderLadder() {
-    if (!this.props.ladder) {
+    if (!this.props.uiStore.ladder) {
       return 'loading';
     }
 
     return (
       <div style={{display: 'flex', flexDirection: 'column'}}>
-        {this.props.ladder.ladder.map(l => (
+        {this.props.uiStore.ladder.ladder.map(l => (
           <span key={l._id}>
             {l.rank + 1}: {l.userName || l._id} - {l.score}
           </span>
@@ -91,11 +69,11 @@ export class Component extends React.Component<Props, State> {
   }
 
   private renderFactionStats() {
-    if (!this.props.factionStats) {
+    if (!this.props.uiStore.factionStats) {
       return 'loading';
     }
 
-    return <FactionStatsCanvas factionStats={this.props.factionStats} />;
+    return <FactionStatsCanvas factionStats={this.props.uiStore.factionStats} />;
   }
 
   private renderBases() {
@@ -111,8 +89,8 @@ export class Component extends React.Component<Props, State> {
 
     const entityImage = {width: '50px'};
 
-    return this.props.game.entities.array
-      .filter(a => a.factionId === this.props.user.factionId && a.entityType === 'factory')
+    return this.props.gameStore.game.entities.array
+      .filter(a => a.factionId === this.props.mainStore.user.factionId && a.entityType === 'factory')
       .map(factory => {
         return (
           <div
@@ -131,7 +109,7 @@ export class Component extends React.Component<Props, State> {
   }
 
   private renderRoundStats() {
-    const factionRoundStats = this.props.factionRoundStats;
+    const factionRoundStats = this.props.uiStore.factionRoundStats;
     if (!factionRoundStats) {
       return 'loading';
     }
@@ -153,7 +131,7 @@ export class Component extends React.Component<Props, State> {
         <div style={{flex: 2, display: 'flex', flexDirection: 'column'}}>
           <div style={{display: 'flex', alignItems: 'center'}}>
             <button onClick={() => this.updateRound(factionRoundStats.generation - 1)}>&lt;</button>
-            {factionRoundStats.generation < this.props.game.generation - 1 && (
+            {factionRoundStats.generation < this.props.gameStore.game.generation - 1 && (
               <button onClick={() => this.updateRound(factionRoundStats.generation + 1)}>&gt;</button>
             )}
           </div>
@@ -169,7 +147,7 @@ export class Component extends React.Component<Props, State> {
           <span>Hot Units</span>
           <div style={{display: 'flex', flexDirection: 'column', flexWrap: 'wrap'}}>
             {factionRoundStats.hotEntities.map(e => {
-              const ent = this.props.game.entities.get2(e);
+              const ent = this.props.gameStore.game.entities.get2(e);
               if (!ent) {
                 return null;
               }
@@ -207,18 +185,18 @@ export class Component extends React.Component<Props, State> {
   }
 
   private navigateToEntity(ent: GameEntity) {
-    this.props.gameRenderer.moveToEntity(ent);
+    this.props.gameStore.gameRenderer.moveToEntity(ent);
   }
 
   goToEntity(entityId: number) {
-    const entity = this.props.game.entities.get2({id: entityId});
+    const entity = this.props.gameStore.game.entities.get2({id: entityId});
     if (entity) {
-      this.props.gameRenderer.moveToEntity(entity);
+      this.props.gameStore.gameRenderer.moveToEntity(entity);
     }
   }
 
   goToHex(hexId: string) {
-    this.props.gameRenderer.moveToHexagon(this.props.game.grid.hexes.find(a => a.id === hexId));
+    this.props.gameStore.gameRenderer.moveToHexagon(this.props.gameStore.game.grid.hexes.find(a => a.id === hexId));
   }
 
   private renderNote(a: VoteNote) {
@@ -257,26 +235,9 @@ export class Component extends React.Component<Props, State> {
     );
   }
 
-  private updateRound(generation: number) {
-    this.props.getFactionRoundStats(generation);
-  }
+  private updateRound = async (generation: number) => {
+    await UIStore.getFactionRoundStats(generation);
+  };
 }
 
-export let UIPanel = connect(
-  (state: SwgStore) => ({
-    user: state.appState.user,
-    game: state.gameState.game,
-    roundState: state.gameState.localRoundState,
-    userDetails: state.gameState.userDetails,
-    gameRenderer: state.gameState.gameRenderer,
-
-    ladder: state.uiState.ladder,
-    factionStats: state.uiState.factionStats,
-    factionRoundStats: state.uiState.factionRoundStats,
-
-    ui: state.uiState.ui,
-  }),
-  {
-    getFactionRoundStats: UIThunks.getFactionRoundStats,
-  }
-)(withRouter(Component));
+export let UIPanel = withRouter(Component);

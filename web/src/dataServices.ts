@@ -1,23 +1,17 @@
-import {GameLayout} from '@swg-common/models/gameLayout';
+import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {FactionStats} from '@swg-common/models/factionStats';
 import {GameState} from '@swg-common/models/gameState';
 import {JwtGetUserResponse, LadderResponse} from '@swg-common/models/http/userController';
-import {RoundState} from '@swg-common/models/roundState';
-
-import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
-import {VoteResult} from '@swg-common/game/voteResult';
-import {FactionStats} from '@swg-common/models/factionStats';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteRequestResults, VoteResponse} from '@swg-common/models/http/voteResults';
-import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {GameStateParser} from '@swg-common/parsers/gameStateParser';
 import {RoundOutcomeParser} from '@swg-common/parsers/roundOutcomeParser';
-import {Utils} from '@swg-common/utils/utils';
-import * as aesjs from 'aes-js';
-import {getStore} from './store';
+import {mainStore} from './store/main/store';
 
 export class DataService {
-  private static apiServer: string = 'https://api.socialwargames.com';
+  private static apiServer: string = 'http://localhost:5103';
+  // private static apiServer: string = 'https://api.socialwargames.com';
   private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
 
   static async login(email: string, password: string): Promise<JwtGetUserResponse> {
@@ -75,14 +69,12 @@ export class DataService {
     generation: number;
     hexId: string;
   }): Promise<VoteResponse> {
-    const state = getStore().getState();
-
     const response = await fetch(this.apiServer + '/vote', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + state.appState.jwt,
+        Authorization: 'Bearer ' + mainStore.jwt,
       },
       body: JSON.stringify(vote),
     });
@@ -91,14 +83,12 @@ export class DataService {
   }
 
   static async currentUserDetails(): Promise<UserDetails> {
-    const state = getStore().getState();
-
     const response = await fetch(this.apiServer + '/user-details', {
       method: 'GET',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + state.appState.jwt,
+        Authorization: 'Bearer ' + mainStore.jwt,
       },
     });
 
@@ -131,14 +121,12 @@ export class DataService {
   }
 
   static async getLadder() {
-    const state = getStore().getState();
-
     const response = await fetch(this.apiServer + '/ladder', {
       method: 'GET',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        ...(state.appState.jwt ? {Authorization: 'Bearer ' + state.appState.jwt} : {}),
+        ...(mainStore.jwt ? {Authorization: 'Bearer ' + mainStore.jwt} : {}),
       },
     });
     const json = await response.json();

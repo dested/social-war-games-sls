@@ -1,36 +1,24 @@
 import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
-import {GameModel} from '@swg-common/game/gameLogic';
 import {GameResource, ResourceDetails} from '@swg-common/game/gameResource';
-import {HttpUser} from '@swg-common/models/http/httpUser';
-import {RoundState} from '@swg-common/models/roundState';
 import {Utils} from '@swg-common/utils/utils';
+import {inject, observer} from 'mobx-react';
 import * as React from 'react';
 import {Fragment, SFC} from 'react';
-import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {withRouter} from 'react-router-dom';
 import {GameAssets} from '../drawing/gameAssets';
-import {Dispatcher} from '../store/actions';
-import {GameThunks} from '../store/game/actions';
-import {SwgStore} from '../store/reducers';
+import {GameStore, GameStoreName, GameStoreProps} from '../store/game/store';
+import {MainStoreName, MainStoreProps} from '../store/main/store';
 import {ColorUtils} from '../utils/colorUtils';
-import {HexColors} from '../utils/hexColors';
-import {HexConstants} from '../utils/hexConstants';
 import './actionPanel.css';
 import './global.css';
 
-interface Props extends RouteComponentProps<{}> {
-  user?: HttpUser;
-  selectedEntity?: GameEntity;
-  selectedResource?: GameResource;
-  selectedEntityAction?: EntityAction;
-  roundState?: RoundState;
-  game?: GameModel;
-  startEntityAction: typeof GameThunks.startEntityAction;
-}
+interface Props extends RouteComponentProps<{}>, MainStoreProps, GameStoreProps {}
 
 interface State {}
 
+@inject(MainStoreName, GameStoreName)
+@observer
 export class Component extends React.Component<Props, State> {
   constructor(props: Props, context: any) {
     super(props, context);
@@ -38,18 +26,18 @@ export class Component extends React.Component<Props, State> {
   }
 
   render() {
-    if (this.props.selectedEntity) {
+    if (this.props.gameStore.selectedEntity) {
       return this.renderEntity();
-    } else if (this.props.selectedResource) {
+    } else if (this.props.gameStore.selectedResource) {
       return this.renderResource();
     }
   }
 
   private renderResource() {
-    const resource = this.props.selectedResource;
+    const resource = this.props.gameStore.selectedResource;
     const resourceDetails = ResourceDetails[resource.resourceType];
 
-    const currentFaction = this.props.game.grid.getHexAt(resource).factionId;
+    const currentFaction = this.props.gameStore.game.grid.getHexAt(resource).factionId;
 
     const healthPercent = resource.currentCount / resourceDetails.startingCount;
     const healthColor = ColorUtils.lerpColor(
@@ -81,9 +69,9 @@ export class Component extends React.Component<Props, State> {
   }
 
   private renderEntity() {
-    const entity = this.props.selectedEntity;
+    const entity = this.props.gameStore.selectedEntity;
     const entityDetails = EntityDetails[entity.entityType];
-    const myEntity = this.props.user.factionId === entity.factionId;
+    const myEntity = this.props.mainStore.user.factionId === entity.factionId;
 
     const healthPercent = entity.health / entityDetails.health;
     const healthColor = ColorUtils.lerpColor('#FF0000', '#00FF00', healthPercent);
@@ -132,7 +120,7 @@ export class Component extends React.Component<Props, State> {
     const spawnTankCount = this.getActionCount(entity, 'spawn-tank');
     const spawnPlaneCount = this.getActionCount(entity, 'spawn-plane');
 
-    const selected = this.props.selectedEntityAction;
+    const selected = this.props.gameStore.selectedEntityAction;
 
     switch (entity.entityType) {
       case 'infantry':
@@ -141,7 +129,7 @@ export class Component extends React.Component<Props, State> {
             <div className={`action-button-holder`}>
               <div
                 className={`button action-button ${selected === 'move' && 'selected-button'}`}
-                onClick={() => this.props.startEntityAction(entity, 'move')}
+                onClick={() => GameStore.startEntityAction(entity, 'move')}
               >
                 Move
               </div>
@@ -150,7 +138,7 @@ export class Component extends React.Component<Props, State> {
             <div className="action-button-holder">
               <div
                 className={`button action-button ${selected === 'attack' && 'selected-button'}`}
-                onClick={() => this.props.startEntityAction(entity, 'attack')}
+                onClick={() => GameStore.startEntityAction(entity, 'attack')}
               >
                 Attack
               </div>
@@ -159,7 +147,7 @@ export class Component extends React.Component<Props, State> {
             <div className="action-button-holder">
               <div
                 className={`button action-button ${selected === 'mine' && 'selected-button'}`}
-                onClick={() => this.props.startEntityAction(entity, 'mine')}
+                onClick={() => GameStore.startEntityAction(entity, 'mine')}
               >
                 Mine
               </div>
@@ -173,7 +161,7 @@ export class Component extends React.Component<Props, State> {
             <div className="action-button-holder">
               <div
                 className={`button action-button ${selected === 'move' && 'selected-button'}`}
-                onClick={() => this.props.startEntityAction(entity, 'move')}
+                onClick={() => GameStore.startEntityAction(entity, 'move')}
               >
                 Move
               </div>
@@ -182,7 +170,7 @@ export class Component extends React.Component<Props, State> {
             <div className="action-button-holder">
               <div
                 className={`button action-button ${selected === 'attack' && 'selected-button'}`}
-                onClick={() => this.props.startEntityAction(entity, 'attack')}
+                onClick={() => GameStore.startEntityAction(entity, 'attack')}
               >
                 Attack
               </div>
@@ -198,7 +186,7 @@ export class Component extends React.Component<Props, State> {
             <div className="action-button-holder">
               <div
                 className={`button action-button ${selected === 'move' && 'selected-button'}`}
-                onClick={() => this.props.startEntityAction(entity, 'move')}
+                onClick={() => GameStore.startEntityAction(entity, 'move')}
               >
                 Move
               </div>
@@ -207,7 +195,7 @@ export class Component extends React.Component<Props, State> {
             <div className="action-button-holder">
               <div
                 className={`button action-button ${selected === 'attack' && 'selected-button'}`}
-                onClick={() => this.props.startEntityAction(entity, 'attack')}
+                onClick={() => GameStore.startEntityAction(entity, 'attack')}
               >
                 Attack
               </div>
@@ -223,7 +211,7 @@ export class Component extends React.Component<Props, State> {
             <div className={`action-button-holder`}>
               <div
                 className={`button action-button ${selected === 'spawn-infantry' && 'selected-button'}`}
-                onClick={() => this.props.startEntityAction(entity, 'spawn-infantry')}
+                onClick={() => GameStore.startEntityAction(entity, 'spawn-infantry')}
               >
                 Spawn Infantry
               </div>
@@ -232,7 +220,7 @@ export class Component extends React.Component<Props, State> {
             <div className="action-button-holder">
               <div
                 className={`button action-button ${selected === 'spawn-tank' && 'selected-button'}`}
-                onClick={() => this.props.startEntityAction(entity, 'spawn-tank')}
+                onClick={() => GameStore.startEntityAction(entity, 'spawn-tank')}
               >
                 Spawn Tank
               </div>
@@ -241,7 +229,7 @@ export class Component extends React.Component<Props, State> {
             <div className="action-button-holder">
               <div
                 className={`button action-button ${selected === 'spawn-plane' && 'selected-button'}`}
-                onClick={() => this.props.startEntityAction(entity, 'spawn-plane')}
+                onClick={() => GameStore.startEntityAction(entity, 'spawn-plane')}
               >
                 Spawn Plane
               </div>
@@ -253,8 +241,8 @@ export class Component extends React.Component<Props, State> {
   }
 
   private getActionCount(entity: GameEntity, action: EntityAction) {
-    return this.props.roundState.entities[entity.id]
-      ? Utils.sum(this.props.roundState.entities[entity.id].filter(a => a.action === action), a => a.count)
+    return this.props.gameStore.roundState.entities[entity.id]
+      ? Utils.sum(this.props.gameStore.roundState.entities[entity.id].filter(a => a.action === action), a => a.count)
       : 0;
   }
 }
@@ -280,16 +268,4 @@ export let Badge: SFC<{count: number}> = ({count}) => {
   );
 };
 
-export let ActionPanel = connect(
-  (state: SwgStore) => ({
-    user: state.appState.user,
-    game: state.gameState.game,
-    roundState: state.gameState.localRoundState,
-    selectedEntity: state.gameState.selectedEntity,
-    selectedResource: state.gameState.selectedResource,
-    selectedEntityAction: state.gameState.selectedEntityAction,
-  }),
-  {
-    startEntityAction: GameThunks.startEntityAction,
-  }
-)(withRouter(Component));
+export let ActionPanel = withRouter(Component);

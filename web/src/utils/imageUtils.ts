@@ -1,15 +1,15 @@
-import {getStore} from '../store';
-import {GameActions} from '../store/game/actions';
+import {gameStore} from '../store/game/store';
+import {mainStore} from '../store/main/store';
 
 export class ImageUtils {
   static preloadImage(url: string) {
     const image = new Image();
     image.src = url;
-    const imagesLoading = getStore().getState().gameState.imagesLoading || 0;
-    getStore().dispatch(GameActions.setImagesLoadingAction(imagesLoading + 1));
+    const imagesLoading = gameStore.imagesLoading || 0;
+    gameStore.setImagesLoading(imagesLoading + 1);
     image.onload = () => {
-      const imagesLeft = getStore().getState().gameState.imagesLoading;
-      getStore().dispatch(GameActions.setImagesLoadingAction(imagesLeft - 1));
+      const imagesLeft = gameStore.imagesLoading;
+      gameStore.setImagesLoading(imagesLeft - 1);
     };
     return image;
   }

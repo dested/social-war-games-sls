@@ -3,9 +3,8 @@ import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameResource} from '@swg-common/game/gameResource';
 import {Utils} from '@swg-common/utils/utils';
 import {Manager, Pan, Tap} from 'hammerjs';
-import {getStore} from '../store';
-import {Dispatcher, GameActions, GameThunks, UIActions} from '../store/actions';
-import {SwgStore} from '../store/reducers';
+import {GameStore, gameStore} from '../store/game/store';
+import {uiStore} from '../store/ui/store';
 import {AnimationUtils} from '../utils/animationUtils';
 import {ColorUtils} from '../utils/colorUtils';
 import {HexColors} from '../utils/hexColors';
@@ -21,21 +20,18 @@ export class GameRenderer {
   private context: CanvasRenderingContext2D;
   view: GameView;
 
-  selectEntity = (entity: GameEntity) => getStore().dispatch(GameActions.selectEntity(entity));
-  selectResource = (resource: GameResource) => getStore().dispatch(GameActions.selectResource(resource));
-  selectedViableHex = (hex: GameHexagon) => getStore().dispatch(GameThunks.selectViableHex(hex));
+  selectEntity = (entity: GameEntity) => gameStore.selectEntity(entity);
+  selectResource = (resource: GameResource) => gameStore.selectResource(resource);
+  selectedViableHex = (hex: GameHexagon) => GameStore.selectViableHex(hex);
   swipeVelocity: {x: number; y: number};
 
   tapHex(hexagon: GameHexagon) {
-    const store = getStore();
-    const state = store.getState();
-
     this.swipeVelocity.x = 0;
     this.swipeVelocity.y = 0;
 
-    const {game, selectedEntity} = state.gameState;
+    const {game, selectedEntity} = gameStore;
 
-    const viableHexIds: {[hexId: string]: boolean} = state.gameState.viableHexIds || {};
+    const viableHexIds: {[hexId: string]: boolean} = gameStore.viableHexIds || {};
 
     let moveTo = false;
 
@@ -102,16 +98,11 @@ export class GameRenderer {
   }
 
   moveToEntity(entity: GameEntity) {
-    const store = getStore();
-    const state = store.getState();
-
-    const {game} = state.gameState;
+    const {game} = gameStore;
     this.moveToHexagon(game.grid.getHexAt(entity));
   }
 
   start(canvas: HTMLCanvasElement) {
-    const store = getStore();
-
     if (this.canvas) {
       return;
     }
@@ -129,9 +120,8 @@ export class GameRenderer {
     let startViewX = 0;
     let startViewY = 0;
     this.swipeVelocity = {x: 0, y: 0};
-    const gameState = store.getState().gameState;
 
-    this.view = new GameView(this.canvas, gameState.game);
+    this.view = new GameView(this.canvas, gameStore.game);
 
     manager.on('panmove', e => {
       if (e.velocity === 0) {
@@ -141,7 +131,7 @@ export class GameRenderer {
     });
 
     manager.on('panstart', e => {
-      store.dispatch(UIActions.setUI('None'));
+      uiStore.setUI('None');
 
       this.swipeVelocity.x = this.swipeVelocity.y = 0;
       startX = e.center.x;
@@ -149,22 +139,22 @@ export class GameRenderer {
       startViewX = this.view.x;
       startViewY = this.view.y;
     });
+
     manager.on('panend', e => {});
 
     manager.on('swipe', (ev: {velocityX: number; velocityY: number}) => {
-      store.dispatch(UIActions.setUI('None'));
+      uiStore.setUI('None');
       this.swipeVelocity.x = ev.velocityX * 10;
       this.swipeVelocity.y = ev.velocityY * 10;
     });
 
     manager.on('tap', e => {
       this.swipeVelocity.x = this.swipeVelocity.y = 0;
-      store.dispatch(UIActions.setUI('None'));
-      const state = store.getState();
-      if (!state.gameState) {
+      uiStore.setUI('None');
+      if (!gameStore.gameState) {
         return;
       }
-      const {game} = state.gameState;
+      const {game} = gameStore;
       const hex = Drawing.getHexAt(
         {
           x: this.view.x + (e.center.x - e.target.offsetLeft),
@@ -204,9 +194,8 @@ export class GameRenderer {
 
   private startRender() {
     requestAnimationFrame(() => {
-      const store = getStore();
       try {
-        this.render(store.getState(), store.dispatch);
+        this.render();
       } catch (ex) {
         console.error(ex);
       }
@@ -214,9 +203,9 @@ export class GameRenderer {
     });
   }
 
-  private render(state: SwgStore, dispatch: Dispatcher) {
+  private render() {
     const {canvas, context} = this;
-    const {game, localRoundState: roundState, selectedEntityAction, selectedEntity} = state.gameState;
+    const {game, localRoundState: roundState, selectedEntityAction, selectedEntity} = gameStore;
     if (!game) {
       return;
     }
@@ -248,7 +237,7 @@ export class GameRenderer {
         HexConstants.height
       );
     }
-    const viableHexIds = state.gameState.viableHexIds || {};
+    const viableHexIds = gameStore.viableHexIds || {};
 
     context.strokeStyle = HexColors.defaultBorder;
     for (const hexagon of visibleHexes) {
@@ -364,8 +353,8 @@ export class GameRenderer {
       }
     }
 
-    if (state.gameState.lastRoundActions) {
-      for (const action of state.gameState.lastRoundActions) {
+    if (gameStore.lastRoundActions) {
+      for (const action of gameStore.lastRoundActions) {
         if (!action.toHex) {
           continue;
         }

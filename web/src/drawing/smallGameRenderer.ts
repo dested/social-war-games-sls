@@ -1,11 +1,8 @@
 import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameModel} from '@swg-common/game/gameLogic';
-import {Grid} from '@swg-common/hex/hex';
 import {Manager, Pan} from 'hammerjs';
-import {getStore} from '../store';
-import {Dispatcher, UIActions, UIThunks} from '../store/actions';
-import {SwgStore} from '../store/reducers';
-import {UI} from '../store/ui/actions';
+import {gameStore} from '../store/game/store';
+import {UI, uiStore} from '../store/ui/store';
 import {AnimationUtils} from '../utils/animationUtils';
 import {ColorUtils} from '../utils/colorUtils';
 import {DebounceUtils} from '../utils/debounceUtils';
@@ -80,11 +77,10 @@ export class SmallGameRenderer {
     manager.add(new Hammer.Pan({}));
 
     const goToPosition = (e: HammerInput, force: boolean) => {
-      const state = getStore().getState();
-      if (!state.gameState) {
+      if (!gameStore.gameState) {
         return;
       }
-      const {game} = state.gameState;
+      const {game} = gameStore;
 
       const bodyRect = document.body.getBoundingClientRect();
       const elemRect = e.target.getBoundingClientRect();
@@ -102,11 +98,10 @@ export class SmallGameRenderer {
           position.y > button.top &&
           position.y < button.top + button.height
         ) {
-          const store = getStore();
-          if (store.getState().uiState.ui === button.ui) {
-            store.dispatch(UIThunks.setUI('None'));
+          if (uiStore.ui === button.ui) {
+            uiStore.setUI('None');
           } else {
-            store.dispatch(UIThunks.setUI(button.ui));
+            uiStore.setUI(button.ui);
           }
           return false;
         }
@@ -143,25 +138,24 @@ export class SmallGameRenderer {
       this.forceRender();
     }, 1000 / 10);
 
-    this.processMiniMap(getStore().getState().gameState.game);
+    this.processMiniMap(gameStore.game);
   }
 
   forceRender() {
-    const store = getStore();
     try {
-      this.render(store.getState(), store.dispatch);
+      this.render();
     } catch (ex) {
       console.error(ex);
     }
   }
 
-  private render(state: SwgStore, dispatch: Dispatcher) {
+  private render() {
     const {canvas, context} = this;
     if (!canvas) {
       return;
     }
 
-    const {game, roundState} = state.gameState;
+    const {game, roundState} = gameStore;
     if (!game) {
       return;
     }
@@ -189,7 +183,7 @@ export class SmallGameRenderer {
 
     const textSize = (UIAssets.BottomButtonFirst.height / scaleY) * 0.7;
     const smallTextSize = (UIAssets.BottomButtonFirst.height / scaleY) * 0.4;
-    const votesLeft = state.gameState.userDetails.maxVotes - state.gameState.userDetails.voteCount;
+    const votesLeft = gameStore.userDetails.maxVotes - gameStore.userDetails.voteCount;
 
     this.buttons = [
       {
@@ -269,7 +263,7 @@ export class SmallGameRenderer {
     for (let i = this.buttons.length - 1; i >= 0; i--) {
       const button = this.buttons[i];
       context.drawImage(button.asset.image, button.left, button.top, button.width, button.height);
-      context.fillStyle = state.uiState.ui === button.ui ? selectedFont : button.color;
+      context.fillStyle = uiStore.ui === button.ui ? selectedFont : button.color;
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       context.font = button.font;
