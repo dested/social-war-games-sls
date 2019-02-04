@@ -1,4 +1,5 @@
 import {GameHexagon} from './gameHexagon';
+import {FacingDirection} from '@swg-common/utils/hexUtils';
 
 export interface EntityDetail {
   type: EntityType;
@@ -26,7 +27,10 @@ export interface ActionRoute {
 }
 export type EntityAction = 'attack' | 'move' | 'spawn-infantry' | 'spawn-tank' | 'spawn-plane' | 'mine';
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
-export type Faction = '0' | '9' | PlayableFactionId;
+
+export type Faction = NoFaction | ShroudedTile | PlayableFactionId;
+export type NoFaction = '0';
+export type ShroudedTile = '9';
 export type PlayableFactionId = '1' | '2' | '3';
 
 export type OfFaction<T> = {[faction in PlayableFactionId]: T};
@@ -55,6 +59,7 @@ export interface GameEntity {
   entityType: EntityType;
   health: number;
   healthRegenStep: number;
+  facingDirection: FacingDirection;
 }
 
 export let EntityDetails: {[key in EntityType]: EntityDetail} = {

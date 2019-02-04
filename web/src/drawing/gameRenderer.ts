@@ -1,6 +1,7 @@
 import {GameEntity} from '@swg-common/game/entityDetail';
 import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameResource} from '@swg-common/game/gameResource';
+import {FacingDirection, HexUtils} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
 import {Manager, Pan, Tap} from 'hammerjs';
 import {GameStore, gameStore} from '../store/game/store';
@@ -148,6 +149,8 @@ export class GameRenderer {
       this.swipeVelocity.y = ev.velocityY * 10;
     });
 
+    let lastPos: GameHexagon;
+
     manager.on('tap', e => {
       this.swipeVelocity.x = this.swipeVelocity.y = 0;
       UIStore.setUI('None');
@@ -164,6 +167,10 @@ export class GameRenderer {
         DrawingOptions.default
       );
       if (hex) {
+        if (lastPos) {
+          HexUtils.getDirection(lastPos, hex);
+        }
+        lastPos = hex;
         this.tapHex(hex);
       }
     });
@@ -236,6 +243,7 @@ export class GameRenderer {
         HexConstants.width,
         HexConstants.height
       );
+      // context.fillText(hexagon.id, hexagon.center.x, hexagon.center.y);
     }
     const viableHexIds = gameStore.viableHexIds || {};
 
@@ -255,7 +263,7 @@ export class GameRenderer {
             continue;
           }
           if (hasEntity) {
-            if (hasEntity === selectedEntity) {
+            if (selectedEntity && hasEntity.id === selectedEntity.id) {
               context.fillStyle = '#f1f1f1';
             } else {
               context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '1');
@@ -411,14 +419,38 @@ export class GameRenderer {
       const entity = game.entities.getIndex(i);
       const hex = grid.getHexAt(entity);
       const asset = GameAssets[entity.entityType];
-
+      let degrees = 0;
+      switch (entity.facingDirection) {
+        case FacingDirection.TopLeft:
+          degrees = 4 * 60;
+          break;
+        case FacingDirection.TopRight:
+          degrees = 5 * 60;
+          break;
+        case FacingDirection.BottomLeft:
+          degrees = 2 * 60;
+          break;
+        case FacingDirection.BottomRight:
+          degrees = 1 * 60;
+          break;
+        case FacingDirection.Left:
+          degrees = 3 * 60;
+          break;
+        case FacingDirection.Right:
+          degrees = 0 * 60;
+          break;
+      }
+      context.save();
+      context.translate(hex.center.x, hex.center.y);
+      context.rotate(degrees * 0.0174533);
       context.drawImage(
         asset.image,
-        hex.center.x - asset.centerX * wRatio,
-        hex.center.y - asset.centerY * hRatio,
+        -asset.centerX * wRatio,
+        -asset.centerY * hRatio,
         asset.width * wRatio,
         asset.height * hRatio
       );
+      context.restore();
     }
 
     for (let i = 0; i < game.entities.length; i++) {
@@ -427,7 +459,6 @@ export class GameRenderer {
       const rectX = hex.center.x - HexConstants.width / 2;
       const rectY = hex.center.y;
       context.drawImage(this.roundRect(rectWidth, rectHeight, 5, 'rgba(0,0,0,.6)'), rectX, rectY);
-
       context.fillStyle = 'white';
       context.fillText(entity.health.toString(), rectX + rectWidth / 2 - 1, rectY + rectHeight / 1.4, rectWidth);
     }

@@ -140,4 +140,16 @@ round state
   each unit id
     each action
       vote count
-    
+
+
+resources
+  only infantry can mine resources
+  has to be within 3 radius
+  takes one turn to mine
+  ++ on the factions resource count
+  any factory can now produce a new unit
+    infantry costs 3 resource
+    tank cost 5
+    plane cost 7
+
+

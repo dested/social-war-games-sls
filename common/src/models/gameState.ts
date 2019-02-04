@@ -1,3 +1,4 @@
+import {FacingDirection} from '@swg-common/utils/hexUtils';
 import {EntityAction, EntityType, OfFaction, PlayableFactionId} from '../game/entityDetail';
 import {ResourceType} from '../game/gameResource';
 
@@ -24,6 +25,7 @@ export interface GameStateEntity {
   entityType: EntityType;
   health: number;
   healthRegenStep: number;
+  facingDirection: FacingDirection;
 }
 
 export interface GameStateGameEntityBusyDetails {

@@ -16,6 +16,7 @@ import {FactionRoundStats, RoundStats} from '@swg-common/models/roundStats';
 import {VoteNote} from '@swg-common/models/voteNote';
 import {RoundOutcomeParser} from '@swg-common/parsers/roundOutcomeParser';
 import {RoundStateParser} from '@swg-common/parsers/roundStateParser';
+import {HexUtils} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
 import {Config} from '@swg-server-common/config';
 import {DataManager} from '@swg-server-common/db/dataManager';
@@ -29,6 +30,7 @@ import fetch from 'node-fetch';
 import {S3Splitter} from './s3Splitter';
 import {SocketManager} from './socketManager';
 import {StateManager} from './stateManager';
+import {ServerGameLogic} from '@swg-server-common/game/serverGameLogic';
 
 export class Worker {
   private static redisManager: RedisManager;
@@ -78,7 +80,7 @@ export class Worker {
       for (const gameEntity of game.entities.filter(a => a.busy)) {
         gameEntity.busy.ticks--;
         if (gameEntity.busy.ticks === 0) {
-          const voteResult = GameLogic.processVote(
+          const voteResult = ServerGameLogic.processVote(
             game,
             {
               factionId: gameEntity.factionId,
@@ -116,7 +118,7 @@ export class Worker {
 
           let voteResult = GameLogic.validateVote(game, vote);
           if (voteResult === VoteResult.Success) {
-            voteResult = GameLogic.processVote(game, vote, false);
+            voteResult = ServerGameLogic.processVote(game, vote, false);
             if (voteResult !== VoteResult.Success) {
               console.log('Process vote failed:', voteResult);
               continue;
@@ -266,7 +268,7 @@ export class Worker {
         c: hexCount,
         p: hexCount / factionHexes.length,
         r: game.factionDetails[faction].resourceCount,
-        s: GameLogic.calculateScore(game, faction),
+        s: ServerGameLogic.calculateScore(game, faction),
       };
     });
     const response = await fetch('https://s3-us-west-2.amazonaws.com/swg-content/faction-stats.json', {
@@ -325,7 +327,7 @@ export class Worker {
       generation: game.generation,
       winningVotes: Utils.mapToObj(Factions, faction => winningVotes.filter(a => a.factionId === faction)),
       playersVoted: Utils.mapObjToObj(playersVoted, (_, p) => p.length),
-      scores: Utils.mapToObj(Factions, faction => GameLogic.calculateScore(game, faction)),
+      scores: Utils.mapToObj(Factions, faction => ServerGameLogic.calculateScore(game, faction)),
       hotEntities: Utils.mapToObj(Factions, faction =>
         voteCounts
           .filter(vote => preVoteEntities.find(ent => ent.id === vote._id).factionId === faction)
@@ -373,7 +375,7 @@ export class Worker {
           }
 
           case 'move': {
-            distanceMoved += game.grid.getDistance(fromHex, toHex);
+            distanceMoved += HexUtils.getDistance(fromHex, toHex);
             break;
           }
           case 'mine': {
@@ -466,8 +468,8 @@ export class Worker {
       }
 
       case 'move': {
-        const distance = game.grid.getDistance(fromHex, toHex);
-        const direction = game.grid.getDirection(fromHex, toHex);
+        const distance = HexUtils.getDistance(fromHex, toHex);
+        const direction = HexUtils.getDirection(fromHex, toHex);
         return [
           {
             note:

@@ -1,16 +1,16 @@
 import {EntityDetails, Factions, GameEntity, OfFaction, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
-import {Point, PointHashKey} from '@swg-common/hex/hex';
+import {PointHashKey} from '@swg-common/hex/hex';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState, GameStateEntity, GameStateResource} from '@swg-common/models/gameState';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {GameStateParser} from '@swg-common/parsers/gameStateParser';
 import {RoundStateParser} from '@swg-common/parsers/roundStateParser';
 import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
+import {Point} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
-import * as aesjs from 'aes-js';
 import {SocketManager} from './socketManager';
 
 export class S3Splitter {

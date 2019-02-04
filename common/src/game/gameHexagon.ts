@@ -1,4 +1,5 @@
-import {Hexagon, Point} from '../hex/hex';
+import {Point} from '@swg-common/utils/hexUtils';
+import {Hexagon} from '../hex/hex';
 import {Faction} from './entityDetail';
 import {HexagonTileType} from './hexagonTypes';
 

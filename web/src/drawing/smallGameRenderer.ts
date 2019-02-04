@@ -1,5 +1,6 @@
 import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {GameModel} from '@swg-common/game/gameLogic';
+import {HexUtils} from '@swg-common/utils/hexUtils';
 import {Manager, Pan} from 'hammerjs';
 import {gameStore} from '../store/game/store';
 import {UI, UIStore, uiStore} from '../store/ui/store';
@@ -121,7 +122,6 @@ export class SmallGameRenderer {
       }));
       distances.sort((a, b) => a.distance - b.distance);
       const hex = distances[0].h;
-
       if (hex) {
         this.tapHex(hex, force);
       }
@@ -262,7 +262,7 @@ export class SmallGameRenderer {
 
     for (let i = this.buttons.length - 1; i >= 0; i--) {
       const button = this.buttons[i];
-      context.drawImage(button.asset.image, button.left, button.top, button.width, button.height);
+      // context.drawImage(button.asset.image, button.left, button.top, button.width, button.height);
       context.fillStyle = uiStore.ui === button.ui ? selectedFont : button.color;
       context.textAlign = 'center';
       context.textBaseline = 'middle';
@@ -270,13 +270,13 @@ export class SmallGameRenderer {
       context.fillText(button.text, button.left + button.textX, button.top + button.textY);
     }
 
-    context.drawImage(
+    /*    context.drawImage(
       UIAssets.Radar.image,
       0,
       canvas.height - UIAssets.Radar.height / scaleY,
       UIAssets.Radar.width / scaleY,
       UIAssets.Radar.height / scaleY
-    );
+    );*/
 
     const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
 
@@ -285,10 +285,12 @@ export class SmallGameRenderer {
     context.fillStyle = ColorUtils.lerpColor('#00FF00', '#FF0000', Math.min(percent, 1));
     context.fillRect(timerLeftStart + 10, timerTopStartWithoutTransparent, timerWidth * percent, timerHeight);
 
+    /*
     context.fillStyle = '#D7D7D7';
     context.fillRect(timerLeftStart - 1, timerTopRimStart, timerWidth, 11 / scaleY);
+*/
 
-    for (let i = timerLeftStart; i < canvas.width; i += UIAssets.TimeShadow.width / scaleY) {
+    /*    for (let i = timerLeftStart; i < canvas.width; i += UIAssets.TimeShadow.width / scaleY) {
       context.drawImage(
         UIAssets.TimeShadow.image,
         i,
@@ -296,17 +298,17 @@ export class SmallGameRenderer {
         Math.min(canvas.width, UIAssets.TimeShadow.width / scaleY),
         UIAssets.TimeShadow.height / scaleY
       );
-    }
-
+    }*/
+    /*
     context.drawImage(
       UIAssets.TimerLeft.image,
       timerLeftStart,
       timerTopStart,
       UIAssets.TimerLeft.width / scaleY,
       UIAssets.TimerLeft.height / scaleY
-    );
+    );*/
 
-    for (let i = timerMiddleStart; i < timerRightStart; i += UIAssets.TimerMiddle.width / scaleY) {
+    /*    for (let i = timerMiddleStart; i < timerRightStart; i += UIAssets.TimerMiddle.width / scaleY) {
       context.drawImage(
         UIAssets.TimerMiddle.image,
         i,
@@ -314,15 +316,15 @@ export class SmallGameRenderer {
         Math.min(timerRightStart - i, UIAssets.TimerMiddle.width / scaleY),
         UIAssets.TimerMiddle.height / scaleY
       );
-    }
+    }*/
 
-    context.drawImage(
+    /*context.drawImage(
       UIAssets.TimerRight.image,
       timerRightStart,
       timerTopStart,
       UIAssets.TimerRight.width / scaleY,
       UIAssets.TimerRight.height / scaleY
-    );
+    );*/
 
     context.restore();
   }

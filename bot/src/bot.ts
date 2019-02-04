@@ -1,12 +1,13 @@
 import {EntityAction, EntityDetails, GameEntity, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {Point, PointHashKey} from '@swg-common/hex/hex';
+import {PointHashKey} from '@swg-common/hex/hex';
 import {JwtGetUserResponse} from '@swg-common/models/http/userController';
 import {VoteRequestResults} from '@swg-common/models/http/voteResults';
 import {DoubleHashArray} from '@swg-common/utils/hashArray';
 import {Utils} from '@swg-common/utils/utils';
 import {DataService} from './dataServices';
+import {Point} from '@swg-common/utils/hexUtils';
 
 const startBot = async (userResponse: JwtGetUserResponse) => {
   const layout = await DataService.getLayout();

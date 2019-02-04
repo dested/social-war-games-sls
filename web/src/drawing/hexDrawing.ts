@@ -1,7 +1,8 @@
 import {GameHexagon} from '@swg-common/../../../common/src/game/gameHexagon';
-import {Axial, Grid, Hexagon, Point} from '@swg-common/hex/hex';
+import {Axial, Grid, Hexagon} from '@swg-common/hex/hex';
 import {HexColors} from '../utils/hexColors';
 import {HexConstants} from '../utils/hexConstants';
+import {Point} from '@swg-common/utils/hexUtils';
 
 export class Drawing {
   static Orientation: {

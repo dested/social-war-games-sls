@@ -1,9 +1,9 @@
 import {Factions, GameEntity, OfFaction} from '@swg-common/game/entityDetail';
-import {Point} from '@swg-common/hex/hex';
 import {FactionStat, FactionStats} from '@swg-common/models/factionStats';
 import {Utils} from '@swg-common/utils/utils';
 import * as React from 'react';
 import {HexColors} from '../utils/hexColors';
+import {Point} from '@swg-common/utils/hexUtils';
 
 interface Props {
   factionStats: FactionStats[];

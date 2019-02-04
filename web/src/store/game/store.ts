@@ -4,7 +4,7 @@ import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {GameResource} from '@swg-common/game/gameResource';
 import {HexagonTypes} from '@swg-common/game/hexagonTypes';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {Point, PointHashKey} from '@swg-common/hex/hex';
+import {PointHashKey} from '@swg-common/hex/hex';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {UserDetails} from '@swg-common/models/http/userDetails';
@@ -22,7 +22,7 @@ import {HexImages} from '../../utils/hexImages';
 import {SocketUtils} from '../../utils/socketUtils';
 import {UIConstants} from '../../utils/uiConstants';
 import {mainStore} from '../main/store';
-import {uiStore} from '../ui/store';
+import {Point} from '@swg-common/utils/hexUtils';
 
 export class GameStore {
   @observable game?: GameModel;

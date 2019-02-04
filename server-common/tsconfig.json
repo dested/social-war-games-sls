@@ -1,7 +1,6 @@
 {
   "extends": "../tsconfig",
   "compilerOptions": {
-    "baseUrl": "./src",
-    "outDir": "./bin"
+    "baseUrl": "./src"
   }
 }

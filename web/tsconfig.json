@@ -1,9 +1,7 @@
 {
   "extends": "../tsconfig",
   "compilerOptions": {
-    "noEmit": true,
     "baseUrl": "./src",
-    "outDir": "./bin",
     "jsx": "react"
   }
 }

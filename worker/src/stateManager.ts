@@ -47,6 +47,7 @@ export class StateManager {
             health: ent.health,
             id: ent.id,
             healthRegenStep: ent.healthRegenStep,
+            facingDirection: ent.facingDirection,
           });
           return entities;
         },

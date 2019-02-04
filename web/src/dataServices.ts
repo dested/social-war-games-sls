@@ -141,7 +141,7 @@ export class DataService {
         'Content-Type': 'application/json',
       },
     });
-    return JSON.parse(await response.json());
+    return await response.json();
   }
 
   static async getFactionRoundStats(generation: number, factionId: PlayableFactionId) {

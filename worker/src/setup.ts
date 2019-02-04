@@ -12,6 +12,7 @@ import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {S3Splitter} from './s3Splitter';
 import {SocketManager} from './socketManager';
 import {StateManager} from './stateManager';
+import {ServerGameLogic} from '@swg-server-common/game/serverGameLogic';
 
 export class Setup {
   static start() {
@@ -36,7 +37,7 @@ export class Setup {
     await DBRoundStats.db.deleteMany({});
     await DBLadder.db.deleteMany({});
 
-    const game = GameLogic.createGame();
+    const game = ServerGameLogic.createDebugGame();
     console.log('create game');
     await redisManager.set<number>('game-generation', game.generation);
     console.log('set generation', game.generation);

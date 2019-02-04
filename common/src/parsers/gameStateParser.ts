@@ -1,3 +1,4 @@
+import {FacingDirection} from '@swg-common/utils/hexUtils';
 import {EntityType, GameEntityBusyDetails, OfFaction, PlayableFactionId} from '../game/entityDetail';
 import {FactionDetail} from '../game/factionDetail';
 import {ResourceType} from '../game/gameResource';
@@ -30,6 +31,7 @@ export class GameStateParser {
         buff.addInt32(entity.id);
         buff.addInt16(entity.x);
         buff.addInt16(entity.y);
+        buff.addInt8(entity.facingDirection);
         buff.addInt8(entity.healthRegenStep);
         buff.addInt8(entity.health);
         buff.addInt8(ParserEnumUtils.entityTypeToInt(entity.entityType));
@@ -129,6 +131,7 @@ export class GameStateParser {
         const id = reader.readInt32();
         const x = reader.readInt16();
         const y = reader.readInt16();
+        const facingDirection = reader.readInt8() as FacingDirection;
         const healthRegenStep = reader.readInt8();
         const health = reader.readInt8();
         const entityType = ParserEnumUtils.intToEntityType(reader.readInt8());
@@ -154,6 +157,7 @@ export class GameStateParser {
           id,
           healthRegenStep,
           busy,
+          facingDirection,
         });
       }
       entities[factionId] = entitiesInFaction;

@@ -1,5 +1,6 @@
 // https://github.com/bodinaren/BHex.js
 
+import {HexUtils, Point} from '@swg-common/utils/hexUtils';
 import {GameEntity} from '../game/entityDetail';
 import {DoubleHashArray, HashArray} from '../utils/hashArray';
 
@@ -145,30 +146,6 @@ export class Grid<T extends Hexagon = Hexagon> {
     return (this.neighborCache[key] = directions.map(d => this.getHexAt(d)));
   }
 
-  /**
-   * Gets the distance between two axial positions ignoring any obstacles.
-   * @param {Axial} a - The first axial position.
-   * @param {Axial} b - The second axial position.
-   * @returns {number} How many hexes it is between the given Axials.
-   */
-  getDistance(a: Point, b: Point) {
-    return (Math.abs(a.x - b.x) + Math.abs(a.x + a.y - b.x - b.y) + Math.abs(a.y - b.y)) / 2;
-  }
-
-  getDirection(a: Point, b: Point) {
-    const difX = a.x - b.x;
-    const difY = a.y - b.y;
-
-    const xDirection = difX > 0 ? 'West' : difX < 0 ? 'East' : '';
-    const yDirection = difY > 0 ? 'North' : difY < 0 ? 'South' : '';
-
-    if (yDirection && xDirection) {
-      return yDirection + xDirection.toLowerCase();
-    }
-
-    return yDirection + '' + xDirection;
-  }
-
   getThickLine(start: Axial, end: Axial, wd: number): T[] {
     let x0 = start.x;
     let y0 = start.y;
@@ -234,7 +211,7 @@ export class Grid<T extends Hexagon = Hexagon> {
 
     const cube_lerp = (a: Cube, b: Cube, t: number) =>
       new Cube(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t);
-    const N = this.getDistance(start, end);
+    const N = HexUtils.getDistance(start, end);
     const line1: T[] = [];
     const line2: T[] = [];
     const cStart = start.toCube();
@@ -347,7 +324,7 @@ export class Grid<T extends Hexagon = Hexagon> {
     const closedHexes: {[key: string]: GridSearchNode<T>} = {};
     const visitedNodes: {[key: string]: GridSearchNode<T>} = {};
 
-    openHeap.push(new GridSearchNode<T>(start, null, 0, grid.getDistance(start, end)));
+    openHeap.push(new GridSearchNode<T>(start, null, 0, HexUtils.getDistance(start, end)));
 
     while (openHeap.size() > 0) {
       // Get the item with the lowest score (current + heuristic).
@@ -382,7 +359,7 @@ export class Grid<T extends Hexagon = Hexagon> {
 
         // Is it cheaper the previously best path to get here?
         if (!visited || g < visited.G) {
-          const h = grid.getDistance(n, end);
+          const h = HexUtils.getDistance(n, end);
 
           if (!visited) {
             // This was the first time we visited this node, add it to the heap.
@@ -439,11 +416,6 @@ class GridSearchNode<T> {
     this.H = h || 0;
     this.F = this.G + this.H;
   }
-}
-
-export interface Point {
-  x: number;
-  y: number;
 }
 
 export let PointHashKey = (a: Point) => a.x + a.y * 10000 + '';
