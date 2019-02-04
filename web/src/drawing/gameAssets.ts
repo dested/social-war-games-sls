@@ -5,6 +5,7 @@ import {ImageUtils} from '../utils/imageUtils';
 export interface GameAsset extends UIAsset {
   centerX: number;
   centerY: number;
+  rotate: boolean;
 }
 export interface UIAsset {
   image: HTMLImageElement;
@@ -93,27 +94,30 @@ export let loadEntities = () => {
     infantry: {
       image: ImageUtils.preloadImage(`./assets/entities/infantry.png`),
       imageUrl: `./assets/entities/infantry.png`,
-      width: 120,
-      height: 180,
-      centerX: 60,
-      centerY: 110,
+      width: 80,
+      height: 80,
+      centerX: 40,
+      centerY: 40,
+      rotate: true,
     },
     tank: {
       image: ImageUtils.preloadImage(`./assets/entities/tank.png`),
       imageUrl: `./assets/entities/tank.png`,
-      width: 120,
-      height: 140,
-      centerX: 60,
-      centerY: 70,
+      width: 80,
+      height: 80,
+      centerX: 40,
+      centerY: 40,
+      rotate: true,
     },
 
     plane: {
       image: ImageUtils.preloadImage(`./assets/entities/plane.png`),
       imageUrl: `./assets/entities/plane.png`,
-      width: 120,
-      height: 140,
-      centerX: 60,
-      centerY: 70,
+      width: 80,
+      height: 80,
+      centerX: 40,
+      centerY: 40,
+      rotate: true,
     },
 
     factory: {
@@ -123,6 +127,7 @@ export let loadEntities = () => {
       height: 140,
       centerX: 60,
       centerY: 70,
+      rotate: false,
     },
 
     bronze: {
@@ -132,6 +137,7 @@ export let loadEntities = () => {
       height: 102,
       centerX: 40,
       centerY: 70,
+      rotate: false,
     },
 
     silver: {
@@ -141,6 +147,7 @@ export let loadEntities = () => {
       height: 102,
       centerX: 40,
       centerY: 70,
+      rotate: false,
     },
 
     gold: {
@@ -150,6 +157,7 @@ export let loadEntities = () => {
       height: 102,
       centerX: 40,
       centerY: 70,
+      rotate: false,
     },
   };
 };

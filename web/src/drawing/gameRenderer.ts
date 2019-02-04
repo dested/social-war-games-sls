@@ -149,8 +149,6 @@ export class GameRenderer {
       this.swipeVelocity.y = ev.velocityY * 10;
     });
 
-    let lastPos: GameHexagon;
-
     manager.on('tap', e => {
       this.swipeVelocity.x = this.swipeVelocity.y = 0;
       UIStore.setUI('None');
@@ -167,10 +165,6 @@ export class GameRenderer {
         DrawingOptions.default
       );
       if (hex) {
-        if (lastPos) {
-          HexUtils.getDirection(lastPos, hex);
-        }
-        lastPos = hex;
         this.tapHex(hex);
       }
     });
@@ -408,8 +402,8 @@ export class GameRenderer {
       );
     }
 
-    const rectWidth = HexConstants.width * 0.35;
-    const rectHeight = HexConstants.height * 0.4;
+    const rectWidth = HexConstants.width * 0.3;
+    const rectHeight = HexConstants.height * 0.35;
     const fontSize = Math.round(rectWidth / 1.7);
     context.textAlign = 'center';
     context.textBaseline = 'bottom';
@@ -442,7 +436,10 @@ export class GameRenderer {
       }
       context.save();
       context.translate(hex.center.x, hex.center.y);
-      context.rotate(degrees * 0.0174533);
+      if (asset.rotate) {
+        context.rotate(degrees * 0.0174533);
+      }
+
       context.drawImage(
         asset.image,
         -asset.centerX * wRatio,

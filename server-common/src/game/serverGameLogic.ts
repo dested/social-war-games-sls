@@ -483,7 +483,7 @@ export class ServerGameLogic extends GameLogic {
 
         fromEntity.x = toHex.x;
         fromEntity.y = toHex.y;
-        fromEntity.facingDirection = HexUtils.getDirection(path[0], path[1]);
+        fromEntity.facingDirection = HexUtils.getDirection(path[path.length - 2], path[path.length - 1]);
 
         break;
       case 'mine':
@@ -506,7 +506,7 @@ export class ServerGameLogic extends GameLogic {
               gameHexagon.setFactionId(fromEntity.factionId, 3);
             }
           }
-          fromEntity.facingDirection = HexUtils.getDirection(path[0], path[1]);
+          fromEntity.facingDirection = HexUtils.getDirection(path[path.length - 2], path[path.length - 1]);
 
           toResource.currentCount--;
           if (toResource.currentCount <= 0) {

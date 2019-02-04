@@ -3,7 +3,7 @@ export class HexConstants {
 
   static defaultWidth = 120;
   static defaultHeight = 140;
-  static height = HexConstants.isMobile ? 50 : 90;
+  static height = HexConstants.isMobile ? 50 : 120;
   static width = (HexConstants.defaultWidth / HexConstants.defaultHeight) * HexConstants.height;
 
   static smallHeight = 90 / 6;
