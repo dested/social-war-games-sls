@@ -146,7 +146,7 @@ export class Component extends React.Component<Props, State> {
         <div style={{flex: 1, overflow: 'scroll'}}>
           <span>Hot Units</span>
           <div style={{display: 'flex', flexDirection: 'column', flexWrap: 'wrap'}}>
-            {factionRoundStats.hotEntities.map(e => {
+            {factionRoundStats.hotEntities.map((e: any) => {
               const ent = this.props.gameStore.game.entities.get2(e);
               if (!ent) {
                 return null;
@@ -178,7 +178,7 @@ export class Component extends React.Component<Props, State> {
         <div style={{flex: 2, overflow: 'scroll', display: 'flex', flexDirection: 'column'}}>
           <span>Notes</span>
 
-          {factionRoundStats.notes.map(a => this.renderNote(a))}
+          {factionRoundStats.notes.map((a: any) => this.renderNote(a))}
         </div>
       </div>
     );

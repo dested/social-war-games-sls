@@ -1,5 +1,5 @@
-import {GameHexagon} from './gameHexagon';
 import {FacingDirection} from '@swg-common/utils/hexUtils';
+import {GameHexagon} from './gameHexagon';
 
 export interface EntityDetail {
   type: EntityType;
@@ -34,6 +34,18 @@ export type ShroudedTile = '9';
 export type PlayableFactionId = '1' | '2' | '3';
 
 export type OfFaction<T> = {[faction in PlayableFactionId]: T};
+
+export function emptyFactionObject<T>(callback: () => T): OfFaction<T> {
+  return {1: callback(), 2: callback(), 3: callback()};
+}
+
+export function foreachFaction<T>(callback: (factionId: PlayableFactionId) => T): OfFaction<T> {
+  const result = emptyFactionObject<T>(() => null);
+  for (const faction of Factions) {
+    result[faction] = callback(faction);
+  }
+  return result;
+}
 
 export let Factions: PlayableFactionId[] = ['1', '2', '3'];
 export let FactionNames: OfFaction<string> = {'1': 'Red', '2': 'Green', '3': 'Purple'};

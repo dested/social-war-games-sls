@@ -1,12 +1,11 @@
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {GameState} from '@swg-common/models/gameState';
-import {JwtGetUserResponse, LadderResponse} from '@swg-common/models/http/userController';
+import {JwtGetUserResponse} from '@swg-common/models/http/userController';
 import {UserDetails} from '@swg-common/models/http/userDetails';
-import {VoteRequestResults, VoteResponse} from '@swg-common/models/http/voteResults';
+import {VoteResponse} from '@swg-common/models/http/voteResults';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {GameStateParser} from '@swg-common/parsers/gameStateParser';
-import {RoundOutcomeParser} from '@swg-common/parsers/roundOutcomeParser';
 import {mainStore} from './store/main/store';
 
 export class DataService {
@@ -108,16 +107,24 @@ export class DataService {
     return GameLayoutParser.toGameLayout(arrayBuffer);
   }
 
-  static async getGameState(factionId: PlayableFactionId, factionToken: string): Promise<GameState> {
-    const response = await fetch(`${this.s3Server}/game-state-${factionId}.swg?bust=${+new Date()}`, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/octet-stream',
-        'Content-Type': 'application/octet-stream',
-      },
-    });
+  static async getGameState(
+    factionId: PlayableFactionId,
+    generation: number,
+    factionToken: string
+  ): Promise<GameState> {
+    const response = await fetch(
+      `${this.s3Server}/generation-outcomes/generation-outcome-${generation}-${factionId}.swg`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/octet-stream',
+          'Content-Type': 'application/octet-stream',
+        },
+      }
+    );
     const arrayBuffer = await response.arrayBuffer();
-    return GameStateParser.toGameState(arrayBuffer, factionToken.split('.').map(a => parseInt(a)));
+    const gameState = GameStateParser.toGameState(arrayBuffer, factionToken.split('.').map(a => parseInt(a)));
+    return gameState;
   }
 
   static async getLadder() {
@@ -142,17 +149,5 @@ export class DataService {
       },
     });
     return await response.json();
-  }
-
-  static async getFactionRoundStats(generation: number, factionId: PlayableFactionId) {
-    const response = await fetch(`${this.s3Server}/round-outcomes/round-outcome-${generation}-${factionId}.swg`, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/octet-stream',
-        'Content-Type': 'application/octet-stream',
-      },
-    });
-    const arrayBuffer = await response.arrayBuffer();
-    return RoundOutcomeParser.toRoundStats(arrayBuffer);
   }
 }

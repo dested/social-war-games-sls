@@ -125,7 +125,7 @@ export class ArrayBufferBuilder {
       }
     }
 
-    if (encryptionToken) {
+    if (false && encryptionToken) {
       const checksum = Utils.checksum(new Uint8Array(buffer));
 
       const aesCtr = new aesjs.ModeOfOperation.ctr(encryptionToken);
@@ -137,7 +137,6 @@ export class ArrayBufferBuilder {
       new Float64Array(readyBytes)[0] = checksum;
       new Uint32Array(readyBytes)[2] = encryptedBytes.length;
 
-      console.log(buffer.byteLength, checksum);
       return new Buffer(readyBytes);
     }
 
@@ -157,7 +156,7 @@ export class ArrayBufferReader {
   private dv: DataView;
 
   constructor(buffer: ArrayBuffer | ArrayBufferLike, decryptToken?: number[]) {
-    if (decryptToken) {
+    if (false && decryptToken) {
       const aesCtr = new aesjs.ModeOfOperation.ctr(decryptToken);
       const checksum = new Float64Array(buffer)[0];
       const length = new Uint32Array(buffer)[2];

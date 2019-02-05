@@ -4,6 +4,11 @@
   "description": "",
   "sideEffects": false,
   "scripts": {
+    "setup": "node dist/index setup",
+    "work": "node dist/index work",
+    "setup:debug": "node --inspect-brk dist/index setup",
+    "work:debug": "node --inspect-brk dist/index work",
+
     "start:watch": "nodemon",
     "test": "npx jest",
     "tsc": "npx tsc",

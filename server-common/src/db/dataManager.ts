@@ -8,9 +8,9 @@ export class DataManager {
 
   static async openDbConnection() {
     if (!this.dbConnection || !(this.dbConnection.serverConfig as any).isConnected()) {
-      console.time('mongo');
+      console.time('connecting mongo');
       this.dbConnection = (await MongoClient.connect(Config.dbConnection)).db(Config.dbName);
-      console.timeEnd('mongo');
+      console.timeEnd('connecting mongo');
     }
   }
 

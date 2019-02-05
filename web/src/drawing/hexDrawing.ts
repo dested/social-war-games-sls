@@ -14,6 +14,7 @@ export class Drawing {
   };
 
   static update(grid: Grid<GameHexagon>, options: DrawingOptions, smallOptions: DrawingOptions) {
+    // todo: make this faster.
     for (const hex of grid.hexes) {
       this.updateHex(hex, grid, options, smallOptions);
     }

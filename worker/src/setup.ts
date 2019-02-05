@@ -1,18 +1,19 @@
+import {emptyFactionObject} from '@swg-common/game/entityDetail';
 import {GameLogic} from '@swg-common/game/gameLogic';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {Config} from '@swg-server-common/config';
 import {DataManager} from '@swg-server-common/db/dataManager';
+import {DBGameStateResult} from '@swg-server-common/db/models/DBGameStateResult';
 import {DBLadder} from '@swg-server-common/db/models/dbLadder';
-import {DBRoundStats} from '@swg-server-common/db/models/dbRoundStats';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
+import {ServerGameLogic} from '@swg-server-common/game/serverGameLogic';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {S3Splitter} from './s3Splitter';
 import {SocketManager} from './socketManager';
 import {StateManager} from './stateManager';
-import {ServerGameLogic} from '@swg-server-common/game/serverGameLogic';
 
 export class Setup {
   static start() {
@@ -34,7 +35,7 @@ export class Setup {
 
     await DBVote.db.deleteMany({});
     await DBUserRoundStats.db.deleteMany({});
-    await DBRoundStats.db.deleteMany({});
+    await DBGameStateResult.db.deleteMany({});
     await DBLadder.db.deleteMany({});
 
     const game = ServerGameLogic.createDebugGame();
@@ -54,7 +55,7 @@ export class Setup {
       })),
     };
 
-    const gameState = StateManager.buildGameState(game);
+    const gameState = await StateManager.buildGameState(game, [], [], [], []);
     const roundState = StateManager.buildRoundState(0, []);
 
     console.log('built state');
@@ -62,7 +63,14 @@ export class Setup {
     const gameLayoutBytes = GameLayoutParser.fromGameLayout(gameLayout);
     await S3Manager.uploadBytes('layout.swg', gameLayoutBytes, true);
     const factionTokens = await S3Splitter.generateFactionTokens(redisManager, game.generation);
-    await S3Splitter.output(game, gameLayout, gameState, roundState, factionTokens, true);
+    await S3Splitter.output(
+      game,
+      gameLayout,
+      gameState,
+      roundState,
+      factionTokens,
+      true
+    );
 
     await redisManager.set('layout', gameLayout);
     await redisManager.set('game-state', gameState);

@@ -8,6 +8,7 @@ import {Event} from '../utils/models';
 import {HttpResponse, respond} from '../utils/respond';
 
 interface UserDetailsResponse {
+  generation: number;
   voteCount: number;
   maxVotes: number;
   factionToken: string;
@@ -29,6 +30,7 @@ export async function userDetailsHandler(
     const factionToken = await redisManager.getString(`faction-token-${generation}-${user.factionId}`);
 
     return respond(200, {
+      generation,
       voteCount: totalVotes,
       maxVotes: user.maxVotesPerRound,
       factionToken,

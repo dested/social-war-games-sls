@@ -2,7 +2,6 @@ import {ActionRoute} from '@swg-common/game/entityDetail';
 import {GameLogic} from '@swg-common/game/gameLogic';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {LadderResponse} from '@swg-common/models/http/userController';
-import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {action, observable} from 'mobx';
 import {DataService} from '../../dataServices';
 import {gameStore} from '../game/store';
@@ -14,7 +13,7 @@ export class UIStore {
   @observable ui: UI = 'None';
   @observable factionStats?: FactionStats[];
   @observable ladder?: LadderResponse;
-  @observable factionRoundStats?: FactionRoundStats;
+  @observable factionRoundStats?: any;
 
   @action private setUI(ui: UI) {
     this.ui = ui;
@@ -25,9 +24,9 @@ export class UIStore {
   @action setLadder(ladder: LadderResponse) {
     this.ladder = ladder;
   }
-  @action setFactionRoundStats(factionRoundStats: FactionRoundStats) {
+  @action setFactionRoundStats(factionRoundStats: any) {
     this.factionRoundStats = factionRoundStats;
-    gameStore.setLastRoundActionsFromNotes(factionRoundStats, gameStore.game, gameStore.game);
+    gameStore.setLastRoundActionsFromNotes(factionRoundStats, null, gameStore.game, gameStore.game);
   }
 
   static async setUI(ui: UI) {
@@ -55,7 +54,7 @@ export class UIStore {
         uiStore.setLadder(await DataService.getLadder());
         break;
       case 'RoundStats':
-        uiStore.setFactionRoundStats(await DataService.getFactionRoundStats(generation - 1, factionId));
+        // uiStore.setFactionRoundStats(await DataService.getFactionRoundStats(generation - 1, factionId));
         break;
     }
   }
@@ -65,7 +64,7 @@ export class UIStore {
 
     uiStore.setFactionRoundStats(null);
     try {
-      uiStore.setFactionRoundStats(await DataService.getFactionRoundStats(generation, factionId));
+      // uiStore.setFactionRoundStats(await DataService.getFactionRoundStats(generation, factionId));
     } catch (ex) {
       uiStore.setFactionRoundStats(null);
     }

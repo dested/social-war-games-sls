@@ -1,8 +1,11 @@
 import {GameHexagon} from '@swg-common/game/gameHexagon';
-import {GameModel} from '@swg-common/game/gameLogic';
+import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {HexUtils} from '@swg-common/utils/hexUtils';
+import {Timer} from '@swg-common/utils/timer';
 import {Manager, Pan} from 'hammerjs';
+import {DataService} from '../dataServices';
 import {gameStore} from '../store/game/store';
+import {mainStore} from '../store/main/store';
 import {UI, UIStore, uiStore} from '../store/ui/store';
 import {AnimationUtils} from '../utils/animationUtils';
 import {ColorUtils} from '../utils/colorUtils';
@@ -102,7 +105,13 @@ export class SmallGameRenderer {
           if (uiStore.ui === button.ui) {
             UIStore.setUI('None');
           } else {
-            UIStore.setUI(button.ui);
+            if (button.ui === 'Ladder') {
+              this.updateGen(1);
+            } else if (button.ui === 'Bases') {
+              this.updateGen(-1);
+            } else {
+              UIStore.setUI(button.ui);
+            }
           }
           return false;
         }
@@ -339,25 +348,23 @@ export class SmallGameRenderer {
     for (const hexagon of hexes) {
       const hasEntity = game.entities.get1(hexagon);
 
-      context.fillStyle = hexagon.tileType.color;
-
-      context.fillRect(
+      /*      context.fillRect(
         hexagon.smallCenter.x - HexConstants.smallWidth / 2,
         hexagon.smallCenter.y - HexConstants.smallHeight / 2,
         HexConstants.smallWidth,
         HexConstants.smallHeight
-      );
+      );*/
 
       if (hexagon.factionId === '9') {
-        context.fillStyle = 'rgba(0,0,0,.6)';
+        context.fillStyle = 'black';
       } else {
         if (hexagon.factionId === '0') {
-          continue;
+          context.fillStyle = hexagon.tileType.color;
         }
         if (hasEntity) {
           context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '1');
         } else {
-          context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '.3');
+          context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '1');
         }
       }
 
@@ -378,5 +385,47 @@ export class SmallGameRenderer {
             );
     */
     }
+  }
+
+  private async updateGen(generationUpdate: number) {
+    const timer = new Timer();
+    const gameState = await DataService.getGameState(
+      mainStore.user.factionId,
+      gameStore.gameState.generation + generationUpdate,
+      gameStore.userDetails.factionToken
+    );
+    timer.add('got from s3');
+    gameStore.setGameState(gameState);
+    const game = GameLogic.buildGameFromState(gameStore.layout, gameState);
+    timer.add('build from state');
+    HexConstants.smallHeight = ((UIConstants.miniMapHeight() - 100) / game.grid.boundsHeight) * 1.3384;
+    HexConstants.smallWidth = UIConstants.miniMapWidth() / game.grid.boundsWidth;
+
+    DrawingOptions.defaultSmall = {
+      width: HexConstants.smallWidth,
+      height: HexConstants.smallHeight,
+      size: HexConstants.smallHeight / 2 - 1,
+      orientation: Drawing.Orientation.PointyTop,
+    };
+
+    Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
+    timer.add('drawing update');
+
+    const emptyRoundState = {
+      nextUpdateTime: 0,
+      nextGenerationTick: game.roundEnd,
+      thisUpdateTime: 0,
+      generation: game.generation,
+      entities: {},
+    };
+
+    gameStore.updateGame(game, {...emptyRoundState}, {...emptyRoundState});
+    timer.add('gamestore update game');
+    gameStore.setLastRoundActionsFromNotes(gameState, mainStore.user.factionId, game, game);
+    timer.add('last round from notes');
+
+    gameStore.smallGameRenderer.forceRender();
+    timer.add('force render');
+    console.log(timer.printDeltas());
   }
 }

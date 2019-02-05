@@ -1,4 +1,11 @@
-import {EntityDetails, Factions, GameEntity, OfFaction, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {
+  emptyFactionObject,
+  EntityDetails,
+  Factions,
+  GameEntity,
+  OfFaction,
+  PlayableFactionId,
+} from '@swg-common/game/entityDetail';
 import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
 import {PointHashKey} from '@swg-common/hex/hex';
 import {GameLayout} from '@swg-common/models/gameLayout';
@@ -57,7 +64,7 @@ export class S3Splitter {
         visibleHexes.pushRange(game.grid.getRange(hexAt, radius, emptyEntityList).map(a => a));
       }
 
-      const [factionGameState, factionRoundState] = this.filterItems(
+      const [factionGameState, factionRoundState] = this.filterForFactions(
         layout,
         gameState,
         roundState,
@@ -68,12 +75,16 @@ export class S3Splitter {
       const roundStateJson = RoundStateParser.fromRoundState(factionRoundState);
       if (outputGameState) {
         // await this.redisManager.set(`faction-token-${generation}-${1}`, ``);
-        const gameStateJson = GameStateParser.fromGameState(
+        const gameStateBits = GameStateParser.fromGameState(
           factionGameState,
           factionTokens[faction].split('.').map(a => parseInt(a))
         );
 
-        await S3Manager.uploadBytes(`game-state-${faction}.swg`, gameStateJson, false);
+        await S3Manager.uploadBytes(
+          `generation-outcomes/generation-outcome-${game.generation}-${faction}.swg`,
+          gameStateBits,
+          true
+        );
       }
       /*await*/
       SocketManager.publish(`round-state-${faction}`, roundStateJson);
@@ -81,7 +92,7 @@ export class S3Splitter {
     // console.timeEnd('faction split');
   }
 
-  private static filterItems(
+  private static filterForFactions(
     layout: GameLayout,
     gameState: GameState,
     roundState: RoundState,
@@ -92,11 +103,7 @@ export class S3Splitter {
     const visibleEntityVotes: {[id: string]: RoundStateEntityVote[]} = {};
     const visibleResources: GameStateResource[] = [];
 
-    const visibleEntities: OfFaction<GameStateEntity[]> = {
-      '1': [],
-      '2': [],
-      '3': [],
-    };
+    const visibleEntities: OfFaction<GameStateEntity[]> = emptyFactionObject(() => []);
 
     const visibleFactionDetails = {...gameState.factionDetails};
 
@@ -116,6 +123,7 @@ export class S3Splitter {
       for (const entity of entities[faction]) {
         if (visibleHexes.exists(entity)) {
           if (faction !== factionId) {
+            // if its not my faction then dont show if its busy
             visibleEntities[faction].push({...entity, busy: null});
           } else {
             visibleEntities[faction].push(entity);
@@ -141,16 +149,25 @@ export class S3Splitter {
         factionStr.push(0);
       }
     }
+    const factionGameState: GameState = {
+      roundDuration: gameState.roundDuration,
+      roundEnd: gameState.roundEnd,
+      roundStart: gameState.roundStart,
 
-    return [
-      {
-        ...gameState,
-        resources: visibleResources,
-        factionDetails: visibleFactionDetails,
-        entities: visibleEntities,
-        factions: factionStr.join(''),
-      },
-      {...roundState, entities: visibleEntityVotes},
-    ];
+      resources: visibleResources,
+      factionDetails: visibleFactionDetails,
+      entities: visibleEntities,
+      factions: factionStr.join(''),
+      totalPlayersVoted: Utils.sum(Factions, f => gameState.playersVoted[f] || 0),
+      generation: gameState.generation,
+
+      hotEntities: {...emptyFactionObject(() => []), [factionId]: gameState.hotEntities[factionId]},
+      winningVotes: {...emptyFactionObject(() => []), [factionId]: gameState.winningVotes[factionId]},
+      playersVoted: {...emptyFactionObject(() => 0), [factionId]: gameState.playersVoted[factionId] || 0},
+      scores: {...emptyFactionObject(() => 0), [factionId]: gameState.scores[factionId] || 0},
+      notes: {...emptyFactionObject(() => []), [factionId]: gameState.notes[factionId]},
+    };
+
+    return [factionGameState, {...roundState, entities: visibleEntityVotes}];
   }
 }
