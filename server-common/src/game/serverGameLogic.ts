@@ -441,6 +441,7 @@ export class ServerGameLogic extends GameLogic {
     if (path.length - 1 > range) {
       return VoteResult.PathOutOfRange;
     }
+    vote.path = path.map(a => a.id);
 
     const toEntity = game.entities.get1(toHex);
     const toResource = game.resources.get(toHex);

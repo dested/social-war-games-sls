@@ -421,7 +421,7 @@ export class SmallGameRenderer {
 
     gameStore.updateGame(game, {...emptyRoundState}, {...emptyRoundState});
     timer.add('gamestore update game');
-    gameStore.setLastRoundActionsFromNotes(gameState, mainStore.user.factionId, game, game);
+    gameStore.setLastRoundActionsFromNotes(gameState, mainStore.user.factionId, game.grid);
     timer.add('last round from notes');
 
     gameStore.smallGameRenderer.forceRender();

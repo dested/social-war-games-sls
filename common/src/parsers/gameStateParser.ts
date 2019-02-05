@@ -1,13 +1,14 @@
 import {ProcessedVote} from '@swg-common/game/gameLogic';
 import {VoteNote} from '@swg-common/models/voteNote';
-import {FacingDirection} from '@swg-common/utils/hexUtils';
+import {FacingDirection, Point} from '@swg-common/utils/hexUtils';
 import {
   emptyFactionObject,
   EntityType,
-  Factions, foreachFaction,
+  Factions,
+  foreachFaction,
   GameEntityBusyDetails,
   OfFaction,
-  PlayableFactionId
+  PlayableFactionId,
 } from '../game/entityDetail';
 import {FactionDetail} from '../game/factionDetail';
 import {ResourceType} from '../game/gameResource';
@@ -141,6 +142,11 @@ export class GameStateParser {
         buff.addInt8(parseInt(note.factionId));
         buff.addInt16(note.voteCount);
         buff.addString(note.note);
+
+        buff.addInt8(note.path.length);
+        for (const p of note.path) {
+          ParserEnumUtils.writeHexId(p, buff);
+        }
       }
     }
     return buff.buildBuffer(factionToken);
@@ -312,6 +318,13 @@ export class GameStateParser {
         const factionId = reader.readInt8().toString() as PlayableFactionId;
         const voteCount = reader.readInt16();
         const note = reader.readString();
+
+        const pathLength = reader.readInt8();
+        const path: string[] = [];
+        for (let j = 0; j < pathLength; j++) {
+          path.push(ParserEnumUtils.readHexId(reader).id);
+        }
+
         factionNotes.push({
           action,
           fromEntityId,
@@ -321,6 +334,7 @@ export class GameStateParser {
           factionId,
           voteCount,
           note,
+          path,
         });
       }
       return factionNotes;
@@ -346,6 +360,4 @@ export class GameStateParser {
 
     return gameState;
   }
-
-
 }

@@ -224,6 +224,7 @@ export class StateManager {
     const fromEntity = preVoteEntities.find(a => a.id === vote.entityId);
     const fromHex = game.grid.hexes.get(fromEntity);
     const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
+
     switch (vote.action) {
       case 'attack': {
         const toEntity = preVoteEntities.find(a => a.x === toHex.x && a.y === toHex.y);
@@ -244,6 +245,7 @@ export class StateManager {
             toHexId: toHex.id,
             fromHexId: fromHex.id,
             voteCount: vote.voteCount,
+            path: vote.path,
           },
 
           {
@@ -259,6 +261,7 @@ export class StateManager {
             toHexId: toHex.id,
             fromHexId: fromHex.id,
             voteCount: vote.voteCount,
+            path: vote.path,
           },
         ];
       }
@@ -278,6 +281,7 @@ export class StateManager {
             toHexId: toHex.id,
             fromHexId: fromHex.id,
             voteCount: vote.voteCount,
+            path: vote.path,
           },
         ];
       }
@@ -311,6 +315,7 @@ export class StateManager {
             toHexId: toHex.id,
             fromHexId: fromHex.id,
             voteCount: vote.voteCount,
+            path: vote.path,
           },
         ];
       }
@@ -348,6 +353,7 @@ export class StateManager {
             toHexId: toHex.id,
             fromHexId: fromHex.id,
             voteCount: vote.voteCount,
+            path: vote.path,
           },
         ];
       }

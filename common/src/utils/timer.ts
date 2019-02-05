@@ -17,7 +17,7 @@ export class Timer {
   }
 
   print() {
-    return this.times.map(a => a.key + ':' + a.time).join(' | ');
+    return this.times.map(a => a.key + ': ' + a.time).join(' | ');
   }
 
   printDeltas() {

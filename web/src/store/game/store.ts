@@ -4,7 +4,7 @@ import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {GameResource} from '@swg-common/game/gameResource';
 import {HexagonTypes} from '@swg-common/game/hexagonTypes';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {PointHashKey} from '@swg-common/hex/hex';
+import {Grid, PointHashKey} from '@swg-common/hex/hex';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
 import {UserDetails} from '@swg-common/models/http/userDetails';
@@ -124,17 +124,16 @@ export class GameStore {
   }
 
   @action setLastRoundActionsFromNotes(
-    factionRoundStats: GameState,
+    gameState: GameState,
     factionId: PlayableFactionId,
-    oldGame: GameModel,
-    game: GameModel
+    grid: Grid<GameHexagon>
   ) {
-    if (factionRoundStats && factionRoundStats.notes) {
-      const grid = game.grid;
+    // todo: make this faster.
+    if (gameState && gameState.notes) {
       const hexIdParse = /(-?\d*)-(-?\d*)/;
-      const route: ActionRoute[] = gameStore.lastRoundActions.filter(a => a.generation > factionRoundStats.generation);
+      const route: ActionRoute[] = gameStore.lastRoundActions.filter(a => a.generation > gameState.generation);
 
-      for (const note of factionRoundStats.notes[factionId]) {
+      for (const note of gameState.notes[factionId]) {
         if (!note.toHexId) {
           continue;
         }
@@ -144,19 +143,24 @@ export class GameStore {
         const toHexId = hexIdParse.exec(note.toHexId);
         const toHex = grid.getHexAt({x: parseInt(toHexId[1]), y: parseInt(toHexId[2])});
 
-        const entityHash = GameLogic.getEntityHash(note.action, oldGame);
-        const path = game.grid.findPath(fromHex, toHex, entityHash);
+        const path = note.path;
         for (let i = 0; i < path.length - 1; i++) {
-          const f = path[i];
-          const t = path[i + 1];
+          const p1 = path[i];
+          const p2 = path[i + 1];
+          const hexCoordsP1 = hexIdParse.exec(p1);
+          const hexP1 = grid.getHexAt({x: parseInt(hexCoordsP1[1]), y: parseInt(hexCoordsP1[2])});
+
+          const hexCoordsP2 = hexIdParse.exec(p2);
+          const hexP2 = grid.getHexAt({x: parseInt(hexCoordsP2[1]), y: parseInt(hexCoordsP2[2])});
+
           route.push({
-            generation: factionRoundStats.generation,
+            generation: gameState.generation,
             fromHex,
             toHex,
-            x1: f.center.x,
-            y1: f.center.y,
-            x2: t.center.x,
-            y2: t.center.y,
+            x1: hexP1.center.x,
+            y1: hexP1.center.y,
+            x2: hexP2.center.x,
+            y2: hexP2.center.y,
             action: note.action,
           });
         }
@@ -223,7 +227,7 @@ export class GameStore {
     };
 
     Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
-    gameStore.setLastRoundActionsFromNotes(gameState, mainStore.user.factionId, game, game);
+    gameStore.setLastRoundActionsFromNotes(gameState, mainStore.user.factionId, game.grid);
 
     const emptyRoundState = {
       nextUpdateTime: 0,
@@ -241,27 +245,26 @@ export class GameStore {
   }
 
   private static async getNewState(roundState: RoundState) {
-    let oldGame = gameStore.game;
     if (roundState.generation !== gameStore.game.generation) {
       gameStore.selectEntity(null);
       gameStore.resetLocalVotes();
       const userDetails = await DataService.currentUserDetails();
       gameStore.updateUserDetails(userDetails);
 
-      const localGameState = await DataService.getGameState(
+      const gameState = await DataService.getGameState(
         mainStore.user.factionId,
         userDetails.generation,
         userDetails.factionToken
       );
 
-      const game = GameLogic.buildGameFromState(gameStore.layout, localGameState);
+      const game = GameLogic.buildGameFromState(gameStore.layout, gameState);
       Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
       gameStore.smallGameRenderer.processMiniMap(game);
-      gameStore.setLastRoundActionsFromNotes(localGameState, mainStore.user.factionId, oldGame, game);
-      oldGame = game;
+      gameStore.setLastRoundActionsFromNotes(gameState, mainStore.user.factionId, game.grid);
+      this.processRoundState(game, roundState);
+    } else {
+      this.processRoundState(gameStore.game, roundState);
     }
-
-    this.processRoundState(oldGame, roundState);
   }
 
   static startLoading() {

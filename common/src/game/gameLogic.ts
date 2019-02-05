@@ -27,6 +27,7 @@ export interface ProcessedVote {
   factionId: PlayableFactionId;
   hexId: string;
   voteCount?: number;
+  path?: string[];
 }
 
 export interface GameModel {

@@ -9,4 +9,5 @@ export interface VoteNote {
   toHexId: string;
   fromHexId: string;
   voteCount: number;
+  path: string[];
 }

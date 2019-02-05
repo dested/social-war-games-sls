@@ -26,7 +26,7 @@ export class UIStore {
   }
   @action setFactionRoundStats(factionRoundStats: any) {
     this.factionRoundStats = factionRoundStats;
-    gameStore.setLastRoundActionsFromNotes(factionRoundStats, null, gameStore.game, gameStore.game);
+    gameStore.setLastRoundActionsFromNotes(factionRoundStats, null, gameStore.game.grid);
   }
 
   static async setUI(ui: UI) {

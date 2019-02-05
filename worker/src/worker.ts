@@ -109,6 +109,7 @@ export class Worker {
             factionId: entity.factionId,
             hexId: action.hexId,
             voteCount: action.count,
+            path: [],
           };
 
           let voteResult = GameLogic.validateVote(game, vote);
