@@ -469,7 +469,7 @@ export class Worker {
 
       case 'move': {
         const distance = HexUtils.getDistance(fromHex, toHex);
-        const direction = HexUtils.getDirection(fromHex, toHex);
+        const direction = HexUtils.getDirectionStr(fromHex, toHex);
         return [
           {
             note:

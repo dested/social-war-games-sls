@@ -15,6 +15,7 @@ export class RedisManager {
           return;
         }
       }
+      console.time('redis')
       const manager = new RedisManager();
       RedisManager.manager = manager;
       manager.client = createClient({
@@ -23,6 +24,7 @@ export class RedisManager {
         auth_pass: Config.redis.authPass,
       });
       manager.client.on('ready', result => {
+        console.timeEnd('redis')
         res(manager);
       });
     });

@@ -20,7 +20,6 @@ let game: GameModel;
 
 export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpResponse<VoteResponse>> {
   const startTime = +new Date();
-  console.log('auth', event);
   if (!event.headers || !event.headers.Authorization) {
     return respond(400, {error: 'auth'});
   }
@@ -29,8 +28,6 @@ export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpRe
   try {
     const redisManager = await RedisManager.setup();
     await DataManager.openDbConnection();
-    console.log('connecting');
-    console.log('connected to redis');
     const shouldStop = await redisManager.get<boolean>('stop');
     if (shouldStop) {
       return respond(400, {error: 'stopped'});

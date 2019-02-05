@@ -254,7 +254,7 @@ export class SmallGameRenderer {
     ];
 
     context.save();
-    context.translate(0, shrinko * 0.75);
+    // context.translate(0, shrinko * 0.75);
     context.drawImage(this.minimapCanvas, 0, 0);
     context.restore();
 
