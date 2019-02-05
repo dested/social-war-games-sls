@@ -1,8 +1,8 @@
 import {GameHexagon} from '@swg-common/../../../common/src/game/gameHexagon';
 import {Axial, Grid, Hexagon} from '@swg-common/hex/hex';
+import {Point} from '@swg-common/utils/hexUtils';
 import {HexColors} from '../utils/hexColors';
 import {HexConstants} from '../utils/hexConstants';
-import {Point} from '@swg-common/utils/hexUtils';
 
 export class Drawing {
   static Orientation: {
@@ -14,7 +14,6 @@ export class Drawing {
   };
 
   static update(grid: Grid<GameHexagon>, options: DrawingOptions, smallOptions: DrawingOptions) {
-    // todo: make this faster.
     for (const hex of grid.hexes) {
       this.updateHex(hex, grid, options, smallOptions);
     }

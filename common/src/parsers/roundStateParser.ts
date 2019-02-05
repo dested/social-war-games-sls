@@ -43,7 +43,7 @@ export class RoundStateParser {
         votes.push({
           count,
           action,
-          hexId: hexId.id,
+          hexId,
         });
       }
       entities[entityId] = votes;

@@ -388,16 +388,13 @@ export class SmallGameRenderer {
   }
 
   private async updateGen(generationUpdate: number) {
-    const timer = new Timer();
     const gameState = await DataService.getGameState(
       mainStore.user.factionId,
       gameStore.gameState.generation + generationUpdate,
       gameStore.userDetails.factionToken
     );
-    timer.add('got from s3');
     gameStore.setGameState(gameState);
     const game = GameLogic.buildGameFromState(gameStore.layout, gameState);
-    timer.add('build from state');
     HexConstants.smallHeight = ((UIConstants.miniMapHeight() - 100) / game.grid.boundsHeight) * 1.3384;
     HexConstants.smallWidth = UIConstants.miniMapWidth() / game.grid.boundsWidth;
 
@@ -409,7 +406,6 @@ export class SmallGameRenderer {
     };
 
     Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
-    timer.add('drawing update');
 
     const emptyRoundState = {
       nextUpdateTime: 0,
@@ -420,12 +416,8 @@ export class SmallGameRenderer {
     };
 
     gameStore.updateGame(game, {...emptyRoundState}, {...emptyRoundState});
-    timer.add('gamestore update game');
     gameStore.setLastRoundActionsFromNotes(gameState, mainStore.user.factionId, game.grid);
-    timer.add('last round from notes');
 
     gameStore.smallGameRenderer.forceRender();
-    timer.add('force render');
-    console.log(timer.printDeltas());
   }
 }

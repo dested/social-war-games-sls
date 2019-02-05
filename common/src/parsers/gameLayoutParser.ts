@@ -29,7 +29,7 @@ export class GameLayoutParser {
     const hexes: GameLayoutHex[] = [];
 
     for (let i = 0; i < hexLength; i++) {
-      const hexId = ParserEnumUtils.readHexId(reader);
+      const hexId = ParserEnumUtils.readHex(reader);
       const type = ParserEnumUtils.intToHexType(reader.readInt8());
       const subType = ParserEnumUtils.intToHexSubType(reader.readInt8());
       hexes.push({

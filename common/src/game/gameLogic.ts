@@ -1,4 +1,5 @@
 import {HexUtils, Point} from '@swg-common/utils/hexUtils';
+import {Timer} from '@swg-common/utils/timer';
 import {Config} from '@swg-server-common/config';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import {Grid, PointHashKey} from '../hex/hex';
@@ -43,19 +44,32 @@ export interface GameModel {
 }
 
 export class GameLogic {
+  static grid: Grid<GameHexagon>;
   static buildGameFromState(layout: GameLayout, gameState: GameState): GameModel {
-    const grid = new Grid<GameHexagon>(0, 0, layout.boardWidth, layout.boardHeight);
+    if (this.grid && this.grid.hexes.length === layout.hexes.length) {
+      const thisGrid = this.grid;
 
-    grid.hexes = new HashArray<GameHexagon, Point>(PointHashKey);
+      for (let i = 0; i < layout.hexes.length; i++) {
+        const hexAt = thisGrid.hexes.getIndex(i);
+        const factionId = GameLogic.getFactionId(gameState.factions, i);
+        const factionDuration = GameLogic.getFactionDuration(gameState.factions, i);
+        hexAt.setFactionId(factionId, factionDuration);
+      }
+    } else {
+      const grid = new Grid<GameHexagon>(0, 0, layout.boardWidth, layout.boardHeight);
 
-    for (let i = 0; i < layout.hexes.length; i++) {
-      const hex = layout.hexes[i];
-      const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), hex.id, hex.x, hex.y);
-      gameHexagon.setFactionId(
-        GameLogic.getFactionId(gameState.factions, i),
-        GameLogic.getFactionDuration(gameState.factions, i)
-      );
-      grid.hexes.push(gameHexagon);
+      grid.hexes = new HashArray<GameHexagon, Point>(PointHashKey);
+
+      for (let i = 0; i < layout.hexes.length; i++) {
+        const hex = layout.hexes[i];
+        const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), hex.id, hex.x, hex.y);
+        gameHexagon.setFactionId(
+          GameLogic.getFactionId(gameState.factions, i),
+          GameLogic.getFactionDuration(gameState.factions, i)
+        );
+        grid.hexes.push(gameHexagon);
+      }
+      this.grid = grid;
     }
 
     const resources: GameResource[] = gameState.resources.map(a => ({
@@ -110,7 +124,7 @@ export class GameLogic {
       resources: HashArray.create(resources, PointHashKey),
       entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
       layout,
-      grid,
+      grid: this.grid,
     };
   }
 

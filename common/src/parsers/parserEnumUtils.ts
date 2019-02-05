@@ -157,9 +157,14 @@ export class ParserEnumUtils {
     buff.addInt16(y);
   }
 
-  static readHexId(reader: ArrayBufferReader) {
+  static readHex(reader: ArrayBufferReader) {
     const x = reader.readInt16();
     const y = reader.readInt16();
     return {x, y, id: x + '-' + y};
+  }
+  static readHexId(reader: ArrayBufferReader) {
+    const x = reader.readInt16();
+    const y = reader.readInt16();
+    return x + '-' + y;
   }
 }

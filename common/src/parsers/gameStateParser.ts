@@ -200,7 +200,7 @@ export class GameStateParser {
           busy = {
             ticks,
             action,
-            hexId: hexId.id,
+            hexId: hexId,
           };
         }
 
@@ -275,7 +275,7 @@ export class GameStateParser {
         const entityId = reader.readInt32();
         const voteCount = reader.readInt16();
         const factionId = reader.readInt8().toString() as PlayableFactionId;
-        const hexId = ParserEnumUtils.readHexId(reader).id;
+        const hexId = ParserEnumUtils.readHexId(reader);
         factionWinningVotes.push({
           voteCount,
           entityId,
@@ -313,8 +313,8 @@ export class GameStateParser {
         if (toEntityId === -1) {
           toEntityId = null;
         }
-        const toHexId = ParserEnumUtils.readHexId(reader).id;
-        const fromHexId = ParserEnumUtils.readHexId(reader).id;
+        const toHexId = ParserEnumUtils.readHexId(reader);
+        const fromHexId = ParserEnumUtils.readHexId(reader);
         const factionId = reader.readInt8().toString() as PlayableFactionId;
         const voteCount = reader.readInt16();
         const note = reader.readString();
@@ -322,7 +322,7 @@ export class GameStateParser {
         const pathLength = reader.readInt8();
         const path: string[] = [];
         for (let j = 0; j < pathLength; j++) {
-          path.push(ParserEnumUtils.readHexId(reader).id);
+          path.push(ParserEnumUtils.readHexId(reader));
         }
 
         factionNotes.push({

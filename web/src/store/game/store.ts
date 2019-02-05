@@ -123,15 +123,11 @@ export class GameStore {
     this.viableHexIds = undefined;
   }
 
-  @action setLastRoundActionsFromNotes(
-    gameState: GameState,
-    factionId: PlayableFactionId,
-    grid: Grid<GameHexagon>
-  ) {
+  @action setLastRoundActionsFromNotes(gameState: GameState, factionId: PlayableFactionId, grid: Grid<GameHexagon>) {
     // todo: make this faster.
     if (gameState && gameState.notes) {
       const hexIdParse = /(-?\d*)-(-?\d*)/;
-      const route: ActionRoute[] = gameStore.lastRoundActions.filter(a => a.generation > gameState.generation);
+      const route: ActionRoute[] = [];
 
       for (const note of gameState.notes[factionId]) {
         if (!note.toHexId) {
