@@ -83,3 +83,12 @@ functions:
           method: get
           integration: lambda
           cors: true
+  getGames:
+    handler: handler.getGames
+    memorySize: 128
+    events:
+      - http:
+          path: games
+          method: get
+          integration: lambda
+          cors: true

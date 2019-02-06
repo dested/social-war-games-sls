@@ -15,12 +15,12 @@ export class SocketManager {
     });
     console.timeEnd('opening socket');
   }
-  static publish(topic: string, payload: Buffer | string) {
+  static publish(gameId: string, topic: string, payload: Buffer | string) {
     return new Promise((res, rej) => {
       this.iotData.publish(
         {
           payload,
-          topic,
+          topic: `${gameId}/${topic}`,
         },
         (err, data) => {
           if (err) {

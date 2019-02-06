@@ -1,6 +1,7 @@
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {DataManager} from '@swg-server-common/db/dataManager';
+import {DBGame} from '@swg-server-common/db/models/dbGame';
 import {DBGameStateResult} from '@swg-server-common/db/models/DBGameStateResult';
 import {DBLadder} from '@swg-server-common/db/models/dbLadder';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
@@ -28,16 +29,20 @@ export class Setup {
 
     await SocketManager.open();
     await redisManager.flushAll();
-    await redisManager.set('stop', true);
 
     await DBVote.db.deleteMany({});
     await DBUserRoundStats.db.deleteMany({});
     await DBGameStateResult.db.deleteMany({});
     await DBLadder.db.deleteMany({});
 
-    const game = ServerGameLogic.createDebugGame();
+    const game = await ServerGameLogic.createDebugGame();
+
+    await DBGame.db.insertDocument(new DBGame(game));
+
+    await redisManager.set(game.id, 'stop', true);
+
     console.log('create game');
-    await redisManager.set<number>('game-generation', game.generation);
+    await redisManager.set<number>(game.id, 'game-generation', game.generation);
     console.log('set generation', game.generation);
 
     const gameLayout: GameLayout = {
@@ -58,16 +63,16 @@ export class Setup {
     console.log('built state');
 
     const gameLayoutBytes = GameLayoutParser.fromGameLayout(gameLayout);
-    await S3Manager.uploadBytes('layout.swg', gameLayoutBytes, true);
-    const factionTokens = await S3Splitter.generateFactionTokens(redisManager, game.generation);
+    await S3Manager.uploadBytes(game.id, `layout.swg`, gameLayoutBytes, true);
+    const factionTokens = await S3Splitter.generateFactionTokens(redisManager, game);
     await S3Splitter.output(game, gameLayout, gameState, roundState, factionTokens, true);
 
-    await redisManager.set('layout', gameLayout);
-    await redisManager.set('game-state', gameState);
+    await redisManager.set(game.id, `layout`, gameLayout);
+    await redisManager.set(game.id, `game-state`, gameState);
     console.log('set redis');
-    await S3Manager.uploadJson(`faction-stats.json`, JSON.stringify([]), false);
+    await S3Manager.uploadJson(game.id, `faction-stats.json`, JSON.stringify([]), false);
 
-    await redisManager.set('stop', false);
+    await redisManager.set(game.id, 'stop', false);
     console.timeEnd('setup');
     process.exit(0);
   }

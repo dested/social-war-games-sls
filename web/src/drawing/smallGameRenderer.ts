@@ -57,7 +57,7 @@ export class SmallGameRenderer {
     manager.add(new Hammer.Pan({}));
 
     const goToPosition = (e: HammerInput, force: boolean) => {
-      if (!gameStore.gameState) {
+      if (!gameStore.game) {
         return;
       }
       const {game} = gameStore;

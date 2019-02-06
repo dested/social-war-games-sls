@@ -150,7 +150,7 @@ export class GameRenderer {
     manager.on('tap', e => {
       this.swipeVelocity.x = this.swipeVelocity.y = 0;
       UIStore.setUI('None');
-      if (!gameStore.gameState) {
+      if (!gameStore.game) {
         return;
       }
       const {game} = gameStore;

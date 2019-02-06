@@ -11,6 +11,7 @@ export class DBGameStateResult extends MongoDocument implements GameState {
 
   constructor(gameState: GameState) {
     super();
+    this.gameId = gameState.gameId;
     this.factions = gameState.factions;
     this.factionDetails = gameState.factionDetails;
     this.entities = gameState.entities;
@@ -27,6 +28,7 @@ export class DBGameStateResult extends MongoDocument implements GameState {
     this.notes = gameState.notes;
   }
 
+  gameId: string;
   factions: string;
   factionDetails: OfFaction<FactionDetail>;
   entities: OfFaction<GameStateEntity[]>;

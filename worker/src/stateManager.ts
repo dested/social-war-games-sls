@@ -68,7 +68,7 @@ export class StateManager {
       /**/ winningVotes.sort((a, b) => actionToWeight(a.action) - actionToWeight(b.action)),
       a => this.buildNote(a, game, preVoteEntities, preVoteResources)
     );
-    const userStats = await DBVote.getRoundUserStats(game.generation - 1);
+    const userStats = await DBVote.getRoundUserStats(game.id, game.generation - 1);
     const playersVoted = Utils.groupByReduce(
       userStats,
       a => a._id.factionId,
@@ -77,6 +77,7 @@ export class StateManager {
     const players = Utils.flattenArray(Utils.mapObjToArray(playersVoted, (_, ar) => ar));
 
     const gameState: GameState = {
+      gameId: game.id,
       factions: game.grid.hexes.map(a => a.factionId + '' + a.factionDuration).join(''),
       factionDetails: game.factionDetails,
       resources: game.resources.map(a => ({
@@ -201,7 +202,7 @@ export class StateManager {
       }
 
       /*await*/
-      DBUserRoundStats.addUserRoundStat(player, {
+      DBUserRoundStats.addUserRoundStat(game.id, player, {
         generation: game.generation - 1,
         votesWon,
         votesCast,

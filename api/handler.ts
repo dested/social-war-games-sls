@@ -1,4 +1,5 @@
 import {RegisterRequestBody} from '@swg-common/models/http/userController';
+import {getGamesHandler} from './functions/getGames';
 import {ladderHandler} from './functions/ladder';
 import {loginHandler} from './functions/login';
 import {registerHandler} from './functions/register';
@@ -18,3 +19,5 @@ module.exports.login = async (event: Event<RegisterRequestBody>) => await loginH
 module.exports.ladder = async (event: Event<void>) => await ladderHandler(event);
 
 module.exports.userStats = async (event: Event<void>) => await userStatsHandler(event);
+
+module.exports.getGames = async (event: Event<void>) => await getGamesHandler(event);

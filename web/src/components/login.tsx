@@ -31,7 +31,7 @@ class Component extends React.Component<Props, State> {
       localStorage.setItem('user', JSON.stringify(response.user));
       this.props.mainStore.setJwt(response.jwt);
       this.props.mainStore.setUser(response.user);
-      this.props.history.push('/');
+      this.props.history.push('/games');
     } catch (ex) {
       alert(ex);
     }

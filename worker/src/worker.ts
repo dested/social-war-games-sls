@@ -7,6 +7,7 @@ import {GameState} from '@swg-common/models/gameState';
 import {Utils} from '@swg-common/utils/utils';
 import {Config} from '@swg-server-common/config';
 import {DataManager} from '@swg-server-common/db/dataManager';
+import {DBGame} from '@swg-server-common/db/models/dbGame';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {ServerGameLogic} from '@swg-server-common/game/serverGameLogic';
@@ -33,31 +34,31 @@ export class Worker {
     this.redisManager = await RedisManager.setup();
     await DataManager.openDbConnection();
     await SocketManager.open();
-
-    await this.processNewRound();
+    const gameId = (await DBGame.db.getAll({}))[0].gameId;
+    await this.processNewRound(gameId);
 
     const stdin = process.openStdin();
 
     stdin.addListener('data', d => {
-      this.processNewRound();
+      this.processNewRound(gameId);
     });
   }
 
-  private static async processNewRound() {
+  private static async processNewRound(gameId: string) {
     try {
       console.time('round end');
-      await this.redisManager.set('stop', true);
-      const generation = await this.redisManager.get<number>('game-generation');
+      await this.redisManager.set(gameId, 'stop', true);
+      const generation = await this.redisManager.get<number>(gameId, 'game-generation');
 
       const game = GameLogic.buildGameFromState(
-        await this.redisManager.get<GameLayout>('layout'),
-        await this.redisManager.get<GameState>('game-state')
+        await this.redisManager.get<GameLayout>(gameId, 'layout'),
+        await this.redisManager.get<GameState>(gameId, 'game-state')
       );
 
       const preVoteEntities = JSON.parse(JSON.stringify(game.entities.array));
       const preVoteResources = JSON.parse(JSON.stringify(game.resources.array));
 
-      const voteCounts = (await DBVote.getVoteCount(generation)).sort(
+      const voteCounts = (await DBVote.getVoteCount(gameId, generation)).sort(
         (left, right) => sumBy(left.actions, a => a.count) - sumBy(right.actions, a => a.count)
       );
 
@@ -123,7 +124,7 @@ export class Worker {
       this.writeFactionStats(game);
 
       game.generation++;
-      await this.redisManager.incr('game-generation');
+      await this.redisManager.incr(gameId, 'game-generation');
 
       const newGameState = await StateManager.buildGameState(
         game,
@@ -136,25 +137,26 @@ export class Worker {
       const roundState = StateManager.buildRoundState(game.generation, []);
       if (
         game.generation !== newGameState.generation &&
-        game.generation !== (await this.redisManager.get('game-generation'))
+        game.generation !== (await this.redisManager.get(gameId, 'game-generation'))
       ) {
         console.log(
           `weird generation:  ${game.generation} ${newGameState.generation} ${await this.redisManager.get(
+            gameId,
             'game-generation'
           )}`
         );
       }
       console.log(`Generation: ${game.generation}`);
-      const factionTokens = await S3Splitter.generateFactionTokens(this.redisManager, game.generation);
+      const factionTokens = await S3Splitter.generateFactionTokens(this.redisManager, game);
       await S3Splitter.output(game, game.layout, newGameState, roundState, factionTokens, true);
 
-      await this.redisManager.set('game-state', newGameState);
-      await this.redisManager.set('stop', false);
+      await this.redisManager.set(gameId, 'game-state', newGameState);
+      await this.redisManager.set(gameId, 'stop', false);
 
       if (game.generation < 10000000) {
         // for debugging
         setTimeout(() => {
-          this.processNewRound();
+          this.processNewRound(gameId);
         }, Config.gameDuration);
       }
 
@@ -164,13 +166,13 @@ export class Worker {
         roundUpdateTick += Config.roundUpdateDuration
       ) {
         setTimeout(() => {
-          this.processRoundUpdate();
+          this.processRoundUpdate(gameId);
         }, roundUpdateTick);
       }
 
       console.timeEnd('round end');
-      this.cleanupVotes();
-      DBUserRoundStats.buildLadder(generation);
+      this.cleanupVotes(gameId);
+      DBUserRoundStats.buildLadder(gameId, generation);
     } catch (ex) {
       console.error(ex);
     }
@@ -222,16 +224,16 @@ export class Worker {
     }
   }
 
-  private static async processRoundUpdate() {
+  private static async processRoundUpdate(gameId: string) {
     try {
       console.time('round update');
       console.log('update round state');
-      const gameState = await this.redisManager.get<GameState>('game-state');
-      const layout = await this.redisManager.get<GameLayout>('layout');
+      const gameState = await this.redisManager.get<GameState>(gameId, 'game-state');
+      const layout = await this.redisManager.get<GameLayout>(gameId, 'layout');
 
       const game = GameLogic.buildGameFromState(layout, gameState);
 
-      const voteCounts = await DBVote.getVoteCount(gameState.generation);
+      const voteCounts = await DBVote.getVoteCount(gameId, gameState.generation);
       await S3Splitter.output(
         game,
         layout,
@@ -246,13 +248,18 @@ export class Worker {
     }
   }
 
-  private static async cleanupVotes() {
+  private static async cleanupVotes(gameId: string) {
     try {
       console.log('destroying votes');
-      const generation = await this.redisManager.get<number>('game-generation', 1);
+      const generation = await this.redisManager.get<number>(gameId, 'game-generation', 1);
 
       // todo, aggregate votes and store them for users later
-      await DBVote.db.deleteMany(DBVote.db.query.parse((a, gen) => a.generation < gen, generation - 2));
+      await DBVote.db.deleteMany(
+        DBVote.db.query.parse((a, data) => a.gameId === data.gameId && a.generation < data.generation, {
+          generation: generation - 2,
+          gameId,
+        })
+      );
     } catch (ex) {
       console.error(ex);
     }
@@ -269,7 +276,7 @@ export class Worker {
         s: ServerGameLogic.calculateScore(game, faction),
       };
     });
-    const response = await fetch('https://s3-us-west-2.amazonaws.com/swg-content/faction-stats.json', {
+    const response = await fetch(`https://s3-us-west-2.amazonaws.com/swg-content/${game.id}/faction-stats.json`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -279,6 +286,6 @@ export class Worker {
     let json = (await response.json()) as FactionStats[];
     json.push(factionStats);
     json = json.slice(-(((24 * 60 * 60 * 1000) / Config.gameDuration) * 2));
-    S3Manager.uploadJson(`faction-stats.json`, JSON.stringify(json), false);
+    S3Manager.uploadJson(game.id, `faction-stats.json`, JSON.stringify(json), false);
   }
 }

@@ -8,6 +8,7 @@ import {Grid, PointHashKey} from '@swg-common/hex/hex';
 import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
 import {FacingDirection, HexUtils, Point} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
+import {DBGame} from '@swg-server-common/db/models/dbGame';
 import {Config} from '../config';
 import {DBUserRoundStats} from '../db/models/dbUserRoundStats';
 
@@ -61,7 +62,7 @@ export class ServerGameLogic extends GameLogic {
     }
   }
 
-  static createDebugGame(): GameModel {
+  static async createDebugGame(): Promise<GameModel> {
     const entitiesPerBase = [
       EntityDetails.factory,
       EntityDetails.tank,
@@ -179,6 +180,7 @@ export class ServerGameLogic extends GameLogic {
     };
 
     return {
+      id: await this.generateGameId(),
       roundDuration: Config.gameDuration,
       roundStart: +new Date(),
       roundEnd: +new Date() + Config.gameDuration,
@@ -191,7 +193,7 @@ export class ServerGameLogic extends GameLogic {
     };
   }
 
-  static createGame(): GameModel {
+  static async createGame(): Promise<GameModel> {
     const entitiesPerBase = [
       EntityDetails.factory,
       EntityDetails.tank,
@@ -376,6 +378,7 @@ export class ServerGameLogic extends GameLogic {
     };
 
     return {
+      id: await this.generateGameId(),
       roundDuration: Config.gameDuration,
       roundStart: +new Date(),
       roundEnd: +new Date() + Config.gameDuration,
@@ -386,6 +389,22 @@ export class ServerGameLogic extends GameLogic {
       layout: null,
       grid,
     };
+  }
+
+  static async generateGameId(): Promise<string> {
+    while (true) {
+      let gameId = 'S';
+      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+      for (let i = 0; i < 5; i++) {
+        gameId += possible.charAt(Math.floor(Math.random() * possible.length));
+      }
+
+      const count = await DBGame.db.count(DBGame.db.query.parse((a, code) => a.gameId === code, gameId));
+      if (count === 0) {
+        return gameId;
+      }
+    }
   }
 
   static processVote(game: GameModel, vote: ProcessedVote, fromBusy: boolean): VoteResult {

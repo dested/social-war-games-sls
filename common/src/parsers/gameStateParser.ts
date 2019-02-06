@@ -10,6 +10,7 @@ import {ParserEnumUtils} from './parserEnumUtils';
 export class GameStateParser {
   static fromGameState(gameState: GameState, factionToken: number[]): Buffer {
     const buff = new ArrayBufferBuilder();
+    buff.addString(gameState.gameId);
     buff.addInt32(gameState.generation);
     buff.addInt32(gameState.roundDuration);
     buff.addFloat64(gameState.roundStart);
@@ -145,6 +146,7 @@ export class GameStateParser {
 
   static toGameState(buffer: ArrayBuffer, factionToken: number[]): GameState {
     const reader = new ArrayBufferReader(buffer, factionToken);
+    const gameId = reader.readString();
     const generation = reader.readInt32();
     const roundDuration = reader.readInt32();
     const roundStart = reader.readFloat64();
@@ -332,6 +334,7 @@ export class GameStateParser {
     });
 
     const gameState = {
+      gameId,
       factions: factions.join(''),
       factionDetails,
       resources,

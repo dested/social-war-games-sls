@@ -5,6 +5,7 @@ import {EntityAction, EntityType, OfFaction} from '../game/entityDetail';
 import {ResourceType} from '../game/gameResource';
 
 export interface GameState {
+  gameId: string;
   factions: string;
   factionDetails: OfFaction<FactionDetail>;
   entities: OfFaction<GameStateEntity[]>;

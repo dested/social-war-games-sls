@@ -30,13 +30,13 @@ export class RedisManager {
     });
   }
 
-  getKey(key: string) {
-    return Config.gameKey + '-' + key;
+  getKey(gameId: string, key: string) {
+    return gameId + '-' + key;
   }
 
-  get<T>(key: string, def?: T): Promise<T> {
+  get<T>(gameId: string, key: string, def?: T): Promise<T> {
     return new Promise((res, rej) => {
-      this.client.get(this.getKey(key), (err, result) => {
+      this.client.get(this.getKey(gameId, key), (err, result) => {
         if (err) {
           rej(err);
           return;
@@ -47,9 +47,9 @@ export class RedisManager {
     });
   }
 
-  getString(key: string, def?: string): Promise<string> {
+  getString(gameId: string, key: string, def?: string): Promise<string> {
     return new Promise((res, rej) => {
-      this.client.get(this.getKey(key), (err, result) => {
+      this.client.get(this.getKey(gameId, key), (err, result) => {
         if (err) {
           rej(err);
           return;
@@ -60,9 +60,9 @@ export class RedisManager {
     });
   }
 
-  setString(key: string, value: string): Promise<string> {
+  setString(gameId: string, key: string, value: string): Promise<string> {
     return new Promise((res, rej) => {
-      this.client.set(this.getKey(key), value, (err, result) => {
+      this.client.set(this.getKey(gameId, key), value, (err, result) => {
         if (err) {
           rej(err);
           return;
@@ -72,9 +72,9 @@ export class RedisManager {
     });
   }
 
-  set<T>(key: string, value: T): Promise<void> {
+  set<T>(gameId: string, key: string, value: T): Promise<void> {
     return new Promise((res, rej) => {
-      this.client.set(this.getKey(key), JSON.stringify(value), (err, result) => {
+      this.client.set(this.getKey(gameId, key), JSON.stringify(value), (err, result) => {
         if (err) {
           rej(err);
           return;
@@ -84,9 +84,9 @@ export class RedisManager {
     });
   }
 
-  append(key: string, value: string): Promise<void> {
+  append(gameId: string, key: string, value: string): Promise<void> {
     return new Promise((res, rej) => {
-      this.client.append(this.getKey(key), value, (err, result) => {
+      this.client.append(this.getKey(gameId, key), value, (err, result) => {
         if (err) {
           rej(err);
           return;
@@ -108,9 +108,9 @@ export class RedisManager {
     });
   }
 
-  expire(key: string, duration: number): Promise<void> {
+  expire(gameId: string, key: string, duration: number): Promise<void> {
     return new Promise((res, rej) => {
-      this.client.expire(this.getKey(key), duration, (err, result) => {
+      this.client.expire(this.getKey(gameId, key), duration, (err, result) => {
         if (err) {
           rej(err);
           return;
@@ -120,9 +120,9 @@ export class RedisManager {
     });
   }
 
-  incr(key: string) {
+  incr(gameId: string, key: string) {
     return new Promise((res, rej) => {
-      this.client.incr(this.getKey(key), (err, result) => {
+      this.client.incr(this.getKey(gameId, key), (err, result) => {
         if (err) {
           rej(err);
           return;

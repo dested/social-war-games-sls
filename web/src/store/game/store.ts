@@ -38,10 +38,10 @@ export class GameStore {
   @observable gameRenderer?: GameRenderer;
   @observable smallGameRenderer?: SmallGameRenderer;
   @observable localVotes: (ProcessedVote & {processedTime: number})[] = [];
-  @observable gameState?: GameState;
   @observable gameReady?: boolean;
   @observable layout?: GameLayout;
   @observable lastRoundActions?: ActionRoute[] = [];
+  @observable currentGameId: string;
 
   @action selectEntity(entity: GameEntity) {
     this.selectedEntity = entity;
@@ -54,6 +54,11 @@ export class GameStore {
     this.game = game;
     this.roundState = roundState;
     this.localRoundState = localRoundState;
+  }
+
+  @action setCurrentGameId(gameId: string) {
+    localStorage.setItem('gameId', gameId);
+    this.currentGameId = gameId;
   }
 
   @action setGameRenderer(gameRenderer: GameRenderer, smallGameRenderer: SmallGameRenderer) {
@@ -93,10 +98,6 @@ export class GameStore {
 
   @action votingError(votingResultError: VoteResult | null) {
     this.votingResultError = votingResultError;
-  }
-
-  @action setGameState(gameState: GameState) {
-    this.gameState = gameState;
   }
 
   @action setGameReady() {
@@ -206,8 +207,7 @@ export class GameStore {
       userDetails.generation,
       userDetails.factionToken
     );
-    gameStore.setGameState(gameState);
-    SocketUtils.connect(mainStore.user.id, mainStore.user.factionId, roundState => {
+    SocketUtils.connect(gameState.gameId, mainStore.user.id, mainStore.user.factionId, roundState => {
       GameStore.getNewState(roundState).catch(ex => console.error(ex));
     });
     const game = GameLogic.buildGameFromState(layout, gameState);
@@ -408,3 +408,10 @@ export class GameStore {
 export const gameStore = new GameStore();
 export type GameStoreProps = {gameStore?: GameStore};
 export const GameStoreName = 'gameStore';
+
+{
+  const gameId = localStorage.getItem('gameId');
+  if (gameId) {
+    gameStore.setCurrentGameId(gameId);
+  }
+}

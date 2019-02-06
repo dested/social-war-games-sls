@@ -34,7 +34,7 @@ class Component extends React.Component<Props, State> {
       const response = await DataService.register(this.state.email, this.state.userName, this.state.password);
       this.props.mainStore.setJwt(response.jwt);
       this.props.mainStore.setUser(response.user);
-      this.props.history.push('/');
+      this.props.history.push('/games');
     } catch (ex) {
       alert(ex);
     }

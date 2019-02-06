@@ -11,15 +11,19 @@ export class DBUserRoundStats extends MongoDocument {
     super();
   }
 
+  gameId: string;
   userId: string;
   userName: string;
   roundsParticipated: DBUserRoundStatDetails[];
 
-  static async getByUserId(userId: string): Promise<DBUserRoundStats> {
-    let userRoundStats = await this.db.getOne(this.db.query.parse((a, uid) => a.userId === uid, userId));
+  static async getByUserId(gameId: string, userId: string): Promise<DBUserRoundStats> {
+    let userRoundStats = await this.db.getOne(
+      this.db.query.parse((a, data) => a.gameId === data.gameId && a.userId === data.userId, {userId, gameId})
+    );
     if (!userRoundStats) {
       userRoundStats = new DBUserRoundStats();
       userRoundStats.userId = userId;
+      userRoundStats.gameId = gameId;
       const user = await DBUser.db.getById(userId);
       userRoundStats.userName = user.userName;
       userRoundStats.roundsParticipated = [];
@@ -28,16 +32,21 @@ export class DBUserRoundStats extends MongoDocument {
     return userRoundStats;
   }
 
-  static async addUserRoundStat(userId: string, stat: DBUserRoundStatDetails): Promise<void> {
-    const userRoundStats = await this.getByUserId(userId);
+  static async addUserRoundStat(gameId: string, userId: string, stat: DBUserRoundStatDetails): Promise<void> {
+    const userRoundStats = await this.getByUserId(gameId, userId);
     userRoundStats.roundsParticipated.push(stat);
     await this.db.updateDocument(userRoundStats);
   }
 
-  static async buildLadder(currentGeneration: number) {
+  static async buildLadder(gameId: string, currentGeneration: number) {
     const generationsPerDay = (24 * 60 * 60 * 1000) / Config.gameDuration;
     const valuableGenerations = generationsPerDay * 2.5;
-    await this.db.aggregate([
+    const query = [
+      {
+        $match: {
+          gameId,
+        },
+      },
       {
         $unwind: {
           path: '$roundsParticipated',
@@ -47,6 +56,7 @@ export class DBUserRoundStats extends MongoDocument {
         $project: {
           _id: '$_id',
           userId: '$userId',
+          gameId: '$gameId',
           userName: '$userName',
           score: {
             $trunc: {
@@ -88,9 +98,18 @@ export class DBUserRoundStats extends MongoDocument {
       {$sort: {score: -1}},
       {$group: {_id: 1, ranks: {$push: '$$CURRENT'}}},
       {$unwind: {path: '$ranks', includeArrayIndex: 'rank'}},
-      {$project: {_id: '$ranks._id', userName: '$ranks.userName', score: '$ranks.score', rank: '$rank'}},
+      {
+        $project: {
+          _id: '$ranks._id',
+          gameId: '$ranks.gameId',
+          userName: '$ranks.userName',
+          score: '$ranks.score',
+          rank: '$rank',
+        },
+      },
       {$out: 'ladder'},
-    ]);
+    ];
+    await this.db.aggregate(query);
   }
 }
 

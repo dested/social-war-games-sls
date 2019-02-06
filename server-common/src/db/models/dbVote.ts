@@ -17,16 +17,18 @@ export class DBVote extends MongoDocument {
   static db = new DocumentManager<DBVote>(DBVote.collectionName);
 
   userId: string;
+  gameId: string;
   generation: number;
   entityId: number;
   action: EntityAction;
   hexId: string;
   factionId: PlayableFactionId;
 
-  static getVoteCount(generation: number): Promise<VoteCountResult[]> {
+  static getVoteCount(gameId: string, generation: number): Promise<VoteCountResult[]> {
     return this.db.aggregate([
       {
         $match: {
+          gameId,
           generation,
         },
       },
@@ -55,10 +57,11 @@ export class DBVote extends MongoDocument {
     ]);
   }
 
-  static getRoundUserStats(generation: number): Promise<RoundUserStats[]> {
+  static getRoundUserStats(gameId: string, generation: number): Promise<RoundUserStats[]> {
     return this.db.aggregate([
       {
         $match: {
+          gameId,
           generation,
         },
       },

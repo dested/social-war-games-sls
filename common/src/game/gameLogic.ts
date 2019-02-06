@@ -20,6 +20,7 @@ export interface ProcessedVote {
 }
 
 export interface GameModel {
+  id: string;
   factionDetails: {[key in PlayableFactionId]: FactionDetail};
   roundStart: number;
   roundEnd: number;
@@ -104,6 +105,7 @@ export class GameLogic {
     ];
 
     return {
+      id: gameState.gameId,
       roundDuration: gameState.roundDuration,
       roundStart: gameState.roundStart,
       roundEnd: gameState.roundEnd,

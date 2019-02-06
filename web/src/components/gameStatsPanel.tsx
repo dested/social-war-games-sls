@@ -13,7 +13,7 @@ import {UI, UIStore, UIStoreName, UIStoreProps} from '../store/ui/store';
 import {HexConstants} from '../utils/hexConstants';
 import {UIConstants} from '../utils/uiConstants';
 
-interface Props extends RouteComponentProps<{}>, MainStoreProps, GameStoreProps, UIStoreProps {
+interface Props extends MainStoreProps, GameStoreProps, UIStoreProps {
   smallGameRenderer: SmallGameRenderer;
 }
 
@@ -21,7 +21,7 @@ interface State {}
 
 @inject(MainStoreName, GameStoreName, UIStoreName)
 @observer
-export class Component extends React.Component<Props, State> {
+export class GameStatsPanel extends React.Component<Props, State> {
   constructor(props: Props, context: any) {
     super(props, context);
     (window as any).gameStatsPanel = this;
@@ -35,9 +35,8 @@ export class Component extends React.Component<Props, State> {
   }
 
   render() {
-    const game = this.props.gameStore.gameState;
+    const game = this.props.gameStore.game;
     const percent = (game.roundDuration - (game.roundEnd - +new Date())) / game.roundDuration;
-
     return (
       <Fragment>
         <div>
@@ -67,7 +66,7 @@ export class Component extends React.Component<Props, State> {
             className={'bottom-button'}
             style={{backgroundColor: '#f3ecea'}}
           >
-            Percent Done: {(percent * 100).toFixed(0)}
+            Percent Done: {(percent * 100).toFixed(0)} {gameStore.game.generation}
           </div>
           <div
             onClick={() => this.setUI('FactionStats')}
@@ -104,10 +103,9 @@ export class Component extends React.Component<Props, State> {
   private updateGen = async (generationUpdate: number) => {
     const gameState = await DataService.getGameState(
       mainStore.user.factionId,
-      gameStore.gameState.generation + generationUpdate,
+      gameStore.game.generation + generationUpdate,
       gameStore.userDetails.factionToken
     );
-    gameStore.setGameState(gameState);
     const game = GameLogic.buildGameFromState(gameStore.layout, gameState);
 
     HexConstants.smallHeight = (UIConstants.miniMapHeight() / game.grid.boundsHeight) * 1.3384;
@@ -177,5 +175,3 @@ export class Component extends React.Component<Props, State> {
     await UIStore.setUI(ui);
   };
 }
-
-export let GameStatsPanel = withRouter(Component);

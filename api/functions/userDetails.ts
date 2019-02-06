@@ -17,17 +17,17 @@ interface UserDetailsResponse {
 export async function userDetailsHandler(
   event: Event<UserDetailsRequestBody>
 ): Promise<HttpResponse<UserDetailsResponse>> {
-  if (!event.headers || !event.headers.Authorization) {
+  if (!event.headers || !event.headers.Authorization || !event.headers.GameId) {
     return respond(403, {error: 'auth'});
   }
+  const gameId = event.headers.GameId;
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
   try {
     const redisManager = await RedisManager.setup();
-
-    const generation = await redisManager.get<number>('game-generation');
-    const totalVotes = await redisManager.get<number>(`user-${user.id}-${generation}-votes`, 0);
-    const factionToken = await redisManager.getString(`faction-token-${generation}-${user.factionId}`);
+    const generation = await redisManager.get<number>(gameId, 'game-generation');
+    const totalVotes = await redisManager.get<number>(gameId, `user-${user.id}-${generation}-votes`, 0);
+    const factionToken = await redisManager.getString(gameId, `faction-token-${generation}-${user.factionId}`);
 
     return respond(200, {
       generation,

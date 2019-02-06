@@ -20,36 +20,37 @@ let game: GameModel;
 
 export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpResponse<VoteResponse>> {
   const startTime = +new Date();
-  if (!event.headers || !event.headers.Authorization) {
+  if (!event.headers || !event.headers.Authorization || !event.headers.GameId) {
     return respond(400, {error: 'auth'});
   }
+  const gameId = event.headers.GameId;
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
   try {
     const redisManager = await RedisManager.setup();
     await DataManager.openDbConnection();
-    const shouldStop = await redisManager.get<boolean>('stop');
+    const shouldStop = await redisManager.get<boolean>(gameId, 'stop');
     if (shouldStop) {
       return respond(400, {error: 'stopped'});
     }
 
-    const generation = await redisManager.get<number>('game-generation');
-    let totalVotes = await redisManager.get<number>(`user-${user.id}-${generation}-votes`, 0);
+    const generation = await redisManager.get<number>(gameId, 'game-generation');
+    let totalVotes = await redisManager.get<number>(gameId, `user-${user.id}-${generation}-votes`, 0);
 
     if (totalVotes === undefined) {
-      await redisManager.set<number>(`user-${user.id}-${generation}-votes`, 1);
-      await redisManager.expire(`user-${user.id}-${generation}-votes`, Config.gameDuration * 2);
+      await redisManager.set<number>(gameId, `user-${user.id}-${generation}-votes`, 1);
+      await redisManager.expire(gameId, `user-${user.id}-${generation}-votes`, Config.gameDuration * 2);
     }
 
     if (totalVotes >= user.maxVotesPerRound) {
       return respond(400, {error: 'max_votes'});
     }
-    await redisManager.incr(`user-${user.id}-${generation}-votes`);
+    await redisManager.incr(gameId, `user-${user.id}-${generation}-votes`);
     totalVotes++;
 
     const body = event.body;
 
-    const voteHexes = await redisManager.getString(`user-${user.id}-${generation}-vote-hex`, '');
+    const voteHexes = await redisManager.getString(gameId, `user-${user.id}-${generation}-vote-hex`, '');
     if (voteHexes.indexOf(body.entityId + ' ') >= 0) {
       return respond(200, {
         reason: `cant_vote_twice` as VoteRequestResults,
@@ -58,9 +59,9 @@ export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpRe
       });
     }
 
-    layout = layout || (await redisManager.get<GameLayout>('layout'));
+    layout = layout || (await redisManager.get<GameLayout>(gameId, 'layout'));
     if (!gameState || gameState.generation !== generation) {
-      gameState = await redisManager.get<GameState>('game-state');
+      gameState = await redisManager.get<GameState>(gameId, 'game-state');
       game = GameLogic.buildGameFromState(layout, gameState);
     }
 
@@ -74,6 +75,7 @@ export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpRe
     }
 
     const vote = new DBVote();
+    vote.gameId = gameId;
     vote.action = body.action;
     vote.entityId = body.entityId;
     vote.generation = body.generation;
@@ -91,8 +93,8 @@ export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpRe
       });
     }
 
-    await redisManager.append(`user-${user.id}-${generation}-vote-hex`, `${vote.entityId} `);
-    await redisManager.expire(`user-${user.id}-${generation}-vote-hex`, Config.gameDuration * 2);
+    await redisManager.append(gameId, `user-${user.id}-${generation}-vote-hex`, `${vote.entityId} `);
+    await redisManager.expire(gameId, `user-${user.id}-${generation}-vote-hex`, Config.gameDuration * 2);
 
     await DBVote.db.insertDocument(vote);
     const endTime = +new Date();

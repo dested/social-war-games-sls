@@ -8,12 +8,12 @@ const s3 = new S3({
 });
 
 export class S3Manager {
-  static async uploadJson(key: string, content: string, cache: boolean) {
+  static async uploadJson(gameId: string, key: string, content: string, cache: boolean) {
     const bucket = Config.awsContentBucket;
     await s3
       .putObject({
         Bucket: bucket,
-        Key: key,
+        Key: `${gameId}/${key}`,
         Body: content,
         ACL: 'public-read',
         ContentType: 'application/json',
@@ -21,15 +21,15 @@ export class S3Manager {
       })
       .promise();
 
-    return `https://${bucket}.s3.amazonaws.com/${key}`;
+    return `https://${bucket}.s3.amazonaws.com/${gameId}/${key}`;
   }
 
-  static async uploadBytes(key: string, content: Buffer, cache: boolean) {
+  static async uploadBytes(gameId: string, key: string, content: Buffer, cache: boolean) {
     const bucket = Config.awsContentBucket;
     await s3
       .putObject({
         Bucket: bucket,
-        Key: key,
+        Key: `${gameId}/${key}`,
         Body: content,
         ACL: 'public-read',
         ContentType: 'application/octet-stream',
@@ -37,6 +37,6 @@ export class S3Manager {
       })
       .promise();
 
-    return `https://${bucket}.s3.amazonaws.com/${key}`;
+    return `https://${bucket}.s3.amazonaws.com/${gameId}/${key}`;
   }
 }

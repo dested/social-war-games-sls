@@ -1,11 +1,13 @@
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {GameState} from '@swg-common/models/gameState';
-import {JwtGetUserResponse} from '@swg-common/models/http/userController';
+import {HttpGame} from '@swg-common/models/http/httpGame';
+import {JwtGetUserResponse, LadderResponse} from '@swg-common/models/http/userController';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResponse} from '@swg-common/models/http/voteResults';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {GameStateParser} from '@swg-common/parsers/gameStateParser';
+import {gameStore} from './store/game/store';
 import {mainStore} from './store/main/store';
 
 export class DataService {
@@ -14,7 +16,7 @@ export class DataService {
   private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
 
   static async login(email: string, password: string): Promise<JwtGetUserResponse> {
-    const response = await fetch(this.apiServer + '/login', {
+    const response = await fetch(`${this.apiServer}/login`, {
       method: 'POST',
       body: JSON.stringify({
         email,
@@ -38,7 +40,7 @@ export class DataService {
   }
 
   static async register(email: string, userName: string, password: string): Promise<JwtGetUserResponse> {
-    const response = await fetch(this.apiServer + '/register', {
+    const response = await fetch(`${this.apiServer}/register`, {
       method: 'POST',
       body: JSON.stringify({
         email,
@@ -48,6 +50,7 @@ export class DataService {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
+        GameId: gameStore.currentGameId,
       },
     });
     if (!response.ok) {
@@ -68,12 +71,13 @@ export class DataService {
     generation: number;
     hexId: string;
   }): Promise<VoteResponse> {
-    const response = await fetch(this.apiServer + '/vote', {
+    const response = await fetch(`${this.apiServer}/vote`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + mainStore.jwt,
+        GameId: gameStore.currentGameId,
       },
       body: JSON.stringify(vote),
     });
@@ -82,12 +86,13 @@ export class DataService {
   }
 
   static async currentUserDetails(): Promise<UserDetails> {
-    const response = await fetch(this.apiServer + '/user-details', {
+    const response = await fetch(`${this.apiServer}/user-details`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + mainStore.jwt,
+        GameId: gameStore.currentGameId,
       },
     });
 
@@ -96,11 +101,13 @@ export class DataService {
   }
 
   static async getLayout() {
-    const response = await fetch(this.s3Server + '/layout.swg', {
+    const gameId = gameStore.currentGameId;
+    const response = await fetch(`${this.s3Server}/${gameId}/layout.swg`, {
       method: 'GET',
       headers: {
         Accept: 'application/octet-stream',
         'Content-Type': 'application/octet-stream',
+        GameId: gameStore.currentGameId,
       },
     });
     const arrayBuffer = await response.arrayBuffer();
@@ -112,8 +119,9 @@ export class DataService {
     generation: number,
     factionToken: string
   ): Promise<GameState> {
+    const gameId = gameStore.currentGameId;
     const response = await fetch(
-      `${this.s3Server}/generation-outcomes/generation-outcome-${generation}-${factionId}.swg`,
+      `${this.s3Server}/${gameId}/generation-outcomes/generation-outcome-${generation}-${factionId}.swg`,
       {
         method: 'GET',
         headers: {
@@ -127,8 +135,21 @@ export class DataService {
     return gameState;
   }
 
-  static async getLadder() {
-    const response = await fetch(this.apiServer + '/ladder', {
+  static async getLadder(): Promise<LadderResponse> {
+    const response = await fetch(`${this.apiServer}/ladder`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...(mainStore.jwt ? {Authorization: 'Bearer ' + mainStore.jwt} : {}),
+      },
+    });
+    const json = await response.json();
+    return JSON.parse(json.body);
+  }
+
+  static async getGames(): Promise<{games: HttpGame[]}> {
+    const response = await fetch(`${this.apiServer}/games`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -141,7 +162,8 @@ export class DataService {
   }
 
   static async getFactionStats(generation: number): Promise<FactionStats[]> {
-    const response = await fetch(`${this.s3Server}/faction-stats.json?bust=${generation}`, {
+    const gameId = gameStore.currentGameId;
+    const response = await fetch(`${this.s3Server}/${gameId}/faction-stats.json?bust=${generation}`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',

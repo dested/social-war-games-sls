@@ -8,6 +8,7 @@ import * as ReactDOM from 'react-dom';
 import {Route} from 'react-router';
 import {HashRouter} from 'react-router-dom';
 import {Game} from './components/game';
+import {Games} from './components/games';
 import {Login} from './components/login';
 import {Register} from './components/register';
 import {stores} from './store/stores';
@@ -21,6 +22,7 @@ function run() {
         <Fragment>
           <Route exact path="/" component={Game} />
           <Route path="/register" component={Register} />
+          <Route path="/games" component={Games} />
           <Route path="/login" component={Login} />
         </Fragment>
       </HashRouter>

@@ -36,6 +36,12 @@ export class Component extends React.Component<Props, State> {
       this.props.history.push('/login');
       return;
     }
+
+    if (!this.props.gameStore.currentGameId) {
+      this.props.history.push('/games');
+      return;
+    }
+
     this.props.gameStore.setGameRenderer(this.gameRenderer, this.smallGameRenderer);
     GameStore.startGame();
 

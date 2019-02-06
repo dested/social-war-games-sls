@@ -18,11 +18,11 @@ const params = {
 export class SocketUtils {
   private static client: any;
 
-  static connect(clientId: string, factionToken: string, onMessage: (roundState: RoundState) => void) {
+  static connect(gameId: string, clientId: string, factionToken: string, onMessage: (roundState: RoundState) => void) {
     this.client = AWSMqtt.connect({...params, clientId});
     this.client.on('connect', () => {
       console.log('connected');
-      this.client.subscribe(`round-state-${factionToken}`);
+      this.client.subscribe(`${gameId}/round-state-${factionToken}`);
     });
     this.client.on('message', (topic: string, buffer: Uint8Array) => {
       const round = RoundStateParser.toRoundState(new Uint8Array(buffer).buffer);
