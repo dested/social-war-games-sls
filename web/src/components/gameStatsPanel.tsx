@@ -130,7 +130,7 @@ export class GameStatsPanel extends React.Component<Props, State> {
 
     gameStore.updateGame(game, {...emptyRoundState}, {...emptyRoundState});
     gameStore.setLastRoundActionsFromNotes(gameState, mainStore.user.factionId, game.grid);
-
+    gameStore.smallGameRenderer.processMiniMap(game);
     gameStore.smallGameRenderer.forceRender();
   };
 

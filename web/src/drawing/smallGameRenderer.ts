@@ -51,7 +51,6 @@ export class SmallGameRenderer {
     this.context = this.canvas.getContext('2d');
 
     this.minimapCanvas = document.createElement('canvas');
-
     const manager = new Manager(this.canvas); // const swipe = new Swipe();
     manager.add(new Hammer.Tap({taps: 1}));
     manager.add(new Hammer.Pan({}));
@@ -144,8 +143,8 @@ export class SmallGameRenderer {
       context.fillRect(
         Math.round(hexagon.smallCenter.x - HexConstants.smallWidth / 2),
         Math.round(hexagon.smallCenter.y - HexConstants.smallHeight / 2),
-        Math.round(HexConstants.smallWidth),
-        Math.round(HexConstants.smallHeight)
+        Math.round(HexConstants.smallWidth * 1.1),
+        Math.round(HexConstants.smallHeight * 1.1)
       );
 
       if (hexagon.factionId === '9') {
@@ -164,8 +163,8 @@ export class SmallGameRenderer {
       context.fillRect(
         Math.round(hexagon.smallCenter.x - HexConstants.smallWidth / 2),
         Math.round(hexagon.smallCenter.y - HexConstants.smallHeight / 2),
-        Math.round(HexConstants.smallWidth),
-        Math.round(HexConstants.smallHeight)
+        Math.round(HexConstants.smallWidth * 1.1),
+        Math.round(HexConstants.smallHeight * 1.1)
       );
 
       /*
