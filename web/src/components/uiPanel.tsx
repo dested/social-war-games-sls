@@ -1,5 +1,4 @@
-import {Factions, GameEntity} from '@swg-common/game/entityDetail';
-import {FactionStats} from '@swg-common/models/factionStats';
+import {GameEntity} from '@swg-common/game/entityDetail';
 import {VoteNote} from '@swg-common/models/voteNote';
 import {inject, observer} from 'mobx-react';
 import * as React from 'react';
@@ -8,7 +7,7 @@ import {withRouter} from 'react-router-dom';
 import {GameAssets} from '../drawing/gameAssets';
 import {GameStoreName, GameStoreProps} from '../store/game/store';
 import {MainStoreName, MainStoreProps} from '../store/main/store';
-import {UI, UIStore, UIStoreName, UIStoreProps} from '../store/ui/store';
+import {UIStore, UIStoreName, UIStoreProps} from '../store/ui/store';
 import {HexColors} from '../utils/hexColors';
 import {FactionStatsCanvas} from './factionStatsCanvas';
 import './uiPanel.css';

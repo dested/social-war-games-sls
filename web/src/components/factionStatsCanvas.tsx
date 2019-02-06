@@ -1,4 +1,4 @@
-import {emptyFactionObject, Factions, GameEntity, OfFaction} from '@swg-common/game/entityDetail';
+import {emptyFactionObject, Factions, OfFaction} from '@swg-common/game/entityDetail';
 import {FactionStat, FactionStats} from '@swg-common/models/factionStats';
 import {Point} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';

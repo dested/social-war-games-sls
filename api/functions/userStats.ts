@@ -3,12 +3,8 @@ import {JwtGetUserResponse, RegisterRequestBody, StatsResponse} from '@swg-commo
 import {Config} from '@swg-server-common/config';
 import {DBUser} from '@swg-server-common/db/models/dbUser';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
-import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import {Timer} from '../../common/src/utils/timer';
 import {DataManager} from '../../server-common/src/db/dataManager';
-import {AuthService} from '../utils/authService';
-import {FactionUtils} from '../utils/factionUtils';
 import {Event} from '../utils/models';
 import {HttpResponse, respond} from '../utils/respond';
 

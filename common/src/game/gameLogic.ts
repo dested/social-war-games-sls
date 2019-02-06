@@ -1,24 +1,12 @@
-import {HexUtils, Point} from '@swg-common/utils/hexUtils';
-import {Timer} from '@swg-common/utils/timer';
-import {Config} from '@swg-server-common/config';
-import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
+import {Point} from '@swg-common/utils/hexUtils';
 import {Grid, PointHashKey} from '../hex/hex';
 import {GameLayout} from '../models/gameLayout';
 import {GameState} from '../models/gameState';
 import {DoubleHashArray, HashArray} from '../utils/hashArray';
-import {Utils} from '../utils/utils';
-import {
-  EntityAction,
-  EntityDetail,
-  EntityDetails,
-  Faction,
-  Factions,
-  GameEntity,
-  PlayableFactionId,
-} from './entityDetail';
+import {EntityAction, EntityDetail, EntityDetails, Faction, GameEntity, PlayableFactionId} from './entityDetail';
 import {FactionDetail} from './factionDetail';
 import {GameHexagon} from './gameHexagon';
-import {GameResource, ResourceDetails, ResourceType} from './gameResource';
+import {GameResource} from './gameResource';
 import {HexagonTypes} from './hexagonTypes';
 import {VoteResult} from './voteResult';
 

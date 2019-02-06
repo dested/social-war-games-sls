@@ -1,13 +1,10 @@
-import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
-import {JwtGetUserResponse, LadderResponse} from '@swg-common/models/http/userController';
-import {RoundState} from '@swg-common/models/roundState';
+import {JwtGetUserResponse} from '@swg-common/models/http/userController';
 
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
-import {VoteResult} from '@swg-common/game/voteResult';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {UserDetails} from '@swg-common/models/http/userDetails';
-import {VoteRequestResults, VoteResponse} from '@swg-common/models/http/voteResults';
+import {VoteResponse} from '@swg-common/models/http/voteResults';
 import {FactionRoundStats} from '@swg-common/models/roundStats';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {GameStateParser} from '@swg-common/parsers/gameStateParser';

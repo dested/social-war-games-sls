@@ -1,7 +1,7 @@
 import {ProcessedVote} from '@swg-common/game/gameLogic';
 import {VoteNote} from '@swg-common/models/voteNote';
 import {FacingDirection} from '@swg-common/utils/hexUtils';
-import {EntityAction, EntityType, OfFaction, PlayableFactionId} from '../game/entityDetail';
+import {EntityAction, EntityType, OfFaction} from '../game/entityDetail';
 import {ResourceType} from '../game/gameResource';
 
 export interface GameState {

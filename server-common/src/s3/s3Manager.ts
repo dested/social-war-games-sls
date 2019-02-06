@@ -1,4 +1,4 @@
-import {config, S3} from 'aws-sdk';
+import {S3} from 'aws-sdk';
 import {Config} from '../config';
 
 const s3 = new S3({

@@ -1,17 +1,8 @@
 import {ProcessedVote} from '@swg-common/game/gameLogic';
 import {VoteNote} from '@swg-common/models/voteNote';
-import {FacingDirection, Point} from '@swg-common/utils/hexUtils';
-import {
-  emptyFactionObject,
-  EntityType,
-  Factions,
-  foreachFaction,
-  GameEntityBusyDetails,
-  OfFaction,
-  PlayableFactionId,
-} from '../game/entityDetail';
+import {FacingDirection} from '@swg-common/utils/hexUtils';
+import {Factions, foreachFaction, GameEntityBusyDetails, OfFaction, PlayableFactionId} from '../game/entityDetail';
 import {FactionDetail} from '../game/factionDetail';
-import {ResourceType} from '../game/gameResource';
 import {GameState, GameStateEntity, GameStateResource} from '../models/gameState';
 import {ArrayBufferBuilder, ArrayBufferReader} from '../utils/arrayBufferBuilder';
 import {ParserEnumUtils} from './parserEnumUtils';
@@ -200,7 +191,7 @@ export class GameStateParser {
           busy = {
             ticks,
             action,
-            hexId: hexId,
+            hexId,
           };
         }
 

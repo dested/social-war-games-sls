@@ -1,5 +1,5 @@
 import {EntityAction, EntityDetails, GameEntity} from '@swg-common/game/entityDetail';
-import {GameResource, ResourceDetails} from '@swg-common/game/gameResource';
+import {ResourceDetails} from '@swg-common/game/gameResource';
 import {Utils} from '@swg-common/utils/utils';
 import {inject, observer} from 'mobx-react';
 import * as React from 'react';

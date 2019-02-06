@@ -1,5 +1,3 @@
-import {ActionRoute} from '@swg-common/game/entityDetail';
-import {GameLogic} from '@swg-common/game/gameLogic';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {LadderResponse} from '@swg-common/models/http/userController';
 import {action, observable} from 'mobx';

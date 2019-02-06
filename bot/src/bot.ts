@@ -5,9 +5,9 @@ import {PointHashKey} from '@swg-common/hex/hex';
 import {JwtGetUserResponse} from '@swg-common/models/http/userController';
 import {VoteRequestResults} from '@swg-common/models/http/voteResults';
 import {DoubleHashArray} from '@swg-common/utils/hashArray';
+import {Point} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
 import {DataService} from './dataServices';
-import {Point} from '@swg-common/utils/hexUtils';
 
 const startBot = async (userResponse: JwtGetUserResponse) => {
   const layout = await DataService.getLayout();

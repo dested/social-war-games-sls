@@ -1,25 +1,14 @@
-import {
-  EntityAction,
-  EntityDetails,
-  EntityTypeNames,
-  FactionNames,
-  Factions,
-  GameEntity,
-} from '@swg-common/game/entityDetail';
+import {EntityDetails, Factions} from '@swg-common/game/entityDetail';
 import {GameLogic, GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
-import {GameResource} from '@swg-common/game/gameResource';
 import {VoteResult} from '@swg-common/game/voteResult';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState} from '@swg-common/models/gameState';
-import {VoteNote} from '@swg-common/models/voteNote';
-import {HexUtils} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
 import {Config} from '@swg-server-common/config';
 import {DataManager} from '@swg-server-common/db/dataManager';
-import {DBGameStateResult} from '@swg-server-common/db/models/DBGameStateResult';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
-import {DBVote, VoteCountResult} from '@swg-server-common/db/models/dbVote';
+import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {ServerGameLogic} from '@swg-server-common/game/serverGameLogic';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';

@@ -1,7 +1,5 @@
-import {EntityAction} from '../game/entityDetail';
 import {RoundState, RoundStateEntityVote} from '../models/roundState';
 import {ArrayBufferBuilder, ArrayBufferReader} from '../utils/arrayBufferBuilder';
-import {Utils} from '../utils/utils';
 import {ParserEnumUtils} from './parserEnumUtils';
 
 export class RoundStateParser {

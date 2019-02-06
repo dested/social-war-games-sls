@@ -1,5 +1,4 @@
 import {gameStore} from '../store/game/store';
-import {mainStore} from '../store/main/store';
 
 export class ImageUtils {
   static preloadImage(url: string) {

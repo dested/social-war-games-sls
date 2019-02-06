@@ -48,8 +48,7 @@ export class Component extends React.Component<Props, State> {
         this.smallGameRenderer.canvas.width = window.innerWidth;
         this.smallGameRenderer.canvas.height = UIConstants.miniMapHeight();
 
-        HexConstants.smallHeight =
-          ((UIConstants.miniMapHeight() - 100) / this.props.gameStore.game.grid.boundsHeight) * 1.3384;
+        HexConstants.smallHeight = (UIConstants.miniMapHeight() / this.props.gameStore.game.grid.boundsHeight) * 1.3384;
         HexConstants.smallWidth = UIConstants.miniMapWidth() / this.props.gameStore.game.grid.boundsWidth;
 
         DrawingOptions.defaultSmall = {

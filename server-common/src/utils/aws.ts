@@ -1,6 +1,3 @@
-import {config} from 'aws-sdk';
-import {Config} from '../config';
-
 export class AwsUtils {
   /*
     static async uploadImage(base64: string, fileType: string) {

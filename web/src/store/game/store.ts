@@ -88,7 +88,7 @@ export class GameStore {
 
   @action voting(isVoting: boolean) {
     this.isVoting = isVoting;
-    this.votingError = null;
+    this.votingResultError = null;
   }
 
   @action votingError(votingResultError: VoteResult | null) {
@@ -212,7 +212,7 @@ export class GameStore {
     });
     const game = GameLogic.buildGameFromState(layout, gameState);
 
-    HexConstants.smallHeight = ((UIConstants.miniMapHeight() - 100) / game.grid.boundsHeight) * 1.3384;
+    HexConstants.smallHeight = (UIConstants.miniMapHeight() / game.grid.boundsHeight) * 1.3384;
     HexConstants.smallWidth = UIConstants.miniMapWidth() / game.grid.boundsWidth;
 
     DrawingOptions.defaultSmall = {

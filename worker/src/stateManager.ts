@@ -5,7 +5,6 @@ import {
   EntityTypeNames,
   FactionNames,
   Factions,
-  foreachFaction,
   GameEntity,
   OfFaction,
 } from '@swg-common/game/entityDetail';

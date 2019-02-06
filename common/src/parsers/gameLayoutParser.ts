@@ -1,9 +1,5 @@
-import {EntityAction} from '../game/entityDetail';
-import {TileSubType, TileType} from '../game/hexagonTypes';
 import {GameLayout, GameLayoutHex} from '../models/gameLayout';
-import {RoundState, RoundStateEntityVote} from '../models/roundState';
 import {ArrayBufferBuilder, ArrayBufferReader} from '../utils/arrayBufferBuilder';
-import {Utils} from '../utils/utils';
 import {ParserEnumUtils} from './parserEnumUtils';
 
 export class GameLayoutParser {

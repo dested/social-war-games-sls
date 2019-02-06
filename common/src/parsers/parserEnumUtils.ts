@@ -1,10 +1,7 @@
 import {EntityAction, EntityType} from '../game/entityDetail';
 import {ResourceType} from '../game/gameResource';
 import {TileSubType, TileType} from '../game/hexagonTypes';
-import {GameLayout, GameLayoutHex} from '../models/gameLayout';
-import {RoundState, RoundStateEntityVote} from '../models/roundState';
 import {ArrayBufferBuilder, ArrayBufferReader} from '../utils/arrayBufferBuilder';
-import {Utils} from '../utils/utils';
 
 export class ParserEnumUtils {
   static hexTypeToInt(type: TileType): number {

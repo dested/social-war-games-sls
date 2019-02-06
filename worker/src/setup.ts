@@ -1,8 +1,5 @@
-import {emptyFactionObject} from '@swg-common/game/entityDetail';
-import {GameLogic} from '@swg-common/game/gameLogic';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
-import {Config} from '@swg-server-common/config';
 import {DataManager} from '@swg-server-common/db/dataManager';
 import {DBGameStateResult} from '@swg-server-common/db/models/DBGameStateResult';
 import {DBLadder} from '@swg-server-common/db/models/dbLadder';
@@ -63,14 +60,7 @@ export class Setup {
     const gameLayoutBytes = GameLayoutParser.fromGameLayout(gameLayout);
     await S3Manager.uploadBytes('layout.swg', gameLayoutBytes, true);
     const factionTokens = await S3Splitter.generateFactionTokens(redisManager, game.generation);
-    await S3Splitter.output(
-      game,
-      gameLayout,
-      gameState,
-      roundState,
-      factionTokens,
-      true
-    );
+    await S3Splitter.output(game, gameLayout, gameState, roundState, factionTokens, true);
 
     await redisManager.set('layout', gameLayout);
     await redisManager.set('game-state', gameState);
