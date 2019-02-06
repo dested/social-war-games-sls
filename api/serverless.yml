@@ -47,9 +47,12 @@ functions:
       - http:
           path: vote
           method: post
-          integration: lambda
-          cors: true
-
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - GameId
   user-details:
     handler: handler.userDetails
     memorySize: 256
@@ -57,32 +60,48 @@ functions:
       - http:
           path: user-details
           method: get
-          integration: lambda
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - GameId
   register:
     handler: handler.register
     events:
       - http:
           path: register
           method: post
-          integration: lambda
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - GameId
   login:
     handler: handler.login
     events:
       - http:
           path: login
           method: post
-          integration: lambda
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - GameId
   ladder:
     handler: handler.ladder
     events:
       - http:
           path: ladder
           method: get
-          integration: lambda
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - GameId
   getGames:
     handler: handler.getGames
     memorySize: 128
@@ -90,5 +109,9 @@ functions:
       - http:
           path: games
           method: get
-          integration: lambda
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - GameId

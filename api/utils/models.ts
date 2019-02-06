@@ -7,5 +7,6 @@ export interface Event<T> {
 
 export interface Headers {
   Authorization: string;
-  GameId: string;
+  authorization: string;
+  gameid: string;
 }

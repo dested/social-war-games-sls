@@ -10,13 +10,7 @@ import {Event} from '../utils/models';
 import {HttpResponse, respond} from '../utils/respond';
 
 export async function getGamesHandler(event: Event<void>): Promise<HttpResponse<StatsResponse>> {
-  if (!event.headers || !event.headers.Authorization) {
-    return respond(403, {error: 'auth'});
-  }
   await DataManager.openDbConnection();
-
-  const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
-
   const games = await DBGame.db.getAll({});
   return respond(200, {
     games: games.map(DBGame.map),

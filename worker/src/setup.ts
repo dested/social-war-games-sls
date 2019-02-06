@@ -30,13 +30,14 @@ export class Setup {
     await SocketManager.open();
     await redisManager.flushAll();
 
+    await DBGame.db.deleteMany({});
     await DBVote.db.deleteMany({});
     await DBUserRoundStats.db.deleteMany({});
     await DBGameStateResult.db.deleteMany({});
     await DBLadder.db.deleteMany({});
 
-    const game = await ServerGameLogic.createDebugGame();
-
+    const game = await ServerGameLogic.createGame();
+    console.log(game.id);
     await DBGame.db.insertDocument(new DBGame(game));
 
     await redisManager.set(game.id, 'stop', true);

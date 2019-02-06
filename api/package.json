@@ -43,6 +43,7 @@
     "serverless-domain-manager": "^2.4.0",
     "serverless-webpack": "^5.2.0",
     "serverless-offline": "^4.2.1",
+    "terser": "3.14.1",
     "ts-loader": "^5.3.3",
     "prettier": "^1.16.3",
     "typescript": "^3.3.1",

@@ -25,7 +25,7 @@
     "nodemon": "^1.12.1",
     "ts-jest": "^22.4.2",
     "ts-node": "^3.3.0",
-    "uglifyjs-webpack-plugin": "^1.2.5",
+    "terser": "3.14.1",
     "ts-loader": "^5.3.3",
     "prettier": "^1.16.3",
     "typescript": "^3.3.1",
@@ -33,7 +33,9 @@
     "tslint-config-prettier": "^1.17.0",
     "tslint-plugin-prettier": "^2.0.1",
     "tslint-eslint-rules": "^5.4.0",
-    "webpack": "^4.29.0"
+    "uglifyjs-webpack-plugin": "^1.2.6",
+    "webpack": "^4.29.0",
+    "webpack-cli": "^3.0.8"
   },
   "jest": {
     "transform": {

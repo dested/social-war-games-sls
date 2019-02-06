@@ -9,11 +9,11 @@ import {Event} from '../utils/models';
 import {HttpResponse, respond} from '../utils/respond';
 
 export async function userStatsHandler(event: Event<void>): Promise<HttpResponse<StatsResponse>> {
-  if (!event.headers || !event.headers.Authorization || !event.headers.GameId) {
+  if (!event.headers || !event.headers.Authorization || !event.headers.gameid) {
     return respond(403, {error: 'auth'});
   }
   await DataManager.openDbConnection();
-  const gameId = event.headers.GameId;
+  const gameId = event.headers.gameid;
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
 

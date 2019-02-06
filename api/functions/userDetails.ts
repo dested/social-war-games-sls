@@ -17,10 +17,11 @@ interface UserDetailsResponse {
 export async function userDetailsHandler(
   event: Event<UserDetailsRequestBody>
 ): Promise<HttpResponse<UserDetailsResponse>> {
-  if (!event.headers || !event.headers.Authorization || !event.headers.GameId) {
+  console.log(event);
+  if (!event.headers || !event.headers.Authorization || !event.headers.gameid) {
     return respond(403, {error: 'auth'});
   }
-  const gameId = event.headers.GameId;
+  const gameId = event.headers.gameid;
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
   try {

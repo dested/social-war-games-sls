@@ -32,8 +32,8 @@ export class DataService {
       throw new Error(response.statusText);
     }
     const json = await response.json();
-    if (json.statusCode === 200) {
-      return JSON.parse(json.body);
+    if (response.status === 200) {
+      return json;
     } else {
       throw new Error();
     }
@@ -50,7 +50,7 @@ export class DataService {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        GameId: gameStore.currentGameId,
+        gameid: gameStore.currentGameId,
       },
     });
     if (!response.ok) {
@@ -58,8 +58,8 @@ export class DataService {
       throw new Error(response.statusText);
     }
     const json = await response.json();
-    if (json.statusCode === 200) {
-      return JSON.parse(json.body);
+    if (response.status === 200) {
+      return json;
     } else {
       throw new Error();
     }
@@ -77,12 +77,12 @@ export class DataService {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + mainStore.jwt,
-        GameId: gameStore.currentGameId,
+        gameid: gameStore.currentGameId,
       },
       body: JSON.stringify(vote),
     });
     const json = await response.json();
-    return JSON.parse(json.body);
+    return json;
   }
 
   static async currentUserDetails(): Promise<UserDetails> {
@@ -92,12 +92,12 @@ export class DataService {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + mainStore.jwt,
-        GameId: gameStore.currentGameId,
+        gameid: gameStore.currentGameId,
       },
     });
 
     const json = await response.json();
-    return JSON.parse(json.body);
+    return json;
   }
 
   static async getLayout() {
@@ -107,7 +107,7 @@ export class DataService {
       headers: {
         Accept: 'application/octet-stream',
         'Content-Type': 'application/octet-stream',
-        GameId: gameStore.currentGameId,
+        gameid: gameStore.currentGameId,
       },
     });
     const arrayBuffer = await response.arrayBuffer();
@@ -145,7 +145,7 @@ export class DataService {
       },
     });
     const json = await response.json();
-    return JSON.parse(json.body);
+    return json;
   }
 
   static async getGames(): Promise<{games: HttpGame[]}> {
@@ -158,7 +158,7 @@ export class DataService {
       },
     });
     const json = await response.json();
-    return JSON.parse(json.body);
+    return json;
   }
 
   static async getFactionStats(generation: number): Promise<FactionStats[]> {

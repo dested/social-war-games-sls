@@ -9,14 +9,21 @@ import {Point} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
 import {DataService} from './dataServices';
 
+let gameId: string;
+
 const startBot = async (userResponse: JwtGetUserResponse) => {
-  const layout = await DataService.getLayout();
-  let userDetails = await DataService.currentUserDetails(userResponse.jwt);
-  let localGameState = await DataService.getGameState(userResponse.user.factionId, userDetails.factionToken);
+  const layout = await DataService.getLayout(gameId);
+  let userDetails = await DataService.currentUserDetails(userResponse.jwt, gameId);
+  console.log(userDetails);
+  let localGameState = await DataService.getGameState(
+    userResponse.user.factionId,
+    userDetails.generation,
+    userDetails.factionToken,
+    gameId
+  );
 
   let game = GameLogic.buildGameFromState(layout, localGameState);
   let votesLeft = userDetails.maxVotes - userDetails.voteCount;
-  console.log(userDetails);
   while (true) {
     try {
       if (votesLeft === 0) {
@@ -24,42 +31,58 @@ const startBot = async (userResponse: JwtGetUserResponse) => {
         console.log('no votes left!');
         await Utils.timeout(next + 5000);
 
-        localGameState = await DataService.getGameState(userResponse.user.factionId, userDetails.factionToken);
+        userDetails = await DataService.currentUserDetails(userResponse.jwt, gameId);
+        localGameState = await DataService.getGameState(
+          userResponse.user.factionId,
+          userDetails.generation,
+          userDetails.factionToken,
+          gameId
+        );
         game = GameLogic.buildGameFromState(layout, localGameState);
-
-        userDetails = await DataService.currentUserDetails(userResponse.jwt);
         votesLeft = userDetails.maxVotes - userDetails.voteCount;
       }
       const voteResult = await randomAction(game, userResponse.jwt, userResponse.user.factionId);
       votesLeft--;
       if (!voteResult) {
         await Utils.timeout(Math.random() * 10000);
-        userDetails = await DataService.currentUserDetails(userResponse.jwt);
+        userDetails = await DataService.currentUserDetails(userResponse.jwt, gameId);
         continue;
       }
 
-      console.log(voteResult.reason + ' ' + voteResult.voteResult, userResponse.user.email);
       switch (voteResult.reason) {
         case 'ok':
+          console.log('voted', userResponse.user.email);
           await Utils.timeout(Math.random() * 500);
           continue;
         case 'max_votes':
+          console.log('max votes', userResponse.user.email);
           await Utils.timeout(10000);
           break;
         case 'stopped':
+          console.log('stopped', userResponse.user.email);
           await Utils.timeout(1000);
-          userDetails = await DataService.currentUserDetails(userResponse.jwt);
-          localGameState = await DataService.getGameState(userResponse.user.factionId, userDetails.factionToken);
+          userDetails = await DataService.currentUserDetails(userResponse.jwt, gameId);
+          localGameState = await DataService.getGameState(
+            userResponse.user.factionId,
+            userDetails.generation,
+            userDetails.factionToken,
+            gameId
+          );
           game = GameLogic.buildGameFromState(layout, localGameState);
           break;
         case 'bad_generation':
-          await Utils.timeout(1000);
-          userDetails = await DataService.currentUserDetails(userResponse.jwt);
-          localGameState = await DataService.getGameState(userResponse.user.factionId, userDetails.factionToken);
+          // await Utils.timeout(1000);
+          userDetails = await DataService.currentUserDetails(userResponse.jwt, gameId);
+          localGameState = await DataService.getGameState(
+            userResponse.user.factionId,
+            userDetails.generation,
+            userDetails.factionToken,
+            gameId
+          );
           game = GameLogic.buildGameFromState(layout, localGameState);
-          break;
+          continue;
       }
-      await Utils.timeout(Math.random() * 10000);
+      // await Utils.timeout(Math.random() * 10000);
     } catch (ex) {
       console.error(ex);
     }
@@ -131,7 +154,7 @@ async function randomMove(
 
   const voteResult = GameLogic.validateVote(game, processedVote);
   if (voteResult === VoteResult.Success) {
-    const serverVoteResult = await DataService.vote(processedVote, jwt);
+    const serverVoteResult = await DataService.vote(processedVote, jwt, gameId);
     return serverVoteResult;
   } else {
     return {
@@ -168,7 +191,7 @@ async function randomAttack(
 
   const voteResult = GameLogic.validateVote(game, processedVote);
   if (voteResult === VoteResult.Success) {
-    const serverVoteResult = await DataService.vote(processedVote, jwt);
+    const serverVoteResult = await DataService.vote(processedVote, jwt, gameId);
     return serverVoteResult;
   } else {
     return {
@@ -208,7 +231,7 @@ async function randomMine(
 
   const voteResult = GameLogic.validateVote(game, processedVote);
   if (voteResult === VoteResult.Success) {
-    const serverVoteResult = await DataService.vote(processedVote, jwt);
+    const serverVoteResult = await DataService.vote(processedVote, jwt, gameId);
     return serverVoteResult;
   } else {
     return {
@@ -251,7 +274,7 @@ async function randomSpawn(
 
   const voteResult = GameLogic.validateVote(game, processedVote);
   if (voteResult === VoteResult.Success) {
-    const serverVoteResult = await DataService.vote(processedVote, jwt);
+    const serverVoteResult = await DataService.vote(processedVote, jwt, gameId);
     return serverVoteResult;
   } else {
     return {
@@ -314,6 +337,9 @@ function getViableHexes(game: GameModel, entity: GameEntity, action: EntityActio
 }
 
 async function start() {
+  const response = await DataService.getGames();
+  gameId = response.games[0].gameId;
+
   const startNum = parseInt(process.argv[2]) * 100;
   for (let i = startNum; i < startNum + 100; i += 10) {
     // login(`test-${i}@test.com`, 'test').catch(ex => console.error(ex));

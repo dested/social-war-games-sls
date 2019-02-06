@@ -1,3 +1,3 @@
-declare module 'aws-mqtt'{
-    declare function connect(params:any):any;
+declare module 'aws-mqtt' {
+  declare function connect(params: any): any;
 }

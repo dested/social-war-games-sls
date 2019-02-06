@@ -20,10 +20,10 @@ let game: GameModel;
 
 export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpResponse<VoteResponse>> {
   const startTime = +new Date();
-  if (!event.headers || !event.headers.Authorization || !event.headers.GameId) {
+  if (!event.headers || !event.headers.Authorization || !event.headers.gameid) {
     return respond(400, {error: 'auth'});
   }
-  const gameId = event.headers.GameId;
+  const gameId = event.headers.gameid;
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
   try {
@@ -71,6 +71,7 @@ export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpRe
         votesLeft: user.maxVotesPerRound - totalVotes,
         processedTime: +new Date(),
         generation,
+        bodyGeneration: body.generation,
       });
     }
 
