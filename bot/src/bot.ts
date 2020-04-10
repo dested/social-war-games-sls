@@ -344,16 +344,16 @@ async function start() {
   for (let i = startNum; i < startNum + 100; i += 10) {
     // login(`test-${i}@test.com`, 'test').catch(ex => console.error(ex));
     await Promise.all([
-      login(`test-${i}@test.com`, `test`),
-      login(`test-${i + 1}@test.com`, `test`),
-      login(`test-${i + 2}@test.com`, `test`),
-      login(`test-${i + 3}@test.com`, `test`),
-      login(`test-${i + 4}@test.com`, `test`),
-      login(`test-${i + 5}@test.com`, `test`),
-      login(`test-${i + 6}@test.com`, `test`),
-      login(`test-${i + 7}@test.com`, `test`),
-      login(`test-${i + 8}@test.com`, `test`),
-      login(`test-${i + 9}@test.com`, `test`),
+      register(i),
+      register(i + 1),
+      register(i + 2),
+      register(i + 3),
+      register(i + 4),
+      register(i + 5),
+      register(i + 6),
+      register(i + 7),
+      register(i + 8),
+      register(i + 9),
     ]);
   }
 }

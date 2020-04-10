@@ -9,8 +9,8 @@ import {GameStateParser} from '@swg-common/parsers/gameStateParser';
 import fetch from 'node-fetch';
 
 export class DataService {
-  // private static apiServer: string = 'http://localhost:5103';
-  private static apiServer: string = 'https://api.socialwargames.com';
+  private static apiServer: string = 'http://localhost:5103';
+  // private static apiServer: string = 'https://api.socialwargames.com';
   private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
 
   static async login(email: string, password: string): Promise<JwtGetUserResponse> {
