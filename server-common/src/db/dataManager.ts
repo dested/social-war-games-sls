@@ -34,7 +34,7 @@ export class DocumentManager<T extends {_id: any}> {
   }
 
   async updateDocument(document: T): Promise<T> {
-    DataManager.dbConnection.collection(this.collectionName).findOneAndUpdate({_id: document._id}, document);
+    DataManager.dbConnection.collection(this.collectionName).findOneAndUpdate({_id: document._id}, {$set:document});
     return document;
   }
 

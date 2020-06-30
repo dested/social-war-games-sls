@@ -33,7 +33,6 @@ export class Worker {
     console.log('booting');
     this.redisManager = await RedisManager.setup();
     await DataManager.openDbConnection();
-    await SocketManager.open();
     const gameId = (await DBGame.db.getAll({}))[0].gameId;
     await this.processNewRound(gameId);
 

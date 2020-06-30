@@ -1,11 +1,7 @@
 import {S3} from 'aws-sdk';
 import {Config} from '../config';
 
-const s3 = new S3({
-  region: Config.awsRegion,
-  accessKeyId: Config.awsAccessKeyId,
-  secretAccessKey: Config.awsSecretAccessKey,
-});
+const s3 = new S3({region: Config.awsRegion});
 
 export class S3Manager {
   static async uploadJson(gameId: string, key: string, content: string, cache: boolean) {

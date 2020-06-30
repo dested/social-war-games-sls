@@ -20,7 +20,7 @@
     "watch-worker": "cross-env NODE_ENV=development webpack --progress --hide-modules --watch"
   },
   "dependencies": {
-    "aws-sdk": "^2.218.1",
+    "aws-sdk": "^2.707.0",
     "esprima": "^4.0.0",
     "aes-js": "^3.1.1",
     "jsonwebtoken": "^8.1.0",

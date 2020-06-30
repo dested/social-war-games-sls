@@ -1,22 +1,10 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
 service: swg
 
 plugins:
   - serverless-webpack
   - serverless-domain-manager
   - serverless-offline
+  - serverless-dynamodb-local
 
 custom:
   webpack:
@@ -30,14 +18,55 @@ custom:
     createRoute53Record: true
   serverless-offline:
     host: 0.0.0.0
-    port: 5103
+    noPrependStageInUrl: true
+    httpPort: 5103
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      heapInitial: 200m
+      heapMax: 1g
+      migrate: true
+      seed: true
+      convertEmptyValues: true
 
 provider:
   name: aws
   runtime: nodejs10.x
   stage: dev
   region: us-west-2
+  websocketsApiName: swg-socket
+  websocketsApiRouteSelectionExpression: $request.body.action
 
+resources: # CloudFormation template syntax from here on.
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: swg-connections
+        AttributeDefinitions:
+          - AttributeName: connectionId
+            AttributeType: S
+          - AttributeName: gameIdFactionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: GameFactionIndex
+            KeySchema:
+            - AttributeName: gameIdFactionId
+              KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 
 functions:
   vote:
@@ -115,3 +144,11 @@ functions:
               - Content-Type
               - Authorization
               - GameId
+  connect:
+    handler: socketHandler.connect
+    events:
+      - websocket: $connect
+  disconnect:
+    handler: socketHandler.disconnect
+    events:
+      - websocket: $disconnect

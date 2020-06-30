@@ -10,7 +10,6 @@ import {ServerGameLogic} from '@swg-server-common/game/serverGameLogic';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {S3Splitter} from './s3Splitter';
-import {SocketManager} from './socketManager';
 import {StateManager} from './stateManager';
 
 export class Setup {
@@ -27,7 +26,6 @@ export class Setup {
     console.log('redis connected');
     await DataManager.openDbConnection();
 
-    await SocketManager.open();
     await redisManager.flushAll();
 
     await DBGame.db.deleteMany({});

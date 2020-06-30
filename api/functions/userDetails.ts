@@ -17,7 +17,7 @@ interface UserDetailsResponse {
 export async function userDetailsHandler(
   event: Event<UserDetailsRequestBody>
 ): Promise<HttpResponse<UserDetailsResponse>> {
-  console.log(event);
+
   if (!event.headers || !event.headers.Authorization || !event.headers.gameid) {
     return respond(403, {error: 'auth'});
   }

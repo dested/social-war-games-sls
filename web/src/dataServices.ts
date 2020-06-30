@@ -14,6 +14,8 @@ export class DataService {
   private static apiServer: string = 'http://localhost:5103';
   // private static apiServer: string = 'https://api.socialwargames.com';
   private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
+    static socketServer: string = 'ws://127.0.0.1:3001';
+  // private static socketServer: string = 'ws://api.socialwargames.com';
 
   static async login(email: string, password: string): Promise<JwtGetUserResponse> {
     const response = await fetch(`${this.apiServer}/login`, {
