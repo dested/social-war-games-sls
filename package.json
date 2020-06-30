@@ -1,22 +1,24 @@
 {
   "name": "swg",
+  "private": true,
   "version": "1.0.0",
   "main": "index.js",
   "author": "Salvatore <dested@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "setup": "npm install && cd common && npm install && cd ../server-common && npm install && cd ../api && npm install && cd ../web && npm install && cd ../worker && npm install && cd ../bot && npm install",
-    "tsc": "cd common && tsc && cd ../server-common && tsc && cd ../api && tsc && cd ../web && tsc && cd ../worker && tsc && cd ../bot && tsc",
-    "lint": "cd common && npm run lint && cd ../server-common && npm run lint && cd ../api && npm run lint && cd ../web && npm run lint && cd ../worker && npm run lint && cd ../bot && npm run lint"
+  },
+  "workspaces": {
+    "packages": [
+      "api",
+      "bot",
+      "common",
+      "server-common",
+      "web",
+      "worker"
+    ],
+    "nohoist": ["**/**"]
   },
   "dependencies": {},
   "devDependencies": {
-    "ts-loader": "^5.3.3",
-    "prettier": "^1.16.3",
-    "typescript": "^3.3.1",
-    "tslint": "^5.12.1",
-    "tslint-config-prettier": "^1.17.0",
-    "tslint-plugin-prettier": "^2.0.1",
-    "tslint-eslint-rules": "^5.4.0"
   }
 }
