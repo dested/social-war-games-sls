@@ -3,8 +3,12 @@ service: swg
 plugins:
   - serverless-webpack
   - serverless-domain-manager
-  - serverless-offline
   - serverless-dynamodb-local
+  - serverless-step-functions
+  - serverless-step-functions-local
+  - serverless-offline-lambda
+  - serverless-offline
+  - serverless-pseudo-parameters
 
 custom:
   webpack:
@@ -20,6 +24,15 @@ custom:
     host: 0.0.0.0
     noPrependStageInUrl: true
     httpPort: 5103
+  lambda:
+    host: 0.0.0.0
+    port: 9898
+  stepFunctionsLocal:
+    accountId: 114394156384
+    region: us-west-2
+    lambdaEndpoint: http://localhost:9898
+    TaskResourceMapping:
+      Iterator: arn:aws:lambda:us-west-2:114394156384:function:iterator
   dynamodb:
     stages:
       - dev
@@ -37,10 +50,11 @@ provider:
   runtime: nodejs10.x
   stage: dev
   region: us-west-2
+  accountId: 114394156384
   websocketsApiName: swg-socket
   websocketsApiRouteSelectionExpression: $request.body.action
 
-resources: # CloudFormation template syntax from here on.
+resources:
   Resources:
     usersTable:
       Type: AWS::DynamoDB::Table
@@ -67,6 +81,46 @@ resources: # CloudFormation template syntax from here on.
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+
+stepFunctions:
+  stateMachines:
+    workRunner:
+      events:
+      name: workRunner
+      definition:
+        Comment: "Invoke Lambda every 10 seconds"
+        StartAt: ConfigureCount
+        States:
+          ConfigureCount:
+            Type: Pass
+            Result:
+              index: 0
+              step: 1
+              count: 6
+            ResultPath: "$.iterator"
+            Next: Iterator
+          Iterator:
+            Type: Task
+            ResultPath: "$.iterator"
+            Resource:
+              Fn::GetAtt: [iterator, Arn]
+            Next: IsCountReached
+          IsCountReached:
+            Type: Choice
+            Choices:
+              - Variable: "$.iterator.continue"
+                BooleanEquals: true
+                Next: "Wait"
+            Default: Done
+          Wait:
+            Type: Wait
+            Seconds: 10
+            Next: Iterator
+          Done:
+            Type: Pass
+            End: true
+  validate: true
+
 
 functions:
   vote:
@@ -131,7 +185,7 @@ functions:
               - Content-Type
               - Authorization
               - GameId
-  getGames:
+  get-games:
     handler: handler.getGames
     memorySize: 128
     events:
@@ -144,6 +198,9 @@ functions:
               - Content-Type
               - Authorization
               - GameId
+  iterator:
+    handler: iteratorHandler.iterator
+    memorySize: 128
   connect:
     handler: socketHandler.connect
     events:
