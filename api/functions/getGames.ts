@@ -10,7 +10,7 @@ import {Event} from '../utils/models';
 import {HttpResponse, respond} from '../utils/respond';
 
 export async function getGamesHandler(event: Event<void>): Promise<HttpResponse<StatsResponse>> {
-  await DataManager.openDbConnection();
+
   const games = await DBGame.db.getAll({});
   return respond(200, {
     games: games.map(DBGame.map),

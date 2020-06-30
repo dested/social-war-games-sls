@@ -8,8 +8,7 @@
     "lint": "npx tslint -p tsconfig.json --fix",
     "verify": "tsc --noEmit",
     "deploy": "sls deploy",
-    "local": "sls offline start",
-    "start-dynamo": "sls dynamodb start"
+    "local": "sls offline start"
   },
   "author": "",
   "license": "ISC",
@@ -21,7 +20,7 @@
     "esprima": "^4.0.0",
     "jsonwebtoken": "^8.1.0",
     "moment": "^2.22.0",
-    "mongodb": "^3.0.10",
+    "mongodb": "^3.4.1",
     "passport": "^0.4.0",
     "passport-jwt": "^3.0.1",
     "redis": "^2.8.0",
@@ -36,7 +35,7 @@
     "@types/express": "^4.11.1",
     "@types/jest": "^22.2.3",
     "@types/jsonwebtoken": "^7.2.5",
-    "@types/mongodb": "^2.2.18",
+    "@types/mongodb": "^3.5.25",
     "@types/node": "^8.0.28",
     "@types/passport": "^0.4.2",
     "@types/passport-jwt": "^3.0.0",

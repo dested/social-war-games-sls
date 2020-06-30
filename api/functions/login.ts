@@ -9,7 +9,7 @@ import {HttpResponse, respond} from '../utils/respond';
 
 export async function loginHandler(event: Event<LoginRequestBody>): Promise<HttpResponse<JwtGetUserResponse>> {
   const model = event.body;
-  await DataManager.openDbConnection();
+
 
   const login = new Timer();
   const query = DBUser.db.query.parse((a, email) => a.email === email, model.email);

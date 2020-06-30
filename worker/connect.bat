@@ -1,1 +1,0 @@
-ssh -i "c:\junk\certs\aws-dested.pem"  ec2-user@ec2-34-220-98-204.us-west-2.compute.amazonaws.com

@@ -13,8 +13,7 @@
       "bot",
       "common",
       "server-common",
-      "web",
-      "worker"
+      "web"
     ],
     "nohoist": ["**/**"]
   },

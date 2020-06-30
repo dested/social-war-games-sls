@@ -6,7 +6,6 @@ plugins:
   - serverless-dynamodb-local
   - serverless-step-functions
   - serverless-step-functions-local
-  - serverless-offline-lambda
   - serverless-offline
   - serverless-pseudo-parameters
 
@@ -26,13 +25,14 @@ custom:
     httpPort: 5103
   lambda:
     host: 0.0.0.0
+    region: us-west-2
     port: 9898
   stepFunctionsLocal:
     accountId: 114394156384
     region: us-west-2
-    lambdaEndpoint: http://localhost:9898
+    lambdaEndpoint: http://localhost:3002
     TaskResourceMapping:
-      Iterator: arn:aws:lambda:us-west-2:114394156384:function:iterator
+      Iterator: arn:aws:lambda:us-west-2:114394156384:function:swg-dev-iterator
   dynamodb:
     stages:
       - dev
@@ -88,17 +88,8 @@ stepFunctions:
       events:
       name: workRunner
       definition:
-        Comment: "Invoke Lambda every 10 seconds"
-        StartAt: ConfigureCount
+        StartAt: Iterator
         States:
-          ConfigureCount:
-            Type: Pass
-            Result:
-              index: 0
-              step: 1
-              count: 6
-            ResultPath: "$.iterator"
-            Next: Iterator
           Iterator:
             Type: Task
             ResultPath: "$.iterator"
@@ -201,6 +192,15 @@ functions:
   iterator:
     handler: iteratorHandler.iterator
     memorySize: 128
+  setup:
+    handler: functions/setup.setupHandler
+    memorySize: 128
+  work:
+    handler: functions/work.workHandler
+    memorySize: 256
+  roundUpdate:
+    handler: functions/roundUpdate.roundUpdateHandler
+    memorySize: 256
   connect:
     handler: socketHandler.connect
     events:

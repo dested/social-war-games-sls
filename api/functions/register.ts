@@ -10,7 +10,7 @@ import {HttpResponse, respond} from '../utils/respond';
 
 export async function registerHandler(event: Event<RegisterRequestBody>): Promise<HttpResponse<JwtGetUserResponse>> {
   const model = event.body;
-  await DataManager.openDbConnection();
+
 
   const register = new Timer();
   const foundUsers = await DBUser.db.count(

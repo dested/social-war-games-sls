@@ -25,7 +25,7 @@ export class S3Splitter {
     const tokens: OfFaction<string> = {} as any;
     for (const faction of Factions) {
       tokens[faction] = Utils.range(0, 16)
-        .map(a => Math.floor(Math.random() * 254) + 1)
+        .map((a) => Math.floor(Math.random() * 254) + 1)
         .join('.');
       await redisManager.setString(game.id, `faction-token-${game.generation}-${faction}`, tokens[faction]);
     }
@@ -41,7 +41,7 @@ export class S3Splitter {
     outputGameState: boolean
   ) {
     // console.time('faction split');
-    const emptyEntityList = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
+    const emptyEntityList = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, (e) => e.id);
 
     for (const faction of Factions) {
       const visibleHexes = new HashArray<Point>(PointHashKey);
@@ -61,7 +61,7 @@ export class S3Splitter {
         const entityDetails = EntityDetails[entity.entityType];
         const radius = Math.max(entityDetails.attackRadius, entityDetails.moveRadius, entityDetails.spawnRadius);
         const hexAt = game.grid.getHexAt(entity);
-        visibleHexes.pushRange(game.grid.getRange(hexAt, radius, emptyEntityList).map(a => a));
+        visibleHexes.pushRange(game.grid.getRange(hexAt, radius, emptyEntityList).map((a) => a));
       }
 
       const [factionGameState, factionRoundState] = this.filterForFactions(
@@ -77,7 +77,7 @@ export class S3Splitter {
         // await this.redisManager.set(`faction-token-${generation}-${1}`, ``);
         const gameStateBits = GameStateParser.fromGameState(
           factionGameState,
-          factionTokens[faction].split('.').map(a => parseInt(a))
+          factionTokens[faction].split('.').map((a) => parseInt(a))
         );
 
         await S3Manager.uploadBytes(
@@ -160,7 +160,7 @@ export class S3Splitter {
       factionDetails: visibleFactionDetails,
       entities: visibleEntities,
       factions: factionStr.join(''),
-      totalPlayersVoted: Utils.sum(Factions, f => gameState.playersVoted[f] || 0),
+      totalPlayersVoted: Utils.sum(Factions, (f) => gameState.playersVoted[f] || 0),
       generation: gameState.generation,
 
       hotEntities: {...emptyFactionObject(() => []), [factionId]: gameState.hotEntities[factionId]},

@@ -25,17 +25,14 @@ export class StateManager {
     return {
       generation,
       thisUpdateTime: +new Date(),
-      entities: voteCounts.reduce(
-        (entities, vote) => {
-          entities[vote._id] = vote.actions.map(a => ({
-            hexId: a.hexId,
-            action: a.action,
-            count: a.count,
-          }));
-          return entities;
-        },
-        {} as {[id: string]: RoundStateEntityVote[]}
-      ),
+      entities: voteCounts.reduce((entities, vote) => {
+        entities[vote._id] = vote.actions.map((a) => ({
+          hexId: a.hexId,
+          action: a.action,
+          count: a.count,
+        }));
+        return entities;
+      }, {} as {[id: string]: RoundStateEntityVote[]}),
     };
   }
 
@@ -66,62 +63,62 @@ export class StateManager {
 
     const notes = Utils.mapMany(
       /**/ winningVotes.sort((a, b) => actionToWeight(a.action) - actionToWeight(b.action)),
-      a => this.buildNote(a, game, preVoteEntities, preVoteResources)
+      (a) => this.buildNote(a, game, preVoteEntities, preVoteResources)
     );
     const userStats = await DBVote.getRoundUserStats(game.id, game.generation - 1);
     const playersVoted = Utils.groupByReduce(
       userStats,
-      a => a._id.factionId,
-      a => Object.keys(Utils.groupBy(a, b => b._id.userId))
+      (a) => a._id.factionId,
+      (a) => Object.keys(Utils.groupBy(a, (b) => b._id.userId))
     );
     const players = Utils.flattenArray(Utils.mapObjToArray(playersVoted, (_, ar) => ar));
 
     const gameState: GameState = {
       gameId: game.id,
-      factions: game.grid.hexes.map(a => a.factionId + '' + a.factionDuration).join(''),
+      factions: game.grid.hexes.map((a) => a.factionId + '' + a.factionDuration).join(''),
       factionDetails: game.factionDetails,
-      resources: game.resources.map(a => ({
+      resources: game.resources.map((a) => ({
         x: a.x,
         y: a.y,
         type: a.resourceType,
         count: a.currentCount,
       })),
-      entities: game.entities.reduce(
-        (entities, ent) => {
-          if (!entities[ent.factionId]) {
-            entities[ent.factionId] = [];
-          }
-          entities[ent.factionId].push({
-            x: ent.x,
-            y: ent.y,
-            entityType: ent.entityType,
-            busy: ent.busy,
-            health: ent.health,
-            id: ent.id,
-            healthRegenStep: ent.healthRegenStep,
-            facingDirection: ent.facingDirection,
-          });
-          return entities;
-        },
-        {} as OfFaction<GameStateEntity[]>
-      ),
+      entities: game.entities.reduce((entities, ent) => {
+        if (!entities[ent.factionId]) {
+          entities[ent.factionId] = [];
+        }
+        entities[ent.factionId].push({
+          x: ent.x,
+          y: ent.y,
+          entityType: ent.entityType,
+          busy: ent.busy,
+          health: ent.health,
+          id: ent.id,
+          healthRegenStep: ent.healthRegenStep,
+          facingDirection: ent.facingDirection,
+        });
+        return entities;
+      }, {} as OfFaction<GameStateEntity[]>),
       generation: game.generation,
       roundDuration: game.roundDuration,
       roundStart: +new Date(),
       roundEnd: +new Date() + Config.gameDuration,
 
-      winningVotes: Utils.mapToObj(Factions, faction => winningVotes.filter(a => a.factionId === faction)),
-      totalPlayersVoted: Utils.sum(Utils.mapObjToArray(playersVoted, (_, ar) => ar.length), a => a),
+      winningVotes: Utils.mapToObj(Factions, (faction) => winningVotes.filter((a) => a.factionId === faction)),
+      totalPlayersVoted: Utils.sum(
+        Utils.mapObjToArray(playersVoted, (_, ar) => ar.length),
+        (a) => a
+      ),
       playersVoted: Utils.mapObjToObj(playersVoted, (_, p) => p.length),
-      scores: Utils.mapToObj(Factions, faction => ServerGameLogic.calculateScore(game, faction)),
-      hotEntities: Utils.mapToObj(Factions, faction =>
+      scores: Utils.mapToObj(Factions, (faction) => ServerGameLogic.calculateScore(game, faction)),
+      hotEntities: Utils.mapToObj(Factions, (faction) =>
         voteCounts
-          .filter(vote => preVoteEntities.find(ent => ent.id === vote._id).factionId === faction)
-          .sort((vote1, vote2) => Utils.sum(vote2.actions, v => v.count) - Utils.sum(vote1.actions, v => v.count))
-          .map(vote => ({id: vote._id, count: Utils.sum(vote.actions, v => v.count)}))
+          .filter((vote) => preVoteEntities.find((ent) => ent.id === vote._id).factionId === faction)
+          .sort((vote1, vote2) => Utils.sum(vote2.actions, (v) => v.count) - Utils.sum(vote1.actions, (v) => v.count))
+          .map((vote) => ({id: vote._id, count: Utils.sum(vote.actions, (v) => v.count)}))
           .slice(0, 10)
       ),
-      notes: Utils.mapToObj(Factions, faction => notes.filter(a => a.factionId === faction)),
+      notes: Utils.mapToObj(Factions, (faction) => notes.filter((a) => a.factionId === faction)),
     };
 
     const gameStateResult = new DBGameStateResult(gameState);
@@ -140,15 +137,15 @@ export class StateManager {
     game: GameModel,
     preVoteResources: GameResource[]
   ) {
-    const userStatsGrouped = Utils.arrayToDictionary(userStats, a => a._id.userId);
+    const userStatsGrouped = Utils.arrayToDictionary(userStats, (a) => a._id.userId);
 
     for (const player of players) {
       const votesByUser = userStatsGrouped[player];
 
       const votesCast = votesByUser ? votesByUser.count : 0;
 
-      const winningUserVotes = votesByUser.votes.filter(v =>
-        winningVotes.find(w => w.action === v.action && w.hexId === v.hexId && w.entityId === v.entityId)
+      const winningUserVotes = votesByUser.votes.filter((v) =>
+        winningVotes.find((w) => w.action === v.action && w.hexId === v.hexId && w.entityId === v.entityId)
       );
 
       const votesWon = winningUserVotes.length;
@@ -159,13 +156,13 @@ export class StateManager {
       let distanceMoved = 0;
 
       for (const winningUserVote of winningUserVotes) {
-        const fromEntity = preVoteEntities.find(a => a.id === winningUserVote.entityId);
+        const fromEntity = preVoteEntities.find((a) => a.id === winningUserVote.entityId);
         const fromHex = game.grid.hexes.get(fromEntity);
-        const toHex = game.grid.hexes.find(a => a.id === winningUserVote.hexId);
+        const toHex = game.grid.hexes.find((a) => a.id === winningUserVote.hexId);
 
         switch (winningUserVote.action) {
           case 'attack': {
-            const toEntity = preVoteEntities.find(a => a.x === toHex.x && a.y === toHex.y);
+            const toEntity = preVoteEntities.find((a) => a.x === toHex.x && a.y === toHex.y);
             const toEntityResult = game.entities.get2(toEntity);
             damageDone += toEntityResult ? toEntity.health - toEntityResult.health : toEntity.health;
             unitsDestroyed += toEntityResult ? 0 : 1;
@@ -177,7 +174,7 @@ export class StateManager {
             break;
           }
           case 'mine': {
-            const resource = preVoteResources.find(a => a.x === toHex.x && a.y === toHex.y);
+            const resource = preVoteResources.find((a) => a.x === toHex.x && a.y === toHex.y);
             let resourceCount = 0;
             switch (resource.resourceType) {
               case 'bronze':
@@ -221,13 +218,13 @@ export class StateManager {
     preVoteEntities: GameEntity[],
     preVoteResources: GameResource[]
   ): VoteNote[] {
-    const fromEntity = preVoteEntities.find(a => a.id === vote.entityId);
+    const fromEntity = preVoteEntities.find((a) => a.id === vote.entityId);
     const fromHex = game.grid.hexes.get(fromEntity);
-    const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
+    const toHex = game.grid.hexes.find((a) => a.id === vote.hexId);
 
     switch (vote.action) {
       case 'attack': {
-        const toEntity = preVoteEntities.find(a => a.x === toHex.x && a.y === toHex.y);
+        const toEntity = preVoteEntities.find((a) => a.x === toHex.x && a.y === toHex.y);
         const toEntityResult = game.entities.get2(toEntity);
         const damage = toEntityResult ? toEntity.health - toEntityResult.health : toEntity.health;
         const result = `for ${damage} damage` + (!toEntityResult ? ' and destroyed it' : '');
@@ -286,8 +283,8 @@ export class StateManager {
         ];
       }
       case 'mine': {
-        const resource = preVoteResources.find(a => a.x === toHex.x && a.y === toHex.y);
-        const resourceResult = game.resources.find(a => a.x === toHex.x && a.y === toHex.y);
+        const resource = preVoteResources.find((a) => a.x === toHex.x && a.y === toHex.y);
+        const resourceResult = game.resources.find((a) => a.x === toHex.x && a.y === toHex.y);
         let resourceCount = 0;
         switch (resource.resourceType) {
           case 'bronze':

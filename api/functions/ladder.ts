@@ -11,7 +11,7 @@ export async function ladderHandler(event: Event<void>): Promise<HttpResponse<La
   if (!event.headers || !event.headers.Authorization || !event.headers.gameid) {
     return respond(403, {error: 'auth'});
   }
-  await DataManager.openDbConnection();
+
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
 

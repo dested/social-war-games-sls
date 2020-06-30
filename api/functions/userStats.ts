@@ -12,7 +12,7 @@ export async function userStatsHandler(event: Event<void>): Promise<HttpResponse
   if (!event.headers || !event.headers.Authorization || !event.headers.gameid) {
     return respond(403, {error: 'auth'});
   }
-  await DataManager.openDbConnection();
+
   const gameId = event.headers.gameid;
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;

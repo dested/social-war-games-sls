@@ -157,11 +157,8 @@ export class QueryBuilder<T> {
       case 'Identifier':
       case 'MemberExpression':
         const name = this.flattenObject(side as MemberExpression | Identifier, variableNames);
-        const nameWithoutInitial = name
-          .split('.')
-          .slice(1)
-          .join('.');
-        if (variableNames.find(a => a === name.split('.')[0])) {
+        const nameWithoutInitial = name.split('.').slice(1).join('.');
+        if (variableNames.find((a) => a === name.split('.')[0])) {
           return {
             expression: nameWithoutInitial,
             expressionName: nameWithoutInitial,
@@ -261,10 +258,7 @@ export class QueryBuilder<T> {
     return result;
   }
 
-  private flattenObject(
-    member: MemberExpression | Identifier | UnaryExpression | Literal,
-    variableNames: string[]
-  ): string {
+  flattenObject(member: MemberExpression | Identifier | UnaryExpression | Literal, variableNames: string[]): string {
     switch (member.type) {
       case 'Identifier':
         return (member as Identifier).name;
@@ -290,7 +284,7 @@ export class QueryBuilder<T> {
     throw new Error('Object can only be of type Identifier or MemberExpression: ' + JSON.stringify(member));
   }
 
-  private static functionToArrow(input: string) {
+  static functionToArrow(input: string) {
     const results = input.match(/function\s*\((\w),*(\s*\s*\w*)*\)\s*{\s*return\s+(.+);\s*}/);
     if (!results || results.length !== 4) {
       throw new Error(`Cannot convert function to arrow`);

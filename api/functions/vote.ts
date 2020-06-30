@@ -28,7 +28,7 @@ export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpRe
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
   try {
     const redisManager = await RedisManager.setup();
-    await DataManager.openDbConnection();
+
     const shouldStop = await redisManager.get<boolean>(gameId, 'stop');
     if (shouldStop) {
       return respond(400, {error: 'stopped'});
