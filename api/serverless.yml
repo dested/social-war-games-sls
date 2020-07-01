@@ -8,6 +8,9 @@ plugins:
   - serverless-step-functions-local
   - serverless-offline
   - serverless-pseudo-parameters
+  - serverless-s3-local
+  - serverless-plugin-additional-stacks
+
 
 provider:
   name: aws
@@ -59,24 +62,38 @@ custom:
     host: 0.0.0.0
     region: us-west-2
     port: 9898
+  s3:
+    host: localhost
+    directory: ./.s3-local
+    cors: ./.s3-local/cors.xml
   stepFunctionsLocal:
     accountId: 114394156384
     region: us-west-2
     lambdaEndpoint: http://localhost:3002
     TaskResourceMapping:
       Iterator: arn:aws:lambda:us-west-2:114394156384:function:swg-dev-iterator
+      Next: arn:aws:lambda:us-west-2:114394156384:function:swg-dev-iterator
   dynamodb:
     stages:
       - dev
     start:
-      port: 8000
-      inMemory: true
+      port: 8020
       heapInitial: 200m
       heapMax: 1g
+      dbPath: ./.dynamo-data-local
       migrate: true
-      seed: true
-      convertEmptyValues: true
-
+  additionalStacks:
+    noDeploy: true
+    permanent:
+      Resources:
+        - S3BucketData:
+          Type: AWS::S3::Bucket
+          Properties:
+            BucketName: swg-content
+        - S3BucketData:
+          Type: AWS::S3::Bucket
+          Properties:
+            BucketName: swg-data
 resources:
   Resources:
     usersTable:
@@ -137,11 +154,24 @@ stepFunctions:
               - Variable: "$.iterator.continue"
                 BooleanEquals: true
                 Next: "Wait"
+              - Variable: "$.iterator.next"
+                BooleanEquals: true
+                Next: "WaitAndDone"
             Default: Done
           Wait:
             Type: Wait
             Seconds: 10
             Next: Iterator
+          WaitAndDone:
+            Type: Wait
+            Seconds: 10
+            Next: Next
+          Next:
+            Type: Task
+            ResultPath: "$.iterator"
+            Resource:
+              Fn::GetAtt: [iterator, Arn]
+            End: true
           Done:
             Type: Pass
             End: true

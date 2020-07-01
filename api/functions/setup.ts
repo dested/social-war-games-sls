@@ -14,8 +14,6 @@ import {S3Splitter} from './game/s3Splitter';
 
 export async function setupHandler(event: Event<void>): Promise<void> {
   console.time('setup');
-  console.log('redis connected');
-
   await RedisManager.flushAll();
 
   await DBGame.db.deleteMany({});

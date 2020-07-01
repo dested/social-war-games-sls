@@ -77,7 +77,7 @@ export class GameStore {
   @action removeLocalVote(vote: ProcessedVote) {
     const localVotes = [...this.localVotes];
     localVotes.splice(
-      localVotes.findIndex(a => a.hexId === vote.hexId && a.entityId === vote.entityId && a.action === vote.action),
+      localVotes.findIndex((a) => a.hexId === vote.hexId && a.entityId === vote.entityId && a.action === vote.action),
       1
     );
     this.localVotes = localVotes;
@@ -178,7 +178,7 @@ export class GameStore {
         localRoundState.entities[processedVote.entityId] = [];
       }
       const vote = localRoundState.entities[processedVote.entityId].find(
-        a => a.hexId === processedVote.hexId && a.action === a.action
+        (a) => a.hexId === processedVote.hexId && a.action === a.action
       );
       if (vote) {
         vote.count++;
@@ -195,10 +195,16 @@ export class GameStore {
 
   static async startGame() {
     this.startLoading();
-
-    const layout = await DataService.getLayout();
-    gameStore.setGameLayout(layout);
-
+    let layout: GameLayout;
+    try {
+      layout = await DataService.getLayout();
+      gameStore.setGameLayout(layout);
+    } catch (ex) {
+      console.error(ex);
+      gameStore.setCurrentGameId(undefined);
+      window.location.reload();
+      return;
+    }
     const userDetails = await DataService.currentUserDetails();
     gameStore.updateUserDetails(userDetails);
 
@@ -207,8 +213,8 @@ export class GameStore {
       userDetails.generation,
       userDetails.factionToken
     );
-    SocketUtils.connect(gameState.gameId, mainStore.user.id, mainStore.user.factionId, roundState => {
-      GameStore.getNewState(roundState).catch(ex => console.error(ex));
+    SocketUtils.connect(gameState.gameId, mainStore.user.id, mainStore.user.factionId, (roundState) => {
+      GameStore.getNewState(roundState).catch((ex) => console.error(ex));
     });
     const game = GameLogic.buildGameFromState(layout, gameState);
 
@@ -266,7 +272,7 @@ export class GameStore {
   static startLoading() {
     loadEntities();
     loadUI();
-    HexagonTypes.preloadTypes().map(a => HexImages.hexTypeToImage(a.type, a.subType));
+    HexagonTypes.preloadTypes().map((a) => HexImages.hexTypeToImage(a.type, a.subType));
   }
 
   static async sendVote(entityId: number, entityAction: EntityAction, hexId: string) {
@@ -347,7 +353,7 @@ export class GameStore {
     switch (entityAction) {
       case 'attack':
         radius = entityDetails.attackRadius;
-        entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
+        entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, (e) => e.id);
         break;
       case 'move':
         radius = entityDetails.moveRadius;
@@ -374,28 +380,25 @@ export class GameStore {
                   );*/
         break;
       case 'move':
-        viableHexes = viableHexes.filter(a => !game.entities.get1(a));
+        viableHexes = viableHexes.filter((a) => !game.entities.get1(a));
         break;
       case 'mine':
-        viableHexes = viableHexes.filter(a => !game.entities.get1(a));
+        viableHexes = viableHexes.filter((a) => !game.entities.get1(a));
         break;
       case 'spawn-infantry':
       case 'spawn-tank':
       case 'spawn-plane':
-        viableHexes = viableHexes.filter(a => !game.entities.get1(a));
+        viableHexes = viableHexes.filter((a) => !game.entities.get1(a));
         break;
     }
 
     gameStore.setEntityAction(
       entity,
       entityAction,
-      viableHexes.reduce(
-        (a, b) => {
-          a[b.id] = true;
-          return a;
-        },
-        {} as {[hexId: string]: boolean}
-      )
+      viableHexes.reduce((a, b) => {
+        a[b.id] = true;
+        return a;
+      }, {} as {[hexId: string]: boolean})
     );
   }
 

@@ -4,5 +4,9 @@ jspm_packages
 
 # Serverless directories
 .serverless
+.s3-local/swg-content/*
+.s3-local/swg-data/*
+
 .dynamodb
 .step-functions-local
+.dynamo-data-local

@@ -13,8 +13,9 @@ import {mainStore} from './store/main/store';
 export class DataService {
   private static apiServer: string = 'http://localhost:5103';
   // private static apiServer: string = 'https://api.socialwargames.com';
-  private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
-    static socketServer: string = 'ws://127.0.0.1:3001';
+  // private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
+  private static s3Server: string = 'http://localhost:4569/swg-content';
+  static socketServer: string = 'ws://127.0.0.1:3001';
   // private static socketServer: string = 'ws://api.socialwargames.com';
 
   static async login(email: string, password: string): Promise<JwtGetUserResponse> {
@@ -133,7 +134,10 @@ export class DataService {
       }
     );
     const arrayBuffer = await response.arrayBuffer();
-    const gameState = GameStateParser.toGameState(arrayBuffer, factionToken.split('.').map(a => parseInt(a)));
+    const gameState = GameStateParser.toGameState(
+      arrayBuffer,
+      factionToken.split('.').map((a) => parseInt(a))
+    );
     return gameState;
   }
 

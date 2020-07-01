@@ -8,7 +8,7 @@ const options: DocumentClient.DocumentClientOptions & DynamoDB.Types.ClientConfi
 };
 if (Config.env === 'DEV') {
   options.region = 'localhost';
-  options.endpoint = 'http://localhost:8000';
+  options.endpoint = 'http://localhost:8020';
 }
 const ddb = new DynamoDB.DocumentClient(options);
 const publishUrl = () => {
