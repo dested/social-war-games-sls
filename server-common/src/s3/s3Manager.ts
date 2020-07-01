@@ -37,24 +37,49 @@ export class S3Manager {
   }
 
   static async getDataFile<T>(file: string): Promise<T | null> {
-    const bucket = 'swg-data';
-    const object = await s3
-      .getObject({
-        Bucket: bucket,
-        Key: file,
-      })
-      .promise();
-    if (object) {
-      return JSON.parse(object.Body.toString('utf-8')) as T;
-    } else {
+    try {
+      console.log('getting', Config.awsDataBucket, file);
+      const object = await s3
+        .getObject({
+          Bucket: Config.awsDataBucket,
+          Key: file,
+        })
+        .promise();
+      if (object) {
+        console.log('got');
+        return JSON.parse(object.Body.toString('utf-8')) as T;
+      } else {
+        return null;
+      }
+    } catch (ex) {
+      console.log('eeee', ex);
       return null;
     }
   }
+  /*
+  static async hasDataFile<T>(file: string): Promise<T | null> {
+    try {
+      const object = await s3
+        .getObject({
+          Bucket: Config.awsDataBucket,
+          Key: file,
+        })
+        .promise();
+      if (object) {
+        return JSON.parse(object.Body.toString('utf-8')) as T;
+      } else {
+        return null;
+      }
+    } catch (ex) {
+      return null;
+    }
+  }
+*/
+
   static async updateDataFile<T>(file: string, body: T): Promise<void> {
-    const bucket = 'swg-data';
     await s3
       .putObject({
-        Bucket: bucket,
+        Bucket: Config.awsDataBucket,
         Key: file,
         Body: JSON.stringify(body),
       })

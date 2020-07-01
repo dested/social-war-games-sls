@@ -1,4 +1,4 @@
-import {PlayableFactionId} from '../../common/src/game/entityDetail';
+import {PlayableFactionId} from '@swg-common/game/entityDetail';
 
 export class FactionUtils {
   static randomFaction(): PlayableFactionId {

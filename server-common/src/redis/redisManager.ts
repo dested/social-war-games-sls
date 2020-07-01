@@ -1,102 +1,93 @@
-import {createClient, RedisClient} from 'redis';
-import {Config} from '../config';
+import {DynamoDB} from 'aws-sdk';
+import {Config} from '@swg-server-common/config';
+
+const options: DynamoDB.Types.ClientConfiguration = {
+  apiVersion: '2012-08-10',
+  region: 'us-west-2',
+};
+if (Config.env === 'DEV') {
+  options.region = 'localhost';
+  options.endpoint = 'http://localhost:8000';
+}
+const ddb = new DynamoDB.DocumentClient(options);
 
 export class RedisManager {
-  // https://github.com/notenoughneon/typed-promisify/blob/master/index.ts
-
-  private client: RedisClient;
-  static manager: RedisManager;
-
-  static setup(): Promise<RedisManager> {
-    return new Promise<RedisManager>((res, rej) => {
-      if (RedisManager.manager) {
-        if (RedisManager.manager.client.connected) {
-          res(RedisManager.manager);
-          return;
-        }
-      }
-      console.time('connecting redis');
-      const manager = new RedisManager();
-      RedisManager.manager = manager;
-      manager.client = createClient({
-        host: Config.redis.host,
-        port: Config.redis.port,
-        auth_pass: Config.redis.authPass,
-      });
-      manager.client.on('ready', result => {
-        console.timeEnd('connecting redis');
-        res(manager);
-      });
-    });
-  }
-
-  getKey(gameId: string, key: string) {
+  static getKey(gameId: string, key: string) {
     return gameId + '-' + key;
   }
 
-  get<T>(gameId: string, key: string, def?: T): Promise<T> {
-    return new Promise((res, rej) => {
-      this.client.get(this.getKey(gameId, key), (err, result) => {
-        if (err) {
-          rej(err);
-          return;
-        }
+  static async get<T>(gameId: string, key: string, def?: T): Promise<T> {
+    const result = await this.getString(gameId, key);
 
-        res((JSON.parse(result) as T) || def);
-      });
-    });
+    return result ? (JSON.parse(result) as T) : def;
   }
 
-  getString(gameId: string, key: string, def?: string): Promise<string> {
-    return new Promise((res, rej) => {
-      this.client.get(this.getKey(gameId, key), (err, result) => {
-        if (err) {
-          rej(err);
-          return;
-        }
+  static async getString(gameId: string, key: string, def?: string): Promise<string> {
+    const result = await ddb
+      .get({
+        TableName: 'redis-table',
+        Key: {
+          key: this.getKey(gameId, key) + '-size',
+        },
+      })
+      .promise();
 
-        res(result || def);
-      });
-    });
+    if (result.Item?.value) {
+      const items = await Promise.all(
+        Array.from(Array(result.Item?.value)).map((item, index) =>
+          ddb
+            .get({
+              TableName: 'redis-table',
+              Key: {
+                key: this.getKey(gameId, key) + '-' + index,
+              },
+            })
+            .promise()
+        )
+      );
+      return items.map((a) => a.Item.value).join('');
+    } else {
+      return def;
+    }
   }
 
-  setString(gameId: string, key: string, value: string): Promise<string> {
-    return new Promise((res, rej) => {
-      this.client.set(this.getKey(gameId, key), value, (err, result) => {
-        if (err) {
-          rej(err);
-          return;
-        }
-        res();
-      });
-    });
+  static async setString(gameId: string, key: string, value: string): Promise<void> {
+    const items = value.match(new RegExp('.{1,' + (400 * 1000 - 1) + '}', 'g'));
+    await Promise.all([
+      ddb
+        .put({
+          TableName: 'redis-table',
+          Item: {
+            key: this.getKey(gameId, key) + '-size',
+            value: items.length,
+          },
+        })
+        .promise(),
+      ...items.map((a, ind) =>
+        ddb
+          .put({
+            TableName: 'redis-table',
+            Item: {
+              key: this.getKey(gameId, key) + '-' + ind,
+              value: a,
+            },
+          })
+          .promise()
+      ),
+    ]);
   }
 
-  set<T>(gameId: string, key: string, value: T): Promise<void> {
-    return new Promise((res, rej) => {
-      this.client.set(this.getKey(gameId, key), JSON.stringify(value), (err, result) => {
-        if (err) {
-          rej(err);
-          return;
-        }
-        res();
-      });
-    });
+  static async set<T>(gameId: string, key: string, value: T): Promise<void> {
+    await this.setString(gameId, key, JSON.stringify(value));
   }
 
-  append(gameId: string, key: string, value: string): Promise<void> {
-    return new Promise((res, rej) => {
-      this.client.append(this.getKey(gameId, key), value, (err, result) => {
-        if (err) {
-          rej(err);
-          return;
-        }
-        res();
-      });
-    });
+  static async append(gameId: string, key: string, value: string): Promise<void> {
+    const old = await this.getString(gameId, key);
+    await this.setString(gameId, key, old + value);
   }
 
-  flushAll(): Promise<void> {
+  static async flushAll(): Promise<void> {
+    /*
     return new Promise((res, rej) => {
       this.client.flushall((err, result) => {
         if (err) {
@@ -106,30 +97,50 @@ export class RedisManager {
         res();
       });
     });
+*/
   }
 
-  expire(gameId: string, key: string, duration: number): Promise<void> {
-    return new Promise((res, rej) => {
-      this.client.expire(this.getKey(gameId, key), duration, (err, result) => {
-        if (err) {
-          rej(err);
-          return;
-        }
-        res();
-      });
-    });
+  static async expire(gameId: string, key: string, duration: number): Promise<void> {
+    return;
+    const result = await ddb
+      .get({
+        TableName: 'redis-table',
+        Key: {
+          key: this.getKey(gameId, key),
+        },
+      })
+      .promise();
+
+    if (!result.Item?.value) return;
+    await ddb
+      .put({
+        TableName: 'redis-table',
+        Item: {
+          ...result.Item,
+        },
+      })
+      .promise();
   }
 
-  incr(gameId: string, key: string) {
-    return new Promise((res, rej) => {
-      this.client.incr(this.getKey(gameId, key), (err, result) => {
-        if (err) {
-          rej(err);
-          return;
-        }
-
-        res();
-      });
-    });
+  static async incr(gameId: string, key: string) {
+    const result = await ddb
+      .get({
+        TableName: 'redis-table',
+        Key: {
+          key: this.getKey(gameId, key) + '-0',
+        },
+      })
+      .promise();
+    if (result.Item) {
+      await ddb
+        .put({
+          TableName: 'redis-table',
+          Item: {
+            ...result.Item,
+            value: (parseInt(result.Item.value) + 1).toString(),
+          },
+        })
+        .promise();
+    }
   }
 }

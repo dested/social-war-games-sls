@@ -1,6 +1,6 @@
 import * as jwt from 'jsonwebtoken';
-import {HttpUser} from '../../common/src/models/http/httpUser';
-import {Config} from '../../server-common/src/config';
+import {HttpUser} from '@swg-common/models/http/httpUser';
+import {Config} from '@swg-server-common/config';
 
 export class AuthService {
   static async createToken(user: HttpUser): Promise<string> {

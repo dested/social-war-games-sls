@@ -1,10 +1,8 @@
 import {HttpUser} from '@swg-common/models/http/httpUser';
 import {JwtGetUserResponse, RegisterRequestBody, StatsResponse} from '@swg-common/models/http/userController';
 import {Config} from '@swg-server-common/config';
-import {DBUser} from '@swg-server-common/db/models/dbUser';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import * as jwt from 'jsonwebtoken';
-import {DataManager} from '../../server-common/src/db/dataManager';
 import {Event} from '../utils/models';
 import {HttpResponse, respond} from '../utils/respond';
 

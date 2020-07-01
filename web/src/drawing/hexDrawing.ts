@@ -1,4 +1,4 @@
-import {GameHexagon} from '@swg-common/../../../common/src/game/gameHexagon';
+import {GameHexagon} from '@swg-common/game/gameHexagon';
 import {Axial, Grid, Hexagon} from '@swg-common/hex/hex';
 import {Point} from '@swg-common/utils/hexUtils';
 import {HexColors} from '../utils/hexColors';

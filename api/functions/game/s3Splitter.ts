@@ -21,13 +21,13 @@ import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {SocketManager} from './socketManager';
 
 export class S3Splitter {
-  static async generateFactionTokens(redisManager: RedisManager, game: GameModel): Promise<OfFaction<string>> {
+  static async generateFactionTokens(game: GameModel): Promise<OfFaction<string>> {
     const tokens: OfFaction<string> = {} as any;
     for (const faction of Factions) {
       tokens[faction] = Utils.range(0, 16)
         .map((a) => Math.floor(Math.random() * 254) + 1)
         .join('.');
-      await redisManager.setString(game.id, `faction-token-${game.generation}-${faction}`, tokens[faction]);
+      await RedisManager.setString(game.id, `faction-token-${game.generation}-${faction}`, tokens[faction]);
     }
     return tokens;
   }
@@ -74,7 +74,7 @@ export class S3Splitter {
 
       const roundStateJson = RoundStateParser.fromRoundState(factionRoundState);
       if (outputGameState) {
-        // await this.redisManager.set(`faction-token-${generation}-${1}`, ``);
+        // await this.RedisManager.set(`faction-token-${generation}-${1}`, ``);
         const gameStateBits = GameStateParser.fromGameState(
           factionGameState,
           factionTokens[faction].split('.').map((a) => parseInt(a))

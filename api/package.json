@@ -51,7 +51,7 @@
     "serverless-pseudo-parameters": "^2.5.0",
     "serverless-offline": "^6.4.0",
     "terser": "3.14.1",
-    "ts-loader": "^5.3.3",
+    "ts-loader": "^7.0.5",
     "prettier": "^2.0.5",
     "typescript": "^3.9.5",
     "tslint": "^6.1.2",

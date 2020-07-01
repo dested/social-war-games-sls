@@ -9,16 +9,48 @@ plugins:
   - serverless-offline
   - serverless-pseudo-parameters
 
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: dev
+  region: us-west-2
+  accountId: 114394156384
+  websocketsApiName: swg-socket
+  websocketsApiRouteSelectionExpression: $request.body.action
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+        - lambda:InvokeAsync
+        - s3:GetObjectAcl
+        - s3:GetObject
+        - s3:GetObjectTagging
+        - s3:DeleteObject
+        - s3:DeleteObjectVersion
+        - s3:PutObject
+        - s3:PutObjectTagging
+        - s3:PutObjectAc
+      Resource: "*"
+
 custom:
   webpack:
     webpackConfig: 'webpack.config.js'
     includeModules: true
     packager: 'npm'
   customDomain:
-    domainName: api.socialwargames.com
-    basePath: ''
-    stage: ${self:provider.stage}
-    createRoute53Record: true
+    rest:
+      domainName: api.socialwargames.com
+      basePath: ''
+      stage: ${self:provider.stage}
+      createRoute53Record: true
+    websocket:
+      domainName: ws.socialwargames.com
+      basePath: ''
+      stage: ${self:provider.stage}
+      createRoute53Record: true
+      endpointType: 'regional'
+      certificateName: socialwargames.com
+      securityPolicy: tls_1_2
   serverless-offline:
     host: 0.0.0.0
     noPrependStageInUrl: true
@@ -44,15 +76,6 @@ custom:
       migrate: true
       seed: true
       convertEmptyValues: true
-
-provider:
-  name: aws
-  runtime: nodejs10.x
-  stage: dev
-  region: us-west-2
-  accountId: 114394156384
-  websocketsApiName: swg-socket
-  websocketsApiRouteSelectionExpression: $request.body.action
 
 resources:
   Resources:
@@ -81,11 +104,23 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+    redisTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: redis-table
+        AttributeDefinitions:
+          - AttributeName: key
+            AttributeType: S
+        KeySchema:
+          - AttributeName: key
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 
 stepFunctions:
   stateMachines:
     workRunner:
-      events:
       name: workRunner
       definition:
         StartAt: Iterator
@@ -221,6 +256,16 @@ functions:
   setup:
     handler: functions/setup.setupHandler
     memorySize: 128
+    events:
+      - http:
+          path: --setup
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - GameId
   work:
     handler: functions/work.workHandler
     memorySize: 256

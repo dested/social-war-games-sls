@@ -1,4 +1,4 @@
-import {GameModel, ProcessedVote} from '@swg-common/../../common/src/game/gameLogic';
+import {GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {
   EntityAction,
   EntityDetails,
@@ -15,7 +15,7 @@ import {VoteNote} from '@swg-common/models/voteNote';
 import {HexUtils} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
 import {Config} from '@swg-server-common/config';
-import {DBGameStateResult} from '@swg-server-common/db/models/DBGameStateResult';
+import {DBGameStateResult} from '@swg-server-common/db/models/dbGameStateResult';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import {DBVote, RoundUserStats, VoteCountResult} from '@swg-server-common/db/models/dbVote';
 import {ServerGameLogic} from '@swg-server-common/game/serverGameLogic';

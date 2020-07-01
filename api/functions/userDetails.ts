@@ -17,7 +17,6 @@ interface UserDetailsResponse {
 export async function userDetailsHandler(
   event: Event<UserDetailsRequestBody>
 ): Promise<HttpResponse<UserDetailsResponse>> {
-
   if (!event.headers || !event.headers.Authorization || !event.headers.gameid) {
     return respond(403, {error: 'auth'});
   }
@@ -25,10 +24,9 @@ export async function userDetailsHandler(
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
   try {
-    const redisManager = await RedisManager.setup();
-    const generation = await redisManager.get<number>(gameId, 'game-generation');
-    const totalVotes = await redisManager.get<number>(gameId, `user-${user.id}-${generation}-votes`, 0);
-    const factionToken = await redisManager.getString(gameId, `faction-token-${generation}-${user.factionId}`);
+    const generation = await RedisManager.get<number>(gameId, 'game-generation');
+    const totalVotes = await RedisManager.get<number>(gameId, `user-${user.id}-${generation}-votes`, 0);
+    const factionToken = await RedisManager.getString(gameId, `faction-token-${generation}-${user.factionId}`);
 
     return respond(200, {
       generation,

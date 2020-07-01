@@ -11,7 +11,9 @@ export async function startWorkerHandler(event: Event<void>): Promise<void> {
   console.log('upload');
   await stepFunctions
     .startExecution({
-      stateMachineArn: 'arn:aws:states:us-east-1:114394156384:stateMachine:workRunner',
+      stateMachineArn: process.env.IS_OFFLINE
+        ? 'arn:aws:states:us-east-1:114394156384:stateMachine:workRunner'
+        : 'arn:aws:states:us-west-2:114394156384:stateMachine:workRunner',
     })
     .promise();
   console.log('started');

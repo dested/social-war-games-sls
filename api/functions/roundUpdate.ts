@@ -12,9 +12,7 @@ import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {VoteResult} from '@swg-common/game/voteResult';
 
-let redisManager: RedisManager;
 export async function roundUpdateHandler(event: Event<void>): Promise<void> {
-  redisManager = await RedisManager.setup();
   const {gameId} = await DBGame.db.getOneProject({}, {gameId: 1});
   await processRoundUpdate(gameId);
 }
@@ -23,8 +21,8 @@ async function processRoundUpdate(gameId: string) {
   try {
     console.time('round update');
     console.log('update round state');
-    const gameState = await redisManager.get<GameState>(gameId, 'game-state');
-    const layout = await redisManager.get<GameLayout>(gameId, 'layout');
+    const gameState = await RedisManager.get<GameState>(gameId, 'game-state');
+    const layout = await RedisManager.get<GameLayout>(gameId, 'layout');
 
     const game = GameLogic.buildGameFromState(layout, gameState);
 

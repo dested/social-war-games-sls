@@ -1,8 +1,7 @@
 import {JwtGetUserResponse, RegisterRequestBody} from '@swg-common/models/http/userController';
 import {DBUser} from '@swg-server-common/db/models/dbUser';
 import * as bcrypt from 'bcryptjs';
-import {Timer} from '../../common/src/utils/timer';
-import {DataManager} from '../../server-common/src/db/dataManager';
+import {Timer} from '@swg-common/utils/timer';
 import {AuthService} from '../utils/authService';
 import {FactionUtils} from '../utils/factionUtils';
 import {Event} from '../utils/models';

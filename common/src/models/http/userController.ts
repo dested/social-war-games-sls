@@ -1,4 +1,4 @@
-import {DBUserRoundStatDetails} from '../../../../server-common/src/db/models/dbUserRoundStats';
+import {DBUserRoundStatDetails} from '@swg-server-common/db/models/dbUserRoundStats';
 import {HttpUser} from './httpUser';
 
 export interface RegisterRequestBody {

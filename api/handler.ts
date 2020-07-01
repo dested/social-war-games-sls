@@ -1,3 +1,4 @@
+console.log('starting');
 import {RegisterRequestBody} from '@swg-common/models/http/userController';
 import {getGamesHandler} from './functions/getGames';
 import {ladderHandler} from './functions/ladder';
@@ -7,7 +8,7 @@ import {userDetailsHandler, UserDetailsRequestBody} from './functions/userDetail
 import {userStatsHandler} from './functions/userStats';
 import {voteHandler, VoteRequestBody} from './functions/vote';
 import {Event} from './utils/models';
-import {startWorkerHandler, stopWorkerHandler} from './functions/wokerHandler';
+import {startWorkerHandler, stopWorkerHandler} from './functions/workerHandler';
 
 module.exports.vote = async (event: Event<VoteRequestBody>) => {
   event.headers.Authorization = event.headers.Authorization || event.headers.authorization;
@@ -52,9 +53,13 @@ module.exports.getGames = async (event: Event<void>) => {
 };
 
 module.exports.startWorker = async (event: Event<void>) => {
-  event.headers.Authorization = event.headers.Authorization || event.headers.authorization;
-  event.body = JSON.parse((event.body as any) as string);
-  return await startWorkerHandler(event);
+  try {
+    event.headers.Authorization = event.headers.Authorization || event.headers.authorization;
+    event.body = JSON.parse((event.body as any) as string);
+    return await startWorkerHandler(event);
+  } catch (ex) {
+    console.error('wat', ex);
+  }
 };
 
 module.exports.stopWorker = async (event: Event<void>) => {
