@@ -35,4 +35,29 @@ export class S3Manager {
 
     return `https://${bucket}.s3.amazonaws.com/${gameId}/${key}`;
   }
+
+  static async getDataFile<T>(file: string): Promise<T | null> {
+    const bucket = 'swg-data';
+    const object = await s3
+      .getObject({
+        Bucket: bucket,
+        Key: file,
+      })
+      .promise();
+    if (object) {
+      return JSON.parse(object.Body.toString('utf-8')) as T;
+    } else {
+      return null;
+    }
+  }
+  static async updateDataFile<T>(file: string, body: T): Promise<void> {
+    const bucket = 'swg-data';
+    await s3
+      .putObject({
+        Bucket: bucket,
+        Key: file,
+        Body: JSON.stringify(body),
+      })
+      .promise();
+  }
 }

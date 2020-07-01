@@ -1,10 +1,19 @@
 import {config, Lambda} from 'aws-sdk';
+import {S3Manager} from '@swg-server-common/s3/s3Manager';
 
 config.region = 'us-west-2';
 const lambda = new Lambda(process.env.IS_OFFLINE ? {endpoint: 'http://0.0.0.0:3002', region: 'us-west-2'} : {});
 
 exports.iterator = async (event: any) => {
   try {
+    const isReady = await S3Manager.getDataFile<{ready: boolean}>('online.json');
+    if (!isReady || !isReady.ready) {
+      return {
+        index: 0,
+        continue: false,
+      };
+    }
+
     if (!event.iterator) {
       event.iterator = {index: 0};
     }

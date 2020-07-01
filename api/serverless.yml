@@ -189,6 +189,32 @@ functions:
               - Content-Type
               - Authorization
               - GameId
+  start-worker:
+    handler: handler.startWorker
+    memorySize: 128
+    events:
+      - http:
+          path: start-worker
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - GameId
+  stop-worker:
+    handler: handler.stopWorker
+    memorySize: 128
+    events:
+      - http:
+          path: stop-worker
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - GameId
   iterator:
     handler: iteratorHandler.iterator
     memorySize: 128

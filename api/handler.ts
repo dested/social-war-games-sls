@@ -7,6 +7,7 @@ import {userDetailsHandler, UserDetailsRequestBody} from './functions/userDetail
 import {userStatsHandler} from './functions/userStats';
 import {voteHandler, VoteRequestBody} from './functions/vote';
 import {Event} from './utils/models';
+import {startWorkerHandler, stopWorkerHandler} from './functions/wokerHandler';
 
 module.exports.vote = async (event: Event<VoteRequestBody>) => {
   event.headers.Authorization = event.headers.Authorization || event.headers.authorization;
@@ -48,4 +49,16 @@ module.exports.getGames = async (event: Event<void>) => {
   event.headers.Authorization = event.headers.Authorization || event.headers.authorization;
   event.body = JSON.parse((event.body as any) as string);
   return await getGamesHandler(event);
+};
+
+module.exports.startWorker = async (event: Event<void>) => {
+  event.headers.Authorization = event.headers.Authorization || event.headers.authorization;
+  event.body = JSON.parse((event.body as any) as string);
+  return await startWorkerHandler(event);
+};
+
+module.exports.stopWorker = async (event: Event<void>) => {
+  event.headers.Authorization = event.headers.Authorization || event.headers.authorization;
+  event.body = JSON.parse((event.body as any) as string);
+  return await stopWorkerHandler(event);
 };
