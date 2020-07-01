@@ -1,0 +1,8 @@
+{
+  "prod": {
+    "bucket": "socialwargames.com",
+    "cloudfront": "EVZQ76HGTBBUZ",
+    "command": "yarn build-prod",
+    "path": "build"
+  }
+}

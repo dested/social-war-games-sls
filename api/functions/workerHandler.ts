@@ -27,6 +27,7 @@ export async function startWorkerHandler(
   return respond(200, {alreadyOnline: false, ready: true});
 }
 
-export async function stopWorkerHandler(event: Event<void>): Promise<void> {
+export async function stopWorkerHandler(event: Event<void>): Promise<HttpResponse<{}>> {
   await S3Manager.updateDataFile('online.json', {ready: false});
+  return respond(200, {});
 }
