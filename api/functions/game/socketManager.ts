@@ -6,23 +6,22 @@ const options: DocumentClient.DocumentClientOptions & DynamoDB.Types.ClientConfi
   apiVersion: '2012-08-10',
   region: 'us-west-2',
 };
-if (Config.env === 'DEV') {
+if (process.env.IS_OFFLINE) {
   options.region = 'localhost';
   options.endpoint = 'http://localhost:8020';
 }
 const ddb = new DynamoDB.DocumentClient(options);
 const publishUrl = () => {
-  switch (Config.env) {
-    case 'PROD':
-      return `https://api.socialwargames.com`;
-    case 'DEV':
-      return `http://localhost:3001`;
+  if (process.env.IS_OFFLINE) {
+    return `http://localhost:3001`;
+  } else {
+    return `https://ws.socialwargames.com`;
   }
 };
 const apigwManagementApi = new ApiGatewayManagementApi({
   apiVersion: '2018-11-29',
   endpoint: publishUrl(),
-  region: Config.env === 'DEV' ? 'localhost' : 'us-west-2',
+  region: process.env.IS_OFFLINE ? 'localhost' : 'us-west-2',
 });
 
 export class SocketManager {

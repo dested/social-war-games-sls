@@ -11,10 +11,13 @@ import {GameLayout} from '@swg-common/models/gameLayout';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {StateManager} from './game/stateManager';
 import {S3Splitter} from './game/s3Splitter';
+import {HttpResponse, respond} from '../utils/respond';
 
-export async function setupHandler(event: Event<void>): Promise<void> {
+export async function setupHandler(event: Event<void>): Promise<HttpResponse<void>> {
   console.time('setup');
   await RedisManager.flushAll();
+
+  await S3Manager.updateDataFile('online.json', {ready: false});
 
   await DBGame.db.deleteMany({});
   await DBVote.db.deleteMany({});
@@ -61,4 +64,6 @@ export async function setupHandler(event: Event<void>): Promise<void> {
 
   await RedisManager.set(game.id, 'stop', false);
   console.timeEnd('setup');
+
+  return respond(200, {});
 }

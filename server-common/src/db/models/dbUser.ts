@@ -4,7 +4,7 @@ import {DocumentManager} from '../dataManager';
 import {MongoDocument} from './mongoDocument';
 
 export class DBUser extends MongoDocument {
-  static collectionName = 'user';
+  static collectionName = 'swg-user';
   static db = new DocumentManager<DBUser>(DBUser.collectionName);
 
   email: string;

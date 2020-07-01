@@ -7,7 +7,7 @@ import {DocumentManager} from '../dataManager';
 import {MongoDocument} from './mongoDocument';
 
 export class DBGame extends MongoDocument {
-  static collectionName = 'game';
+  static collectionName = 'swg-game';
   static db = new DocumentManager<DBGame>(DBGame.collectionName);
 
   constructor(gameModel: GameModel) {

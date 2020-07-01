@@ -29,7 +29,7 @@ exports.iterator = async (event: any) => {
       return {
         index: 0,
         continue: false,
-        next: false
+        next: false,
       };
     }
 
@@ -39,7 +39,7 @@ exports.iterator = async (event: any) => {
     await lambda.invoke({FunctionName: step, InvocationType: 'Event'}).promise();
 
     index++;
-    if (index === 6) {
+    if (index === 4) {
       return {
         continue: false,
         next: true,

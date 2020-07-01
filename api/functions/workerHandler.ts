@@ -10,7 +10,7 @@ export async function startWorkerHandler(
   event: Event<void>
 ): Promise<HttpResponse<{alreadyOnline: boolean; ready: boolean}>> {
   console.log('starting');
-  const data = await S3Manager.getDataFile<{ready: true}>('online.json');
+  const data = await S3Manager.getDataFile<{ready: boolean}>('online.json');
   if (data?.ready) {
     return respond(200, {alreadyOnline: true, ready: false});
   }

@@ -56,8 +56,12 @@ export class GameStore {
     this.localRoundState = localRoundState;
   }
 
-  @action setCurrentGameId(gameId: string) {
-    localStorage.setItem('gameId', gameId);
+  @action setCurrentGameId(gameId?: string) {
+    if (!gameId) {
+      localStorage.removeItem('gameId');
+    } else {
+      localStorage.setItem('gameId', gameId);
+    }
     this.currentGameId = gameId;
   }
 

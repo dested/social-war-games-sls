@@ -17,6 +17,7 @@ import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {FactionStats} from '@swg-common/models/factionStats';
 import {Utils} from '@swg-common/utils/utils';
 import {Config} from '@swg-server-common/config';
+import fetch from 'node-fetch';
 
 const s3Url = process.env.IS_OFFLINE ? `http://localhost:4569` : `https://s3-us-west-2.amazonaws.com`;
 
@@ -220,7 +221,7 @@ async function writeFactionStats(game: GameModel) {
       s: ServerGameLogic.calculateScore(game, faction),
     };
   });
-  const response = await fetch(`${s3Url}/swg-content/${game.id}/faction-stats.json`, {
+  const response = await fetch(`${s3Url}/swg-games/${game.id}/faction-stats.json`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',

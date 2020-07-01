@@ -7,21 +7,21 @@ const options: DocumentClient.DocumentClientOptions & DynamoDB.Types.ClientConfi
   apiVersion: '2012-08-10',
   region: 'us-west-2',
 };
-if (Config.env === 'DEV') {
+if (process.env.IS_OFFLINE) {
   options.region = 'localhost';
   options.endpoint = 'http://localhost:8020';
 }
 const ddb = new DynamoDB.DocumentClient(options);
 
 exports.connect = async (event: APIGatewayRequestAuthorizerEvent) => {
-  console.log('open', event.queryStringParameters['gameId'], event.queryStringParameters['faction']);
+  console.log('open', event.queryStringParameters.gameId, event.queryStringParameters.faction);
   try {
     await ddb
       .put({
         TableName: 'swg-connections',
         Item: {
           connectionId: event.requestContext.connectionId,
-          gameIdFactionId: event.queryStringParameters['gameId'] + '-' + event.queryStringParameters['faction'],
+          gameIdFactionId: event.queryStringParameters.gameId + '-' + event.queryStringParameters.faction,
         },
       })
       .promise();

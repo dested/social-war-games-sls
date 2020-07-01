@@ -89,8 +89,10 @@ const startBot = async (userResponse: JwtGetUserResponse) => {
   }
 };
 
+const seed = Math.round(Math.random() * 100000);
+
 async function register(ind: number) {
-  const email = `test-${ind}@test.com`;
+  const email = `test-${seed}-${ind}@test.com`;
   const password = `test`;
   const userName = `Test ${ind}`;
 
@@ -137,7 +139,7 @@ async function randomMove(
   factionId: PlayableFactionId
 ): Promise<{reason: VoteRequestResults; voteResult?: VoteResult; votesLeft: number; processedTime: number}> {
   const entity = Utils.randomElement(
-    game.entities.array.filter(a => a.factionId === factionId && a.entityType !== 'factory')
+    game.entities.array.filter((a) => a.factionId === factionId && a.entityType !== 'factory')
   );
 
   const viableHexes = getViableHexes(game, entity, 'move' as EntityAction);
@@ -172,7 +174,7 @@ async function randomAttack(
   factionId: PlayableFactionId
 ): Promise<{reason: VoteRequestResults; voteResult?: VoteResult; votesLeft: number; processedTime: number}> {
   const entity = Utils.randomElement(
-    game.entities.array.filter(a => a.factionId === factionId && a.entityType !== 'factory')
+    game.entities.array.filter((a) => a.factionId === factionId && a.entityType !== 'factory')
   );
 
   const viableHexes = getViableHexes(game, entity, 'attack' as EntityAction);
@@ -209,7 +211,7 @@ async function randomMine(
   factionId: PlayableFactionId
 ): Promise<{reason: VoteRequestResults; voteResult?: VoteResult; votesLeft: number; processedTime: number}> {
   const entity = Utils.randomElement(
-    game.entities.array.filter(a => a.factionId === factionId && a.entityType === 'infantry' && !a.busy)
+    game.entities.array.filter((a) => a.factionId === factionId && a.entityType === 'infantry' && !a.busy)
   );
   if (!entity) {
     return null;
@@ -249,7 +251,7 @@ async function randomSpawn(
   factionId: PlayableFactionId
 ): Promise<{reason: VoteRequestResults; voteResult?: VoteResult; votesLeft: number; processedTime: number}> {
   const entity = Utils.randomElement(
-    game.entities.array.filter(a => a.factionId === factionId && a.entityType === 'factory' && !a.busy)
+    game.entities.array.filter((a) => a.factionId === factionId && a.entityType === 'factory' && !a.busy)
   );
 
   if (!entity) {
@@ -295,7 +297,7 @@ function getViableHexes(game: GameModel, entity: GameEntity, action: EntityActio
   switch (action) {
     case 'attack':
       radius = entityDetails.attackRadius;
-      entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
+      entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, (e) => e.id);
       break;
     case 'move':
       radius = entityDetails.moveRadius;
@@ -317,20 +319,20 @@ function getViableHexes(game: GameModel, entity: GameEntity, action: EntityActio
 
   switch (action) {
     case 'attack':
-      viableHexes = viableHexes.filter(a =>
-        game.entities.find(e => e.factionId !== entity.factionId && e.x === a.x && e.y === a.y)
+      viableHexes = viableHexes.filter((a) =>
+        game.entities.find((e) => e.factionId !== entity.factionId && e.x === a.x && e.y === a.y)
       );
       break;
     case 'move':
-      viableHexes = viableHexes.filter(a => !game.entities.get1(a));
+      viableHexes = viableHexes.filter((a) => !game.entities.get1(a));
       break;
     case 'mine':
-      viableHexes = viableHexes.filter(a => game.resources.find(e => e.x === a.x && e.y === a.y));
+      viableHexes = viableHexes.filter((a) => game.resources.find((e) => e.x === a.x && e.y === a.y));
       break;
     case 'spawn-infantry':
     case 'spawn-tank':
     case 'spawn-plane':
-      viableHexes = viableHexes.filter(a => !game.entities.get1(a));
+      viableHexes = viableHexes.filter((a) => !game.entities.get1(a));
       break;
   }
   return viableHexes;
@@ -340,21 +342,10 @@ async function start() {
   const response = await DataService.getGames();
   gameId = response.games[0].gameId;
 
-  const startNum = parseInt(process.argv[2]) * 100;
-  for (let i = startNum; i < startNum + 100; i += 10) {
+  const startNum = parseInt(process.argv[2]);
+  for (let i = 0; i < startNum; i++) {
     // login(`test-${i}@test.com`, 'test').catch(ex => console.error(ex));
-    await Promise.all([
-      register(i),
-      register(i + 1),
-      register(i + 2),
-      register(i + 3),
-      register(i + 4),
-      register(i + 5),
-      register(i + 6),
-      register(i + 7),
-      register(i + 8),
-      register(i + 9),
-    ]);
+    await Promise.all([register(i)]);
   }
 }
-start().catch(ex => console.error(ex));
+start().catch((ex) => console.error(ex));

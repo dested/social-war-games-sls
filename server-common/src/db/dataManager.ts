@@ -38,15 +38,6 @@ export class DataManager {
           new MongoClient(Config.dbConnection, {
             useUnifiedTopology: true,
             useNewUrlParser: true,
-            /*
-            connectTimeoutMS: 10000,
-            socketTimeoutMS: 10000,
-            wtimeout: 10000,
-            acceptableLatencyMS: 10000,
-            minSize: 2,
-            keepAlive: true,
-            keepAliveInitialDelay: 10000,
-*/
             loggerLevel: 'error',
             logger: (e, b) => console.log(b, e),
           });

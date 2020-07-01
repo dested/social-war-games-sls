@@ -5,7 +5,7 @@ const options: DynamoDB.Types.ClientConfiguration = {
   apiVersion: '2012-08-10',
   region: 'us-west-2',
 };
-if (Config.env === 'DEV') {
+if (process.env.IS_OFFLINE) {
   options.region = 'localhost';
   options.endpoint = 'http://localhost:8020';
 }

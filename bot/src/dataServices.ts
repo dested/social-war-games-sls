@@ -8,16 +8,18 @@ import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {GameStateParser} from '@swg-common/parsers/gameStateParser';
 import fetch from 'node-fetch';
 
-export class DataService {
-  private static apiServer: string = 'http://localhost:5103';
-  // private static apiServer: string = 'https://api.socialwargames.com';
-  // private static s3Server: string = 'https://s3-us-west-2.amazonaws.com/swg-content';
-  private static s3Server: string = 'http://localhost:4569/swg-content';
-  static socketServer: string = 'ws://127.0.0.1:3001';
-  // private static socketServer: string = 'ws://api.socialwargames.com';
+export class Config {
+  static env: 'LOCAL' | 'PROD' = 'LOCAL';
 
+  static apiServer = Config.env === 'LOCAL' ? 'http://localhost:5103' : 'https://api.socialwargames.com';
+  static s3Server =
+    Config.env === 'LOCAL' ? 'http://localhost:4569/swg-games' : 'https://s3-us-west-2.amazonaws.com/swg-games';
+  static socketServer = Config.env === 'LOCAL' ? 'ws://127.0.0.1:3001' : 'wss://ws.socialwargames.com';
+}
+
+export class DataService {
   static async login(email: string, password: string): Promise<JwtGetUserResponse> {
-    const response = await fetch(this.apiServer + '/login', {
+    const response = await fetch(Config.apiServer + '/login', {
       method: 'POST',
       body: JSON.stringify({
         email,
@@ -41,7 +43,7 @@ export class DataService {
   }
 
   static async register(email: string, userName: string, password: string): Promise<JwtGetUserResponse> {
-    const response = await fetch(this.apiServer + '/register', {
+    const response = await fetch(Config.apiServer + '/register', {
       method: 'POST',
       body: JSON.stringify({
         email,
@@ -75,7 +77,7 @@ export class DataService {
     jwt: string,
     gameId: string
   ): Promise<VoteResponse> {
-    const response = await fetch(`${this.apiServer}/vote`, {
+    const response = await fetch(`${Config.apiServer}/vote`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -90,7 +92,7 @@ export class DataService {
   }
 
   static async currentUserDetails(jwt: string, gameId: string): Promise<UserDetails> {
-    const response = await fetch(`${this.apiServer}/user-details`, {
+    const response = await fetch(`${Config.apiServer}/user-details`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -105,7 +107,7 @@ export class DataService {
   }
 
   static async getLayout(gameId: string) {
-    const response = await fetch(`${this.s3Server}/${gameId}/layout.swg`, {
+    const response = await fetch(`${Config.s3Server}/${gameId}/layout.swg`, {
       method: 'GET',
       headers: {
         Accept: 'application/octet-stream',
@@ -123,7 +125,7 @@ export class DataService {
     gameId: string
   ): Promise<GameState> {
     const response = await fetch(
-      `${this.s3Server}/${gameId}/generation-outcomes/generation-outcome-${generation}-${factionId}.swg`,
+      `${Config.s3Server}/${gameId}/generation-outcomes/generation-outcome-${generation}-${factionId}.swg`,
       {
         method: 'GET',
         headers: {
@@ -141,7 +143,7 @@ export class DataService {
   }
 
   static async getGames(): Promise<{games: HttpGame[]}> {
-    const response = await fetch(`${this.apiServer}/games`, {
+    const response = await fetch(`${Config.apiServer}/games`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',

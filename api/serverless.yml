@@ -23,8 +23,15 @@ provider:
   iamRoleStatements:
     - Effect: Allow
       Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:DeleteItem
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:UpdateItem
         - lambda:InvokeFunction
         - lambda:InvokeAsync
+        - states:StartExecution
         - s3:GetObjectAcl
         - s3:GetObject
         - s3:GetObjectTagging
@@ -32,7 +39,7 @@ provider:
         - s3:DeleteObjectVersion
         - s3:PutObject
         - s3:PutObjectTagging
-        - s3:PutObjectAc
+        - s3:PutObjectAcl
       Resource: "*"
 
 custom:
@@ -82,20 +89,28 @@ custom:
       heapMax: 1g
       dbPath: ./.dynamo-data-local
       migrate: true
-  additionalStacks:
-    noDeploy: true
-    permanent:
-      Resources:
-        - S3BucketData:
-          Type: AWS::S3::Bucket
-          Properties:
-            BucketName: swg-content
-        - S3BucketData:
-          Type: AWS::S3::Bucket
-          Properties:
-            BucketName: swg-data
+
 resources:
   Resources:
+    GamesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: swg-games
+        AccessControl: PublicRead
+        CorsConfiguration:
+          CorsRules:
+            -
+              AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+    RulesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccessControl: Private
+        BucketName: swg-rules
     usersTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -160,11 +175,11 @@ stepFunctions:
             Default: Done
           Wait:
             Type: Wait
-            Seconds: 10
+            Seconds: 15
             Next: Iterator
           WaitAndDone:
             Type: Wait
-            Seconds: 10
+            Seconds: 15
             Next: Next
           Next:
             Type: Task
@@ -257,6 +272,7 @@ functions:
   start-worker:
     handler: handler.startWorker
     memorySize: 128
+    timeout: 29
     events:
       - http:
           path: start-worker
@@ -285,7 +301,8 @@ functions:
     memorySize: 128
   setup:
     handler: functions/setup.setupHandler
-    memorySize: 128
+    memorySize: 512
+    timeout: 29
     events:
       - http:
           path: --setup
@@ -298,10 +315,14 @@ functions:
               - GameId
   work:
     handler: functions/work.workHandler
+    timeout: 59
     memorySize: 256
+    reservedConcurrency: 1
   roundUpdate:
     handler: functions/roundUpdate.roundUpdateHandler
+    timeout: 14
     memorySize: 256
+    reservedConcurrency: 1
   connect:
     handler: socketHandler.connect
     events:
