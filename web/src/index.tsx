@@ -2,7 +2,7 @@ import React, {Fragment} from 'react';
 import ReactDOM from 'react-dom';
 import * as serviceWorker from './serviceWorker';
 import {stores} from './store/stores';
-import {HashRouter} from 'react-router-dom';
+import {BrowserRouter} from 'react-router-dom';
 import {Route} from 'react-router';
 import {Game} from './components/game';
 import {Register} from './components/register';
@@ -16,14 +16,14 @@ configure({enforceActions: 'always'});
 ReactDOM.render(
   // <React.StrictMode>
   <Provider {...stores}>
-    <HashRouter>
+    <BrowserRouter>
       <Fragment>
         <Route exact path="/" component={Game} />
         <Route path="/register" component={Register} />
         <Route path="/games" component={Games} />
         <Route path="/login" component={Login} />
       </Fragment>
-    </HashRouter>
+    </BrowserRouter>
   </Provider>,
   // </React.StrictMode>
   document.getElementById('root')

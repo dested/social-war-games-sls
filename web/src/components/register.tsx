@@ -11,6 +11,7 @@ interface State {
   email: string;
   userName: string;
   password: string;
+  loading: boolean;
 }
 
 @inject(MainStoreName)
@@ -22,6 +23,7 @@ class Component extends React.Component<Props, State> {
       email: '',
       userName: '',
       password: '',
+      loading: false,
     };
   }
 
@@ -30,6 +32,7 @@ class Component extends React.Component<Props, State> {
     if (!this.state.email || !this.state.userName || !this.state.password) {
       return;
     }
+    this.setState({loading: true});
     try {
       const response = await DataService.register(this.state.email, this.state.userName, this.state.password);
       this.props.mainStore.setJwt(response.jwt);
@@ -38,6 +41,7 @@ class Component extends React.Component<Props, State> {
     } catch (ex) {
       alert(ex);
     }
+    this.setState({loading: false});
   };
 
   private updateEmail = async (e: any) => this.setState({email: e.target.value});
@@ -73,7 +77,7 @@ class Component extends React.Component<Props, State> {
           <input onChange={this.updateUserName} value={this.state.userName} />
           <span>Password</span>
           <input onChange={this.updatePassword} value={this.state.password} type="password" />
-          <button onSubmit={this.register}>Register</button>
+          {this.state.loading ? 'Loading' : <button onSubmit={this.register}>Register</button>}
           <Link to={'/'}>Login</Link>
         </form>
       </div>

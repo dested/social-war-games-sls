@@ -10,6 +10,7 @@ interface Props extends RouteComponentProps<{}>, MainStoreProps {}
 interface State {
   email: string;
   password: string;
+  loading: boolean;
 }
 
 @inject(MainStoreName)
@@ -20,10 +21,12 @@ class Component extends React.Component<Props, State> {
     this.state = {
       email: '',
       password: '',
+      loading: false,
     };
   }
 
   private login = async (e: any) => {
+    this.setState({loading: true});
     e.preventDefault();
     try {
       const response = await DataService.login(this.state.email, this.state.password);
@@ -35,6 +38,7 @@ class Component extends React.Component<Props, State> {
     } catch (ex) {
       alert(ex);
     }
+    this.setState({loading: false});
   };
 
   private updateEmail = async (e: any) => this.setState({email: e.target.value});
@@ -67,7 +71,7 @@ class Component extends React.Component<Props, State> {
           <input onChange={this.updateEmail} value={this.state.email} type="email" />
           <span>Password</span>
           <input onChange={this.updatePassword} value={this.state.password} type="password" />
-          <button onSubmit={this.login}>Login</button>
+          {this.state.loading ? 'Loading' : <button onSubmit={this.login}>Login</button>}
           <Link to={'/register'}>Register</Link>
         </form>
       </div>
