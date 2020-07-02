@@ -2,9 +2,7 @@ import {CustomSchemaTypes} from '@swg-common/schemaDefiner/schemaDefinerTypes';
 
 export const customSchemaTypes: CustomSchemaTypes<{hexId: string}> = {
   hexId: {
-    read: (buffer) => {
-      return buffer.readInt16() + '-' + buffer.readInt16();
-    },
+    read: (buffer) => buffer.readInt16() + '-' + buffer.readInt16(),
     write: (model, buffer) => {
       const hexIdParse = /(-?\d*)-(-?\d*)/;
       const hexIdResult = hexIdParse.exec(model);
@@ -13,8 +11,6 @@ export const customSchemaTypes: CustomSchemaTypes<{hexId: string}> = {
       buffer.addInt16(x);
       buffer.addInt16(y);
     },
-    size: (model) => {
-      return 2 + 2;
-    },
+    size: (model) => 2 + 2,
   },
 };

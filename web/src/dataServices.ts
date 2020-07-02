@@ -8,7 +8,7 @@ import {VoteResponse} from '@swg-common/models/http/voteResults';
 import {gameStore} from './store/game/store';
 import {mainStore} from './store/main/store';
 import {SchemaDefiner} from '@swg-common/schemaDefiner/schemaDefiner';
-import {GameLayoutSchemaReaderFunction} from '@swg-common/models/gameLayout';
+import {GameLayoutRead} from '@swg-common/models/gameLayout';
 
 export class Config {
   static env: 'LOCAL' | 'PROD' = 'LOCAL';
@@ -115,7 +115,7 @@ export class DataService {
       },
     });
     const arrayBuffer = await response.arrayBuffer();
-    return SchemaDefiner.startReadSchemaBuffer(arrayBuffer, GameLayoutSchemaReaderFunction);
+    return GameLayoutRead(arrayBuffer);
   }
 
   static async getGameState(

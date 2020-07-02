@@ -7,16 +7,15 @@ import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {DBGame} from '@swg-server-common/db/models/dbGame';
 import {GameLayout} from '@swg-common/models/gameLayout';
-import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {StateManager} from './game/stateManager';
 import {S3Splitter} from './game/s3Splitter';
 import {HttpResponse, respond} from '../utils/respond';
-import {SchemaDefiner} from 'swg-common/src/schemaDefiner/schemaDefiner';
-import {GameLayoutSchemaAdderFunction, GameLayoutSchemaAdderSizeFunction} from 'swg-common/src/models/gameLayout';
+import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
+import {GameLayoutWrite} from 'swg-common/src/models/gameLayout';
 
 export async function setupHandler(event: Event<void>): Promise<HttpResponse<void>> {
   console.time('setup');
-  await RedisManager.flushAll();
+  await SwgRemoteStore.flushAll();
 
   await S3Manager.updateDataFile('online.json', {ready: false});
 
@@ -30,10 +29,10 @@ export async function setupHandler(event: Event<void>): Promise<HttpResponse<voi
   console.log(game.id);
   await DBGame.db.insertDocument(new DBGame(game));
 
-  await RedisManager.set(false, game.id, 'stop', true);
+  await SwgRemoteStore.setStop(game.id, true);
 
   console.log('create game');
-  await RedisManager.set<number>(false, game.id, 'game-generation', game.generation);
+  await SwgRemoteStore.setGameGeneration(game.id, game.generation);
   console.log('set generation', game.generation);
 
   const gameLayout: GameLayout = {
@@ -42,7 +41,6 @@ export async function setupHandler(event: Event<void>): Promise<HttpResponse<voi
     hexes: game.grid.hexes.map((a) => ({
       x: a.x,
       y: a.y,
-      id: a.id,
       type: a.tileType.type,
       subType: a.tileType.subType,
     })),
@@ -53,21 +51,17 @@ export async function setupHandler(event: Event<void>): Promise<HttpResponse<voi
 
   console.log('built state');
 
-  const gameLayoutBytes = SchemaDefiner.startAddSchemaBuffer(
-    gameLayout,
-    GameLayoutSchemaAdderSizeFunction,
-    GameLayoutSchemaAdderFunction
-  );
+  const gameLayoutBytes = GameLayoutWrite(gameLayout);
   await S3Manager.uploadBytes(game.id, `layout.swg`, Buffer.from(gameLayoutBytes), true);
   const factionTokens = await S3Splitter.generateFactionTokens(game);
   await S3Splitter.output(game, gameLayout, gameState, roundState, factionTokens, true);
 
-  await RedisManager.set(true, game.id, `layout`, gameLayout);
-  await RedisManager.set(true, game.id, `game-state`, gameState);
+  await SwgRemoteStore.setGameLayout(game.id, gameLayout);
+  await SwgRemoteStore.setGameState(game.id, gameState);
   console.log('set redis');
   await S3Manager.uploadJson(game.id, `faction-stats.json`, JSON.stringify([]), false);
 
-  await RedisManager.set(false, game.id, 'stop', false);
+  await SwgRemoteStore.setStop(game.id, false);
   console.timeEnd('setup');
 
   return respond(200, {});

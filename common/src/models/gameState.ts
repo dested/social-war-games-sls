@@ -25,6 +25,35 @@ export interface GameState {
   hotEntities: OfFaction<{id: number; count: number}[]>;
   notes: OfFaction<VoteNote[]>;
 }
+
+export interface FactionDetail {
+  resourceCount: number;
+}
+
+export interface GameStateEntity {
+  x: number;
+  y: number;
+  id: number;
+  busy?: GameStateGameEntityBusyDetails;
+  entityType: EntityType;
+  health: number;
+  healthRegenStep: number;
+  facingDirection: FacingDirection;
+}
+
+export interface GameStateGameEntityBusyDetails {
+  ticks: number;
+  action: EntityAction;
+  hexId: string;
+}
+
+export interface GameStateResource {
+  x: number;
+  y: number;
+  count: number;
+  type: ResourceType;
+}
+
 /*
 function OfFactionSchema<T>(schema: SDSimpleObject<T>): SDSimpleObject<OfFaction<T>> {
   return {
@@ -455,32 +484,4 @@ export function GameStateWrite(gameState: GameState): ArrayBuffer {
     GameStateSchemaAdderFunction,
     customSchemaTypes
   );
-}
-
-export interface FactionDetail {
-  resourceCount: number;
-}
-
-export interface GameStateEntity {
-  x: number;
-  y: number;
-  id: number;
-  busy?: GameStateGameEntityBusyDetails;
-  entityType: EntityType;
-  health: number;
-  healthRegenStep: number;
-  facingDirection: FacingDirection;
-}
-
-export interface GameStateGameEntityBusyDetails {
-  ticks: number;
-  action: EntityAction;
-  hexId: string;
-}
-
-export interface GameStateResource {
-  x: number;
-  y: number;
-  count: number;
-  type: ResourceType;
 }

@@ -51,7 +51,7 @@ export class GameLogic {
 
       for (let i = 0; i < layout.hexes.length; i++) {
         const hex = layout.hexes[i];
-        const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), hex.id, hex.x, hex.y);
+        const gameHexagon = new GameHexagon(HexagonTypes.get(hex.type, hex.subType), `${hex.x}-${hex.y}`, hex.x, hex.y);
         gameHexagon.setFactionId(
           GameLogic.getFactionId(gameState.factions, i),
           GameLogic.getFactionDuration(gameState.factions, i)

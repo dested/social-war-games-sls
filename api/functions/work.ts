@@ -1,6 +1,5 @@
 import {Event} from '../utils/models';
 import {DBGame} from '@swg-server-common/db/models/dbGame';
-import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {orderBy, sumBy} from 'lodash';
 import {StateManager} from './game/stateManager';
 import {S3Splitter} from './game/s3Splitter';
@@ -20,6 +19,7 @@ import {Config} from '@swg-server-common/config';
 import fetch from 'node-fetch';
 import {SchemaDefiner} from 'swg-common/src/schemaDefiner/schemaDefiner';
 import {GameStateRead, GameStateWrite} from 'swg-common/src/models/gameState';
+import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
 
 const s3Url = process.env.IS_OFFLINE ? `http://localhost:4569` : `https://s3-us-west-2.amazonaws.com`;
 
@@ -37,12 +37,12 @@ let layout: GameLayout;
 async function processNewRound(gameId: string) {
   try {
     console.time('round end');
-    await RedisManager.set(false, gameId, 'stop', true);
-    const generation = await RedisManager.get<number>(false, gameId, 'game-generation');
+    await SwgRemoteStore.setStop(gameId, true);
+    const generation = await SwgRemoteStore.getGameGeneration(gameId);
 
-    layout = layout || (await RedisManager.get<GameLayout>(true, gameId, 'layout'));
+    layout = layout || (await SwgRemoteStore.getGameLayout(gameId));
 
-    const game = GameLogic.buildGameFromState(layout, await RedisManager.get<GameState>(true, gameId, 'game-state'));
+    const game = GameLogic.buildGameFromState(layout, await SwgRemoteStore.getGameState(gameId));
 
     const preVoteEntities = JSON.parse(JSON.stringify(game.entities.array));
     const preVoteResources = JSON.parse(JSON.stringify(game.resources.array));
@@ -113,7 +113,7 @@ async function processNewRound(gameId: string) {
     writeFactionStats(game);
 
     game.generation++;
-    await RedisManager.set(false, gameId, 'game-generation', game.generation);
+    await SwgRemoteStore.setGameGeneration(gameId, game.generation);
 
     const newGameState = await StateManager.buildGameState(
       game,
@@ -126,13 +126,11 @@ async function processNewRound(gameId: string) {
     const roundState = StateManager.buildRoundState(game.generation, []);
     if (
       game.generation !== newGameState.generation &&
-      game.generation !== (await RedisManager.get(false, gameId, 'game-generation'))
+      game.generation !== (await SwgRemoteStore.getGameGeneration(gameId))
     ) {
       console.log(
-        `weird generation:  ${game.generation} ${newGameState.generation} ${await RedisManager.get(
-          false,
-          gameId,
-          'game-generation'
+        `weird generation:  ${game.generation} ${newGameState.generation} ${await SwgRemoteStore.getGameGeneration(
+          gameId
         )}`
       );
     }
@@ -140,8 +138,8 @@ async function processNewRound(gameId: string) {
     const factionTokens = await S3Splitter.generateFactionTokens(game);
     await S3Splitter.output(game, game.layout, newGameState, roundState, factionTokens, true);
 
-    await RedisManager.set(true, gameId, 'game-state', newGameState);
-    await RedisManager.set(false, gameId, 'stop', false);
+    await SwgRemoteStore.setGameState(gameId, newGameState);
+    await SwgRemoteStore.setStop(gameId, false);
 
     console.timeEnd('round end');
     cleanupVotes(gameId);
@@ -200,7 +198,7 @@ function postVoteTasks(game: GameModel) {
 async function cleanupVotes(gameId: string) {
   try {
     console.log('destroying votes');
-    const generation = await RedisManager.get<number>(false, gameId, 'game-generation', 1);
+    const generation = await SwgRemoteStore.getGameGeneration(gameId);
 
     // todo, aggregate votes and store them for users later
     await DBVote.db.deleteMany(

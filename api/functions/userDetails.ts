@@ -1,11 +1,9 @@
-import {EntityAction} from '@swg-common/game/entityDetail';
 import {HttpUser} from '@swg-common/models/http/httpUser';
-import {UserDetails} from '@swg-common/models/http/userDetails';
 import {Config} from '@swg-server-common/config';
-import {RedisManager} from '@swg-server-common/redis/redisManager';
 import * as jwt from 'jsonwebtoken';
 import {Event} from '../utils/models';
 import {HttpResponse, respond} from '../utils/respond';
+import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
 
 interface UserDetailsResponse {
   generation: number;
@@ -24,9 +22,9 @@ export async function userDetailsHandler(
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
   try {
-    const generation = await RedisManager.get<number>(false, gameId, 'game-generation');
-    const totalVotes = await RedisManager.get<number>(false, gameId, `user-${user.id}-${generation}-votes`, 0);
-    const factionToken = await RedisManager.getString(false, gameId, `faction-token-${generation}-${user.factionId}`);
+    const generation = await SwgRemoteStore.getGameGeneration(gameId);
+    const totalVotes = await SwgRemoteStore.getUserVotes(gameId, user.id, generation);
+    const factionToken = await SwgRemoteStore.getFactionToken(gameId, generation, user.factionId);
 
     return respond(200, {
       generation,

@@ -14,12 +14,12 @@ import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
 import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
 import {Point} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
-import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {SocketManager} from './socketManager';
 import {SchemaDefiner} from 'swg-common/src/schemaDefiner/schemaDefiner';
 import {GameStateRead, GameStateWrite} from 'swg-common/src/models/gameState';
 import {RoundStateWrite} from 'swg-common/src/models/roundState';
+import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
 
 export class S3Splitter {
   static async generateFactionTokens(game: GameModel): Promise<OfFaction<string>> {
@@ -28,7 +28,7 @@ export class S3Splitter {
       tokens[faction] = Utils.range(0, 16)
         .map((a) => Math.floor(Math.random() * 254) + 1)
         .join('.');
-      await RedisManager.setString(false, game.id, `faction-token-${game.generation}-${faction}`, tokens[faction]);
+      await SwgRemoteStore.setFactionToken(game.id, game.generation, faction, tokens[faction]);
     }
     return tokens;
   }

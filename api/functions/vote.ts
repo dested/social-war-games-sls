@@ -9,10 +9,10 @@ import {VoteRequestResults} from '@swg-common/models/http/voteResults';
 import {Config} from '@swg-server-common/config';
 import {DataManager} from '@swg-server-common/db/dataManager';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
-import {RedisManager} from '@swg-server-common/redis/redisManager';
 import * as jwt from 'jsonwebtoken';
 import {Event} from '../utils/models';
 import {HttpResponse, respond} from '../utils/respond';
+import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
 
 let layout: GameLayout;
 let gameState: GameState;
@@ -27,28 +27,27 @@ export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpRe
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
   try {
-    const shouldStop = await RedisManager.get<boolean>(false, gameId, 'stop');
+    const shouldStop = await SwgRemoteStore.getStop(gameId);
     if (shouldStop) {
       return respond(400, {error: 'stopped'});
     }
 
-    const generation = await RedisManager.get<number>(false, gameId, 'game-generation');
-    let totalVotes = await RedisManager.get<number>(false, gameId, `user-${user.id}-${generation}-votes`, 0);
+    const generation = await SwgRemoteStore.getGameGeneration(gameId);
+    let totalVotes = await SwgRemoteStore.getUserVotes(gameId, user.id, generation);
 
     if (totalVotes === undefined) {
-      await RedisManager.set<number>(false, gameId, `user-${user.id}-${generation}-votes`, 1);
-      await RedisManager.expire(false, gameId, `user-${user.id}-${generation}-votes`, Config.gameDuration * 2);
+      await SwgRemoteStore.setUserVotes(gameId, user.id, generation, 1);
     }
 
     if (totalVotes >= user.maxVotesPerRound) {
       return respond(400, {error: 'max_votes'});
     }
     totalVotes++;
-    await RedisManager.set(false, gameId, `user-${user.id}-${generation}-votes`, totalVotes);
+    await SwgRemoteStore.setUserVotes(gameId, user.id, generation, totalVotes);
 
     const body = event.body;
 
-    const voteHexes = await RedisManager.getString(false, gameId, `user-${user.id}-${generation}-vote-hex`, '');
+    const voteHexes = await SwgRemoteStore.getUserVotesHex(gameId, user.id, generation);
     if (voteHexes.indexOf(body.entityId + ' ') >= 0) {
       return respond(200, {
         reason: `cant_vote_twice` as VoteRequestResults,
@@ -57,9 +56,9 @@ export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpRe
       });
     }
 
-    layout = layout || (await RedisManager.get<GameLayout>(true, gameId, 'layout'));
+    layout = layout || (await SwgRemoteStore.getGameLayout(gameId));
     if (!gameState || gameState.generation !== generation) {
-      gameState = await RedisManager.get<GameState>(true, gameId, 'game-state');
+      gameState = await SwgRemoteStore.getGameState(gameId);
       game = GameLogic.buildGameFromState(layout, gameState);
     }
 
@@ -92,8 +91,7 @@ export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpRe
       });
     }
 
-    await RedisManager.append(false, gameId, `user-${user.id}-${generation}-vote-hex`, `${vote.entityId} `);
-    await RedisManager.expire(false, gameId, `user-${user.id}-${generation}-vote-hex`, Config.gameDuration * 2);
+    await SwgRemoteStore.appendUserVotesHex(gameId, user.id, generation, vote.entityId);
 
     await DBVote.db.insertDocument(vote);
     const endTime = +new Date();
