@@ -108,7 +108,7 @@ export class Component extends React.Component<Props, State> {
   }
 
   private renderRoundStats() {
-    const factionRoundStats = this.props.uiStore.factionRoundStats;
+    const factionRoundStats = this.props.gameStore.currentGameState;
     if (!factionRoundStats) {
       return 'loading';
     }
@@ -125,6 +125,7 @@ export class Component extends React.Component<Props, State> {
 
     const entityImage = {width: '50px'};
 
+    const factionId = this.props.mainStore.user.factionId;
     return (
       <div style={{display: 'flex', height: '100%'}}>
         <div style={{flex: 2, display: 'flex', flexDirection: 'column'}}>
@@ -137,15 +138,15 @@ export class Component extends React.Component<Props, State> {
 
           <span>Round {factionRoundStats.generation} Outcome:</span>
           <span>
-            {factionRoundStats.totalPlayersVoted.toString()} Players Voted, {factionRoundStats.playersVoted} in your
+            {factionRoundStats.totalPlayersVoted.toString()} Players Voted, {factionRoundStats.playersVoted[factionId]} in your
             faction.
           </span>
-          <span>Score: {factionRoundStats.score}</span>
+          <span>Score: {factionRoundStats.scores[factionId]}</span>
         </div>
         <div style={{flex: 1, overflow: 'scroll'}}>
           <span>Hot Units</span>
           <div style={{display: 'flex', flexDirection: 'column', flexWrap: 'wrap'}}>
-            {factionRoundStats.hotEntities.map((e: any) => {
+            {factionRoundStats.hotEntities[factionId].map((e: any) => {
               const ent = this.props.gameStore.game.entities.get2(e);
               if (!ent) {
                 return null;
@@ -177,7 +178,7 @@ export class Component extends React.Component<Props, State> {
         <div style={{flex: 2, overflow: 'scroll', display: 'flex', flexDirection: 'column'}}>
           <span>Notes</span>
 
-          {factionRoundStats.notes.map((a: any) => this.renderNote(a))}
+          {factionRoundStats.notes[factionId].map((a: any) => this.renderNote(a))}
         </div>
       </div>
     );
@@ -233,7 +234,7 @@ export class Component extends React.Component<Props, State> {
   }
 
   private updateRound = async (generation: number) => {
-    await UIStore.getFactionRoundStats(generation);
+    // await UIStore.getFactionRoundStats(generation);
   };
 }
 

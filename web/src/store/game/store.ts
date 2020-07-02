@@ -24,6 +24,8 @@ import {UIConstants} from '../../utils/uiConstants';
 import {mainStore} from '../main/store';
 
 export class GameStore {
+
+  @observable currentGameState?: GameState;
   @observable game?: GameModel;
   @observable roundState?: RoundState;
   @observable localRoundState?: RoundState;
@@ -55,7 +57,9 @@ export class GameStore {
     this.roundState = roundState;
     this.localRoundState = localRoundState;
   }
-
+  @action setCurrentGameState(gameState: GameState) {
+    this.currentGameState = gameState;
+  }
   @action setCurrentGameId(gameId?: string) {
     if (!gameId) {
       localStorage.removeItem('gameId');
@@ -242,6 +246,7 @@ export class GameStore {
 
     Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
     gameStore.setLastRoundActionsFromNotes(gameState, mainStore.user.factionId, game.grid);
+    gameStore.setCurrentGameState(gameState);
 
     const emptyRoundState = {
       nextUpdateTime: 0,
@@ -278,6 +283,7 @@ export class GameStore {
       Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);
       gameStore.smallGameRenderer.processMiniMap(game);
       gameStore.setLastRoundActionsFromNotes(gameState, mainStore.user.factionId, game.grid);
+      gameStore.setCurrentGameState(gameState);
       this.processRoundState(game, roundState);
     } else {
       this.processRoundState(gameStore.game, roundState);

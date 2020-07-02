@@ -4,6 +4,7 @@ import {action, observable} from 'mobx';
 import {DataService} from '../../dataServices';
 import {gameStore} from '../game/store';
 import {mainStore} from '../main/store';
+import {GameState} from '@swg-common/models/gameState';
 
 export type UI = 'None' | 'FactionStats' | 'RoundStats' | 'Ladder' | 'Bases' | 'Votes';
 
@@ -11,7 +12,6 @@ export class UIStore {
   @observable ui: UI = 'None';
   @observable factionStats?: FactionStats[];
   @observable ladder?: LadderResponse;
-  @observable factionRoundStats?: any;
 
   @action private setUI(ui: UI) {
     this.ui = ui;
@@ -22,11 +22,6 @@ export class UIStore {
   @action setLadder(ladder: LadderResponse) {
     this.ladder = ladder;
   }
-  @action setFactionRoundStats(factionRoundStats: any) {
-    this.factionRoundStats = factionRoundStats;
-    gameStore.setLastRoundActionsFromNotes(factionRoundStats, null, gameStore.game.grid);
-  }
-
   static async setUI(ui: UI) {
     const {factionId} = mainStore.user;
     const {generation} = gameStore.game;
@@ -38,9 +33,6 @@ export class UIStore {
       case 'Ladder':
         uiStore.setLadder(null);
         break;
-      case 'RoundStats':
-        uiStore.setFactionRoundStats(null);
-        break;
     }
     uiStore.setUI(ui);
 
@@ -51,20 +43,6 @@ export class UIStore {
       case 'Ladder':
         uiStore.setLadder(await DataService.getLadder());
         break;
-      case 'RoundStats':
-        // uiStore.setFactionRoundStats(await DataService.getFactionRoundStats(generation - 1, factionId));
-        break;
-    }
-  }
-
-  static async getFactionRoundStats(generation: number) {
-    const {factionId} = mainStore.user;
-
-    uiStore.setFactionRoundStats(null);
-    try {
-      // uiStore.setFactionRoundStats(await DataService.getFactionRoundStats(generation, factionId));
-    } catch (ex) {
-      uiStore.setFactionRoundStats(null);
     }
   }
 }
