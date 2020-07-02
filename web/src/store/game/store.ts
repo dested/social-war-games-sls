@@ -270,6 +270,9 @@ export class GameStore {
         userDetails.generation,
         userDetails.factionToken
       );
+      if (!gameState) {
+        return;
+      }
 
       const game = GameLogic.buildGameFromState(gameStore.layout, gameState);
       Drawing.update(game.grid, DrawingOptions.default, DrawingOptions.defaultSmall);

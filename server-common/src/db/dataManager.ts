@@ -100,9 +100,7 @@ export class DocumentManager<T extends {_id: any}> {
 
   async insertDocument(document: T): Promise<T> {
     const collection = await this.getCollection();
-    console.log('insert started');
     const result = await collection.insertOne(document as any);
-    console.log('insert done');
     document._id = result.insertedId;
     return document;
   }

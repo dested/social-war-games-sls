@@ -124,6 +124,7 @@ export class DataService {
     factionToken: string
   ): Promise<GameState> {
     const gameId = gameStore.currentGameId;
+    // todo add retry logic because s3 is slow
     const response = await fetch(
       `${Config.s3Server}/${gameId}/generation-outcomes/generation-outcome-${generation}-${factionId}.swg`,
       {
@@ -134,9 +135,12 @@ export class DataService {
         },
       }
     );
-    const arrayBuffer = await response.arrayBuffer();
-    // todo decrypt with factionToken.split('.').map((a) => parseInt(a))
-    return GameStateRead(arrayBuffer);
+    if (response.status === 200) {
+      const arrayBuffer = await response.arrayBuffer();
+      // todo decrypt with factionToken.split('.').map((a) => parseInt(a))
+      return GameStateRead(arrayBuffer);
+    }
+    return undefined;
   }
 
   static async getLadder(): Promise<LadderResponse> {

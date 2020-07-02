@@ -70,5 +70,3 @@ config.js
 !.elasticbeanstalk/*.global.yml
 
 dist/
-.webpack/
-.serverless/

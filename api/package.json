@@ -9,8 +9,9 @@
     "verify": "tsc --noEmit",
     "deploy": "sls deploy",
     "local": "sls offline start",
-    "console": "webpack --config webpack-console.config.js && node ./.webpack/main.js",
-    "console-d": "webpack --config webpack-console.config.js && node --inspect-brk ./.webpack/main.js"
+    "console": "webpack --config webpack-console.config.js && node ./.webpack-console/main.js",
+    "console-d": "webpack --config webpack-console.config.js && node --inspect-brk ./.webpack-console/main.js",
+    "console-services": "start /B sls dynamodb start & start /B sls s3 start"
   },
   "author": "",
   "license": "ISC",

@@ -93,7 +93,6 @@ const seed = Math.round(Math.random() * 100000);
 
 async function register(ind: number) {
   const email = `test-${seed}-${ind}@test.com`;
-  console.log(email);
   const password = `test`;
   const userName = `Test-${seed}-${ind}`;
 

@@ -18,6 +18,12 @@ let layout: GameLayout;
 let gameState: GameState;
 let game: GameModel;
 
+export function debug_setValues(dLayout: GameLayout, dGameState: GameState, dGame: GameModel) {
+  layout = dLayout;
+  gameState = dGameState;
+  game = dGame;
+}
+
 export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpResponse<VoteResponse>> {
   const startTime = +new Date();
   if (!event.headers || !event.headers.Authorization || !event.headers.gameid) {

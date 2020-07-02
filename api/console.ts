@@ -1,7 +1,10 @@
+import {registerHandler} from './functions/register';
+
+process.env.IS_OFFLINE = 'true';
 import {setupHandler} from './functions/setup';
 import {workHandler} from './functions/work';
 import {roundUpdateHandler} from './functions/roundUpdate';
-import {voteHandler, VoteRequestBody} from './functions/vote';
+import {debug_setValues, voteHandler, VoteRequestBody} from './functions/vote';
 import {GameLogic, GameModel} from 'swg-common/src/game/gameLogic';
 import {DBGame} from 'swg-server-common/src/db/models/dbGame';
 import {loginHandler} from './functions/login';
@@ -14,44 +17,69 @@ import {Point} from 'swg-common/src/utils/hexUtils';
 import {PointHashKey} from 'swg-common/src/hex/hex';
 import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
 
+async function vote(gameId: string, users: JwtGetUserResponse[]) {
+  const layout = await SwgRemoteStore.getGameLayout(gameId);
+  const gameState = await SwgRemoteStore.getGameState(gameId);
+  const game = GameLogic.buildGameFromState(layout, gameState);
+
+  debug_setValues(layout, gameState, game);
+  const votes: Promise<any>[] = [];
+  for (const user of users) {
+    votes.push(
+      new Promise(async (res) => {
+        console.log('getting action ', user.user.userName);
+        const action = await randomAction(game, user.user.factionId);
+        if (action) {
+          console.log('voting action', user.user.userName, action.action, action.hexId);
+          await voteHandler({
+            headers: {Authorization: 'Bearer ' + user.jwt, gameid: gameId} as any,
+            httpMethod: '',
+            path: '',
+            body: action,
+          });
+          console.log('voted', user.user.userName);
+        }
+        res();
+      })
+    );
+  }
+  await Promise.all(votes);
+}
+
 async function main() {
   console.log('here');
+  const seed = Math.round(Math.random() * 100000);
+  const users: JwtGetUserResponse[] = [];
 
-  const result = await loginHandler({body: {email: 'dested@gmail.com', password: 'testtest'}} as any);
-  const loginBody = JSON.parse(result.body) as JwtGetUserResponse;
-  const jwt = loginBody.jwt;
+  for (let ind = 0; ind < 100; ind++) {
+    const email = `test-${seed}-${ind}@test.com`;
+    const password = `test`;
+    const userName = `Test-${seed}-${ind}`;
+    const result = await registerHandler({
+      body: {email, password, userName},
+      path: '',
+      httpMethod: '',
+      headers: {} as any,
+    });
+    const loginBody = JSON.parse(result.body) as JwtGetUserResponse;
+    users.push(loginBody);
+    console.log('register ', userName);
+  }
+
   await setupHandler(undefined);
   await workHandler(undefined);
   const {gameId} = await DBGame.db.getOneProject({}, {gameId: 1});
-  const game = GameLogic.buildGameFromState(
-    await SwgRemoteStore.getGameLayout(gameId),
-    await SwgRemoteStore.getGameState(gameId)
-  );
-  const entity = Utils.randomElement(
-    game.entities.array.filter((a) => a.factionId === loginBody.user.factionId && a.entityType === 'infantry')
-  );
 
-  for (let i = 0; i < 3; i++) {
-    const action = await randomAction(game, loginBody.user.factionId);
-    await voteHandler({
-      headers: {Authorization: 'Bearer ' + jwt, gameid: gameId} as any,
-      httpMethod: '',
-      path: '',
-      body: action,
-    });
+  for (let i = 0; i < 1000; i++) {
+    await roundUpdateHandler(undefined);
+    await vote(gameId, users);
+    await roundUpdateHandler(undefined);
+    await vote(gameId, users);
+    await roundUpdateHandler(undefined);
+    await vote(gameId, users);
+    await roundUpdateHandler(undefined);
+    await workHandler(undefined);
   }
-  await roundUpdateHandler(undefined);
-  await roundUpdateHandler(undefined);
-  await roundUpdateHandler(undefined);
-  await workHandler(undefined);
-  await roundUpdateHandler(undefined);
-  await roundUpdateHandler(undefined);
-  await roundUpdateHandler(undefined);
-  await workHandler(undefined);
-  await roundUpdateHandler(undefined);
-  await roundUpdateHandler(undefined);
-  await roundUpdateHandler(undefined);
-  await workHandler(undefined);
 
   /* debugger;
   const result = SchemaDefiner.startAddSchemaBuffer(
@@ -89,6 +117,9 @@ async function randomMove(game: GameModel, factionId: PlayableFactionId): Promis
     game.entities.array.filter((a) => a.factionId === factionId && a.entityType !== 'factory')
   );
 
+  if (!entity) {
+    return;
+  }
   const viableHexes = getViableHexes(game, entity, 'move' as EntityAction);
 
   const hex = Utils.randomElement(viableHexes);
@@ -113,7 +144,9 @@ async function randomAttack(game: GameModel, factionId: PlayableFactionId): Prom
   const entity = Utils.randomElement(
     game.entities.array.filter((a) => a.factionId === factionId && a.entityType !== 'factory')
   );
-
+  if (!entity) {
+    return;
+  }
   const viableHexes = getViableHexes(game, entity, 'attack' as EntityAction);
   if (viableHexes.length === 0) {
     return null;

@@ -47,7 +47,7 @@ export class GameStatsPanel extends React.Component<Props, State> {
               left: 0,
               bottom: 0,
             }}
-            ref={e => this.props.smallGameRenderer.start(e, this.props.gameStore.gameRenderer)}
+            ref={(e) => this.props.smallGameRenderer.start(e, this.props.gameStore.gameRenderer)}
             width={UIConstants.miniMapWidth()}
             height={UIConstants.miniMapHeight()}
           />
@@ -106,6 +106,7 @@ export class GameStatsPanel extends React.Component<Props, State> {
       gameStore.game.generation + generationUpdate,
       gameStore.userDetails.factionToken
     );
+    if (!gameState) return;
     const game = GameLogic.buildGameFromState(gameStore.layout, gameState);
 
     HexConstants.smallHeight = (UIConstants.miniMapHeight() / game.grid.boundsHeight) * 1.3384;

@@ -5,7 +5,7 @@
 '/ add validation jwt
 
 '/write server util code
-  
+
   '/hex board
   '/entities
  '/ actions
@@ -13,7 +13,7 @@
   '/  attack
   '/  spawn
   '/  voting logic validation
-  
+
 '/ spin up redis server
 '/ add vote api
 '/ add server for round end
@@ -41,7 +41,7 @@
 '/  2 radius around unit
 '/   other than that, faction tile expires 2 rounds after set
 '/ add healing per tick
-'/ show attack radius 
+'/ show attack radius
 '/ add changing color to percent bar
 '/ dont show votes on enemies
 '/ show minimap
@@ -51,19 +51,19 @@
 '/  cant vote for the same action twice
 '/ show votes on screen
 
-'/ what happened in each round 
+'/ what happened in each round
 '/   round-outcome-255-1.json
 '/     each vote outcome
 '/     top 10 hottest entities
 '/    how many players voted
 '/    notes[]
-'/      your base was attacked 
+'/      your base was attacked
 '/      link to tap and go to that unit
 '/      mike was attacked
 '/      joe was moved
 '/    score
 '/ close menu on new round
-'/ fix flickering vote  
+'/ fix flickering vote
 '/  show selected entity
 '/  show busy units
 '/  fix -1 votes left
@@ -77,14 +77,14 @@
   '/ amount of resources per faction
   '/ current score
 
-'/ score 
+'/ score
   total number of hexes owned by your faction
   3 x the number of resources
   5 x number of bases
   3 x number of planes
   2 x number of tanks
   1 x number of infantry
-  
+
 '/ historical user details
   '/ votes cast
   '/ rounds participated in
@@ -162,14 +162,14 @@ low priority
     microtransaction
     ad support
     payment processor support
-  build bots  
+  build bots
   make addUserRoundStat better
   out of sync/time clients
   figure out a way to prevent multiple accounts
     prevent fake email addresses
     ip based?
   mobile support
- 
+ follow unit when going back in time
 
 
 write proper description of game for twitch

@@ -6,7 +6,7 @@ module.exports = {
   mode: 'development',
   output: {
     libraryTarget: 'commonjs',
-    path: path.join(__dirname, '.webpack'),
+    path: path.join(__dirname, '.webpack-console'),
     filename: '[name].js',
     pathinfo: false,
   },
