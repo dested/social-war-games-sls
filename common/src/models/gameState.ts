@@ -5,6 +5,7 @@ import {EntityAction, EntityType, OfFaction, PlayableFactionId} from '../game/en
 import {ResourceType} from '../game/gameResource';
 import {SDArray, SDSimpleObject, SDTypeElement} from '@swg-common/schemaDefiner/schemaDefinerTypes';
 import {SchemaDefiner} from '@swg-common/schemaDefiner/schemaDefiner';
+import {customSchemaTypes} from '@swg-common/models/customSchemaTypes';
 
 export interface GameState {
   gameId: string;
@@ -40,7 +41,7 @@ function OfFactionArraySchema<T>(schema: SDArray<SDSimpleObject<T>>): SDSimpleOb
   };
 }*/
 
-export const GameStateSchema: SDSimpleObject<GameState> = {
+export const GameStateSchema: SDSimpleObject<GameState, keyof typeof customSchemaTypes> = {
   gameId: 'string',
   factions: {
     flag: 'byte-array',
@@ -91,7 +92,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
                 mine: 5,
                 move: 6,
               },
-              hexId: 'string',
+              hexId: 'hexId',
               ticks: 'uint32',
             },
           },
@@ -122,7 +123,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
                 mine: 5,
                 move: 6,
               },
-              hexId: 'string',
+              hexId: 'hexId',
               ticks: 'uint32',
             },
           },
@@ -153,7 +154,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
                 mine: 5,
                 move: 6,
               },
-              hexId: 'string',
+              hexId: 'hexId',
               ticks: 'uint32',
             },
           },
@@ -192,7 +193,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
             move: 6,
           },
           entityId: 'uint32',
-          hexId: 'string',
+          hexId: 'hexId',
           factionId: {
             flag: 'number-enum',
             1: 1,
@@ -228,7 +229,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
             move: 6,
           },
           entityId: 'uint32',
-          hexId: 'string',
+          hexId: 'hexId',
           factionId: {
             flag: 'number-enum',
             1: 1,
@@ -264,7 +265,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
             move: 6,
           },
           entityId: 'uint32',
-          hexId: 'string',
+          hexId: 'hexId',
           factionId: {
             flag: 'number-enum',
             1: 1,
@@ -350,7 +351,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
             3: 3,
           },
           fromEntityId: 'int16',
-          fromHexId: 'string',
+          fromHexId: 'hexId',
           note: 'string',
           path: {
             flag: 'array-uint8',
@@ -360,7 +361,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
             flag: 'optional',
             element: 'uint32',
           },
-          toHexId: 'string',
+          toHexId: 'hexId',
           voteCount: 'uint16',
         },
       },
@@ -386,7 +387,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
             3: 3,
           },
           fromEntityId: 'int16',
-          fromHexId: 'string',
+          fromHexId: 'hexId',
           note: 'string',
           path: {
             flag: 'array-uint8',
@@ -396,7 +397,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
             flag: 'optional',
             element: 'uint32',
           },
-          toHexId: 'string',
+          toHexId: 'hexId',
           voteCount: 'uint16',
         },
       },
@@ -422,7 +423,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
             3: 3,
           },
           fromEntityId: 'int16',
-          fromHexId: 'string',
+          fromHexId: 'hexId',
           note: 'string',
           path: {
             flag: 'array-uint8',
@@ -432,7 +433,7 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
             flag: 'optional',
             element: 'uint32',
           },
-          toHexId: 'string',
+          toHexId: 'hexId',
           voteCount: 'uint16',
         },
       },
@@ -440,9 +441,21 @@ export const GameStateSchema: SDSimpleObject<GameState> = {
   },
 };
 
-export const GameStateSchemaReaderFunction = SchemaDefiner.generateReaderFunction(GameStateSchema);
-export const GameStateSchemaAdderFunction = SchemaDefiner.generateAdderFunction(GameStateSchema);
-export const GameStateSchemaAdderSizeFunction = SchemaDefiner.generateAdderSizeFunction(GameStateSchema);
+const GameStateSchemaReaderFunction = SchemaDefiner.generateReaderFunction(GameStateSchema, customSchemaTypes);
+const GameStateSchemaAdderFunction = SchemaDefiner.generateAdderFunction(GameStateSchema, customSchemaTypes);
+const GameStateSchemaAdderSizeFunction = SchemaDefiner.generateAdderSizeFunction(GameStateSchema, customSchemaTypes);
+
+export function GameStateRead(buffer: ArrayBuffer): GameState {
+  return SchemaDefiner.startReadSchemaBuffer(buffer, GameStateSchemaReaderFunction, customSchemaTypes);
+}
+export function GameStateWrite(gameState: GameState): ArrayBuffer {
+  return SchemaDefiner.startAddSchemaBuffer(
+    gameState,
+    GameStateSchemaAdderSizeFunction,
+    GameStateSchemaAdderFunction,
+    customSchemaTypes
+  );
+}
 
 export interface FactionDetail {
   resourceCount: number;

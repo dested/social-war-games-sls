@@ -1,7 +1,9 @@
 import {EntityAction} from '../game/entityDetail';
-import {SDElement, SDSimpleObject} from '@swg-common/schemaDefiner/schemaDefinerTypes';
+import {CustomSchemaTypes, SDElement, SDSimpleObject} from '@swg-common/schemaDefiner/schemaDefinerTypes';
 import {SchemaDefiner} from '@swg-common/schemaDefiner/schemaDefiner';
 import {Utils} from '@swg-common/utils/utils';
+import {ArrayBufferBuilder, ArrayBufferReader} from '@swg-common/schemaDefiner/parsers/arrayBufferBuilder';
+import {customSchemaTypes} from '@swg-common/models/customSchemaTypes';
 
 export interface RoundState {
   thisUpdateTime: number;
@@ -46,7 +48,7 @@ export type RoundStateEntityVote = {
   count: number;
 };
 
-export const RoundStateSchema: SDSimpleObject<RoundStateModel> = {
+export const RoundStateSchema: SDSimpleObject<RoundStateModel, keyof typeof customSchemaTypes> = {
   generation: 'uint32',
   thisUpdateTime: 'float64',
   entityVotes: {
@@ -65,7 +67,7 @@ export const RoundStateSchema: SDSimpleObject<RoundStateModel> = {
             'spawn-plane': 5,
             mine: 6,
           },
-          hexId: 'string',
+          hexId: 'hexId',
           count: 'uint16',
         },
       },
@@ -73,17 +75,20 @@ export const RoundStateSchema: SDSimpleObject<RoundStateModel> = {
   },
 };
 
-export const RoundStateSchemaReaderFunction = SchemaDefiner.generateReaderFunction(RoundStateSchema);
-export const RoundStateSchemaAdderFunction = SchemaDefiner.generateAdderFunction(RoundStateSchema);
-export const RoundStateSchemaAdderSizeFunction = SchemaDefiner.generateAdderSizeFunction(RoundStateSchema);
+const RoundStateSchemaReaderFunction = SchemaDefiner.generateReaderFunction(RoundStateSchema, customSchemaTypes);
+const RoundStateSchemaAdderFunction = SchemaDefiner.generateAdderFunction(RoundStateSchema, customSchemaTypes);
+const RoundStateSchemaAdderSizeFunction = SchemaDefiner.generateAdderSizeFunction(RoundStateSchema, customSchemaTypes);
 
 export function RoundStateRead(buffer: ArrayBuffer): RoundState {
-  return RoundStateModelToRoundState(SchemaDefiner.startReadSchemaBuffer(buffer, RoundStateSchemaReaderFunction));
+  return RoundStateModelToRoundState(
+    SchemaDefiner.startReadSchemaBuffer(buffer, RoundStateSchemaReaderFunction, customSchemaTypes)
+  );
 }
 export function RoundStateWrite(roundState: RoundState): ArrayBuffer {
   return SchemaDefiner.startAddSchemaBuffer(
     RoundStateToModel(roundState),
     RoundStateSchemaAdderSizeFunction,
-    RoundStateSchemaAdderFunction
+    RoundStateSchemaAdderFunction,
+    customSchemaTypes
   );
 }

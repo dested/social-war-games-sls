@@ -12,7 +12,6 @@ import {StateManager} from './game/stateManager';
 import {S3Splitter} from './game/s3Splitter';
 import {HttpResponse, respond} from '../utils/respond';
 import {SchemaDefiner} from 'swg-common/src/schemaDefiner/schemaDefiner';
-import {GameStateSchemaAdderFunction, GameStateSchemaAdderSizeFunction} from 'swg-common/src/models/gameState';
 import {GameLayoutSchemaAdderFunction, GameLayoutSchemaAdderSizeFunction} from 'swg-common/src/models/gameLayout';
 
 export async function setupHandler(event: Event<void>): Promise<HttpResponse<void>> {

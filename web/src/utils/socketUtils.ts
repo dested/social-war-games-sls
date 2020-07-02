@@ -1,8 +1,5 @@
 import {RoundState, RoundStateModelToRoundState, RoundStateRead} from '@swg-common/models/roundState';
 import {Config, DataService} from '../dataServices';
-import {Utils} from '@swg-common/utils/utils';
-import {SchemaDefiner} from '@swg-common/schemaDefiner/schemaDefiner';
-import {GameStateSchemaReaderFunction} from '@swg-common/models/gameState';
 
 export class SocketUtils {
   static connect(

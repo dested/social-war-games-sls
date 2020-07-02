@@ -19,11 +19,7 @@ import {Utils} from '@swg-common/utils/utils';
 import {Config} from '@swg-server-common/config';
 import fetch from 'node-fetch';
 import {SchemaDefiner} from 'swg-common/src/schemaDefiner/schemaDefiner';
-import {
-  GameStateSchemaAdderFunction,
-  GameStateSchemaAdderSizeFunction,
-  GameStateSchemaReaderFunction,
-} from 'swg-common/src/models/gameState';
+import {GameStateRead, GameStateWrite} from 'swg-common/src/models/gameState';
 
 const s3Url = process.env.IS_OFFLINE ? `http://localhost:4569` : `https://s3-us-west-2.amazonaws.com`;
 
@@ -144,13 +140,6 @@ async function processNewRound(gameId: string) {
     const factionTokens = await S3Splitter.generateFactionTokens(game);
     await S3Splitter.output(game, game.layout, newGameState, roundState, factionTokens, true);
 
-    const result = SchemaDefiner.startAddSchemaBuffer(
-      newGameState,
-      GameStateSchemaAdderSizeFunction,
-      GameStateSchemaAdderFunction
-    );
-
-    const resultReader = SchemaDefiner.startReadSchemaBuffer(result, GameStateSchemaReaderFunction);
     await RedisManager.set(true, gameId, 'game-state', newGameState);
     await RedisManager.set(false, gameId, 'stop', false);
 

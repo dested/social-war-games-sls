@@ -1,20 +1,26 @@
 import {ArrayBufferBuilder, ArrayBufferReader} from './parsers/arrayBufferBuilder';
-import {ABFlags, ABSchemaDef} from './schemaDefinerTypes';
+import {ABFlags, ABSchemaDef, CustomSchemaTypes} from './schemaDefinerTypes';
 import {assertType, Utils} from '../utils/utils';
+import {customSchemaTypes} from '@swg-common/models/customSchemaTypes';
 
 export class SchemaDefiner {
-  static generateAdderFunction(schema: any): any {
+  static generateAdderFunction(schema: any, customSchema: CustomSchemaTypes<any> = {}): AdderFunction {
     const objectMaps: string[] = [];
 
-    let code = this.buildAdderFunction(schema, 'value', (map) => {
-      const id = objectMaps.length;
-      objectMaps.push(`const map${id}=${map}`);
-      return `map${id}`;
-    });
+    let code = this.buildAdderFunction(
+      schema,
+      'value',
+      (map) => {
+        const id = objectMaps.length;
+        objectMaps.push(`const map${id}=${map}`);
+        return `map${id}`;
+      },
+      customSchema
+    );
 
     // language=JavaScript
     code = `
-(buff, value)=>{
+(buff, value, customSchema)=>{
 ${objectMaps.join(';\n')}
 ${code}
 return buff.buildBuffer()
@@ -22,14 +28,19 @@ return buff.buildBuffer()
     // tslint:disable no-eval
     return eval(code);
   }
-  static generateAdderSizeFunction(schema: any): any {
+  static generateAdderSizeFunction(schema: any, customSchema: CustomSchemaTypes<any> = {}): AdderSizeFunction {
     const objectMaps: string[] = [];
 
-    let code = this.buildAdderSizeFunction(schema, 'value', (map) => {
-      const id = objectMaps.length;
-      objectMaps.push(`const map${id}=${map}`);
-      return `map${id}`;
-    });
+    let code = this.buildAdderSizeFunction(
+      schema,
+      'value',
+      (map) => {
+        const id = objectMaps.length;
+        objectMaps.push(`const map${id}=${map}`);
+        return `map${id}`;
+      },
+      customSchema
+    );
 
     // language=JavaScript
     code = `
@@ -40,7 +51,7 @@ var sum=(items)=>{
   }
   return c;
 };
-(value)=>{
+(value,customSchema)=>{
 ${objectMaps.join(';\n')}
 return (${code}0);
 }`;
@@ -48,14 +59,17 @@ return (${code}0);
     // tslint:disable no-eval
     return eval(code);
   }
-  static generateReaderFunction(schema: any): any {
+  static generateReaderFunction(schema: any, customSchema: CustomSchemaTypes<any> = {}): ReaderFunction {
     const objectMaps: string[] = [];
-
-    let code = this.buildReaderFunction(schema, (map) => {
-      const id = objectMaps.length;
-      objectMaps.push(`const map${id}=${map}`);
-      return `map${id}`;
-    });
+    let code = this.buildReaderFunction(
+      schema,
+      (map) => {
+        const id = objectMaps.length;
+        objectMaps.push(`const map${id}=${map}`);
+        return `map${id}`;
+      },
+      customSchema
+    );
 
     // language=JavaScript
     code = `
@@ -92,7 +106,7 @@ function bitmask(mask, obj) {
   return result;
 }
 
-(reader)=>{
+(reader,customSchema)=>{
 ${objectMaps.join(';\n')}
 return (${code})
 }`;
@@ -102,22 +116,32 @@ return (${code})
 
   static startAddSchemaBuffer(
     value: any,
-    adderSizeFunction: (value: any) => number,
-    adderFunction: (buff: ArrayBufferBuilder, value: any) => ArrayBuffer
+    adderSizeFunction: AdderSizeFunction,
+    adderFunction: AdderFunction,
+    customSchemaTypes: CustomSchemaTypes<any> = {}
   ) {
-    const size = adderSizeFunction(value);
+    const size = adderSizeFunction(value, customSchemaTypes);
     const arrayBufferBuilder = new ArrayBufferBuilder(size, true);
-    return adderFunction(arrayBufferBuilder, value);
+    return adderFunction(arrayBufferBuilder, value, customSchemaTypes);
   }
 
   static startReadSchemaBuffer(
     buffer: ArrayBuffer | ArrayBufferLike,
-    readerFunction: (reader: ArrayBufferReader) => any
+    readerFunction: ReaderFunction,
+    customSchemaTypes: CustomSchemaTypes<any> = {}
   ): any {
-    return readerFunction(new ArrayBufferReader(buffer));
+    return readerFunction(new ArrayBufferReader(buffer), customSchemaTypes);
   }
 
-  private static buildAdderFunction(schema: ABSchemaDef, fieldName: string, addMap: (code: string) => string): string {
+  private static buildAdderFunction(
+    schema: ABSchemaDef,
+    fieldName: string,
+    addMap: (code: string) => string,
+    customSchema: CustomSchemaTypes<any>
+  ): string {
+    if (typeof schema === 'string' && customSchema[schema]) {
+      return `customSchema['${schema}'].write(${fieldName},buff);\n`;
+    }
     switch (schema) {
       case 'uint8':
         return `buff.addUint8(${fieldName});\n`;
@@ -179,7 +203,7 @@ ${Utils.safeKeysExclude(schema, 'flag')
             return `
            buff.addUint8(${fieldName}.length);
     for (const ${noPeriodsFieldName}Element of ${fieldName}) {
-      ${SchemaDefiner.buildAdderFunction(schema.elements, noPeriodsFieldName + 'Element', addMap)}
+      ${SchemaDefiner.buildAdderFunction(schema.elements, noPeriodsFieldName + 'Element', addMap, customSchema)}
     }`;
           }
           case 'array-uint16': {
@@ -187,7 +211,7 @@ ${Utils.safeKeysExclude(schema, 'flag')
             return `
            buff.addUint16(${fieldName}.length);
     for (const ${noPeriodsFieldName}Element of ${fieldName}) {
-      ${SchemaDefiner.buildAdderFunction(schema.elements, noPeriodsFieldName + 'Element', addMap)}
+      ${SchemaDefiner.buildAdderFunction(schema.elements, noPeriodsFieldName + 'Element', addMap, customSchema)}
     }`;
           }
           case 'type-lookup': {
@@ -196,7 +220,7 @@ ${Utils.safeKeysExclude(schema, 'flag')
             for (const key of Object.keys(schema.elements)) {
               map += `['${key}']:()=>{
               buff.addUint8(${index});
-              ${SchemaDefiner.buildAdderFunction(schema.elements[key], fieldName, addMap)}
+              ${SchemaDefiner.buildAdderFunction(schema.elements[key], fieldName, addMap, customSchema)}
               },`;
               index++;
             }
@@ -206,7 +230,7 @@ ${Utils.safeKeysExclude(schema, 'flag')
           case 'optional': {
             return `buff.addBoolean(${fieldName}!==undefined);
             if(${fieldName}!==undefined){
-            ${SchemaDefiner.buildAdderFunction(schema.element, fieldName, addMap)}
+            ${SchemaDefiner.buildAdderFunction(schema.element, fieldName, addMap, customSchema)}
             }`;
           }
           case undefined:
@@ -214,7 +238,8 @@ ${Utils.safeKeysExclude(schema, 'flag')
             let result = '';
             for (const key of Object.keys(schema)) {
               const currentSchemaElement = schema[key];
-              result += this.buildAdderFunction(currentSchemaElement, `${fieldName}["${key}"]`, addMap) + '\n';
+              result +=
+                this.buildAdderFunction(currentSchemaElement, `${fieldName}["${key}"]`, addMap, customSchema) + '\n';
             }
             return result;
         }
@@ -224,8 +249,12 @@ ${Utils.safeKeysExclude(schema, 'flag')
   private static buildAdderSizeFunction(
     schema: ABSchemaDef,
     fieldName: string,
-    addMap: (code: string) => string
+    addMap: (code: string) => string,
+    customSchema: CustomSchemaTypes<any>
   ): string {
+    if (typeof schema === 'string' && customSchema[schema]) {
+      return `customSchema['${schema}'].size(${fieldName})+`;
+    }
     switch (schema) {
       case 'uint8':
         return `1+`;
@@ -263,7 +292,8 @@ ${Utils.safeKeysExclude(schema, 'flag')
             return `1+(${fieldName}!==undefined?(${SchemaDefiner.buildAdderSizeFunction(
               schema.element,
               fieldName,
-              addMap
+              addMap,
+              customSchema
             )}0):0)+`;
           }
 
@@ -276,7 +306,8 @@ ${Utils.safeKeysExclude(schema, 'flag')
             return `1+sum(${fieldName}.map(${noPeriodsFieldName + 'Element'}=>(${SchemaDefiner.buildAdderSizeFunction(
               schema.elements,
               noPeriodsFieldName + 'Element',
-              addMap
+              addMap,
+              customSchema
             )}0)))+`;
           }
           case 'array-uint16': {
@@ -284,14 +315,20 @@ ${Utils.safeKeysExclude(schema, 'flag')
             return `2+sum(${fieldName}.map(${noPeriodsFieldName + 'Element'}=>(${SchemaDefiner.buildAdderSizeFunction(
               schema.elements,
               noPeriodsFieldName + 'Element',
-              addMap
+              addMap,
+              customSchema
             )}0)))+`;
           }
           case 'type-lookup': {
             let map = '{\n';
             let index = 0;
             for (const key of Object.keys(schema.elements)) {
-              map += `${key}:()=>1+${SchemaDefiner.buildAdderSizeFunction(schema.elements[key], fieldName, addMap)}0,`;
+              map += `${key}:()=>1+${SchemaDefiner.buildAdderSizeFunction(
+                schema.elements[key],
+                fieldName,
+                addMap,
+                customSchema
+              )}0,`;
               index++;
             }
             map += '}';
@@ -302,7 +339,8 @@ ${Utils.safeKeysExclude(schema, 'flag')
             let result = '';
             for (const key of Object.keys(schema)) {
               const currentSchemaElement = schema[key];
-              result += this.buildAdderSizeFunction(currentSchemaElement, `${fieldName}["${key}"]`, addMap) + '';
+              result +=
+                this.buildAdderSizeFunction(currentSchemaElement, `${fieldName}["${key}"]`, addMap, customSchema) + '';
             }
             return result + '0+';
         }
@@ -310,7 +348,15 @@ ${Utils.safeKeysExclude(schema, 'flag')
     throw new Error('Buffer error');
   }
 
-  private static buildReaderFunction(schema: ABSchemaDef, addMap: (code: string) => string, injectField?: string): any {
+  private static buildReaderFunction(
+    schema: ABSchemaDef,
+    addMap: (code: string) => string,
+    customSchema: CustomSchemaTypes<any>,
+    injectField?: string
+  ): any {
+    if (typeof schema === 'string' && customSchema[schema]) {
+      return `customSchema['${schema}'].read(reader)`;
+    }
     switch (schema) {
       case 'uint8':
         return 'reader.readUint8()';
@@ -355,14 +401,22 @@ ${Utils.safeKeysExclude(schema, 'flag')
             return `byteArray(reader.readUint32(),reader.readUint32(),reader)`;
           }
           case 'array-uint8': {
-            return `range(reader.readUint8(),()=>(${SchemaDefiner.buildReaderFunction(schema.elements, addMap)}))`;
+            return `range(reader.readUint8(),()=>(${SchemaDefiner.buildReaderFunction(
+              schema.elements,
+              addMap,
+              customSchema
+            )}))`;
           }
           case 'array-uint16': {
-            return `range(reader.readUint16(),()=>(${SchemaDefiner.buildReaderFunction(schema.elements, addMap)}))`;
+            return `range(reader.readUint16(),()=>(${SchemaDefiner.buildReaderFunction(
+              schema.elements,
+              addMap,
+              customSchema
+            )}))`;
           }
           case 'optional': {
             return `reader.readBoolean()?
-              ${SchemaDefiner.buildReaderFunction(schema.element, addMap)}
+              ${SchemaDefiner.buildReaderFunction(schema.element, addMap, customSchema)}
             :undefined`;
           }
           case 'type-lookup': {
@@ -370,7 +424,7 @@ ${Utils.safeKeysExclude(schema, 'flag')
             let index = 0;
             for (const key of Object.keys(schema.elements)) {
               map += `${index}:()=>(
-              ${SchemaDefiner.buildReaderFunction(schema.elements[key], addMap, `type: '${key}'`)}
+              ${SchemaDefiner.buildReaderFunction(schema.elements[key], addMap, customSchema, `type: '${key}'`)}
               ),\n`;
               index++;
             }
@@ -386,7 +440,7 @@ ${Utils.safeKeysExclude(schema, 'flag')
             }
             for (const key of Object.keys(schema)) {
               const currentSchemaElement = schema[key];
-              str += `['${key}'] : ${this.buildReaderFunction(currentSchemaElement, addMap)},\n`;
+              str += `['${key}'] : ${this.buildReaderFunction(currentSchemaElement, addMap, customSchema)},\n`;
             }
             str += '}';
             return str;
@@ -396,3 +450,7 @@ ${Utils.safeKeysExclude(schema, 'flag')
     throw new Error('Buffer error');
   }
 }
+
+type AdderSizeFunction = (value: any, customSchemaTypes: CustomSchemaTypes<any>) => number;
+type AdderFunction = (buff: ArrayBufferBuilder, value: any, customSchemaTypes: CustomSchemaTypes<any>) => ArrayBuffer;
+type ReaderFunction = (reader: ArrayBufferReader, customSchemaTypes: CustomSchemaTypes<any>) => any;

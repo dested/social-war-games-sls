@@ -1,5 +1,5 @@
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
-import {GameState, GameStateSchemaReaderFunction} from '@swg-common/models/gameState';
+import {GameState, GameStateRead, GameStateSchemaReaderFunction} from '@swg-common/models/gameState';
 import {HttpGame} from '@swg-common/models/http/httpGame';
 import {JwtGetUserResponse} from '@swg-common/models/http/userController';
 import {UserDetails} from '@swg-common/models/http/userDetails';
@@ -137,7 +137,7 @@ export class DataService {
     );
     const arrayBuffer = await response.arrayBuffer();
     // todo decrypt with factionToken.split('.').map((a) => parseInt(a))
-    const gameState: GameState = SchemaDefiner.startReadSchemaBuffer(arrayBuffer, GameStateSchemaReaderFunction);
+    const gameState: GameState = GameStateRead(arrayBuffer);
 
     return gameState;
   }

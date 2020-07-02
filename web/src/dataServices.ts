@@ -1,6 +1,6 @@
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
 import {FactionStats} from '@swg-common/models/factionStats';
-import {GameState, GameStateSchemaReaderFunction} from '@swg-common/models/gameState';
+import {GameState, GameStateRead} from '@swg-common/models/gameState';
 import {HttpGame} from '@swg-common/models/http/httpGame';
 import {JwtGetUserResponse, LadderResponse} from '@swg-common/models/http/userController';
 import {UserDetails} from '@swg-common/models/http/userDetails';
@@ -136,9 +136,7 @@ export class DataService {
     );
     const arrayBuffer = await response.arrayBuffer();
     // todo decrypt with factionToken.split('.').map((a) => parseInt(a))
-    const gameState: GameState = SchemaDefiner.startReadSchemaBuffer(arrayBuffer, GameStateSchemaReaderFunction);
-
-    return gameState;
+    return GameStateRead(arrayBuffer);
   }
 
   static async getLadder(): Promise<LadderResponse> {

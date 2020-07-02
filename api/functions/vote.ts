@@ -111,7 +111,6 @@ export async function voteHandler(event: Event<VoteRequestBody>): Promise<HttpRe
 }
 
 export interface VoteRequestBody {
-  reason: VoteRequestResults;
   entityId: number;
   action: EntityAction;
   generation: number;

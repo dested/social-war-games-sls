@@ -1,3 +1,5 @@
+import {ArrayBufferBuilder, ArrayBufferReader} from '@swg-common/schemaDefiner/parsers/arrayBufferBuilder';
+
 export type Discriminate<T, TField extends keyof T, TValue extends T[TField]> = T extends {[field in TField]: TValue}
   ? T
   : never;
@@ -5,22 +7,23 @@ export type SDEnum<T extends string> = {[key in T]: number} & {flag: 'enum'};
 export type SDNumberEnum<T extends number> = {[key in T]: number} & {flag: 'number-enum'};
 export type SDBitmask<T> = {[keyT in keyof T]-?: number} & {flag: 'bitmask'};
 export type SDArray<TElements> = {elements: TElements; flag: 'array-uint8' | 'array-uint16'};
-export type SDTypeLookupElements<TElements extends {type: string}> = {
+export type SDTypeLookupElements<TElements extends {type: string}, TCustoms> = {
   elements: {
-    [key in TElements['type']]: SDTypeLookup<TElements, key>;
+    [key in TElements['type']]: SDTypeLookup<TElements, key, TCustoms>;
   };
   flag: 'type-lookup';
 };
-export type SDTypeLookup<TItem extends {type: string}, TKey extends TItem['type']> = SDSimpleObject<
-  Omit<Discriminate<TItem, 'type', TKey>, 'type'>
+export type SDTypeLookup<TItem extends {type: string}, TKey extends TItem['type'], TCustoms> = SDSimpleObject<
+  Omit<Discriminate<TItem, 'type', TKey>, 'type'>,
+  TCustoms
 >;
-export type SDTypeElement<TItem extends {type: string}> = SDSimpleObject<Omit<TItem, 'type'>>;
+export type SDTypeElement<TItem extends {type: string}, TCustoms> = SDSimpleObject<Omit<TItem, 'type'>, TCustoms>;
 
-export type SDSimpleObject<TItem> = {
-  [keyT in OptionalPropertyOf<TItem>]: {element: SDElement<Required<TItem>, keyT>; flag: 'optional'};
+export type SDSimpleObject<TItem, TCustoms = never> = {
+  [keyT in OptionalPropertyOf<TItem>]: {element: SDElement<Required<TItem>, keyT, TCustoms>; flag: 'optional'};
 } &
   {
-    [keyT in RequiredPropertyOf<TItem>]: SDElement<Required<TItem>, keyT>;
+    [keyT in RequiredPropertyOf<TItem>]: SDElement<Required<TItem>, keyT, TCustoms>;
   };
 
 type OptionalPropertyOf<T> = Exclude<
@@ -36,30 +39,30 @@ type RequiredPropertyOf<T> = Exclude<
   undefined
 >;
 
-type Simple<T> = T extends string
-  ? 'string' | SDEnum<T>
+type Simple<T, TCustoms> = T extends string
+  ? 'string' | SDEnum<T> | TCustoms
   : T extends number
-  ? 'uint8' | 'uint16' | 'uint32' | 'int8' | 'int16' | 'int32' | 'float32' | 'float64' | SDNumberEnum<T>
-  : T extends boolean
+  ? 'uint8' | 'uint16' | 'uint32' | 'int8' | 'int16' | 'int32' | 'float32' | 'float64' | SDNumberEnum<T> | TCustoms
+  : T extends boolean | TCustoms
   ? 'boolean'
   : never;
 
-export type SDElement<T, TKey extends keyof T> = T[TKey] extends string | boolean | number
-  ? Simple<T[TKey]>
+export type SDElement<T, TKey extends keyof T, TCustoms> = T[TKey] extends string | boolean | number
+  ? Simple<T[TKey], TCustoms>
   : T[TKey] extends Array<any>
   ? T[TKey][number] extends number
-    ? SDArray<Simple<T[TKey][number]>> | {flag: 'byte-array'; elements: 'bit'}
+    ? SDArray<Simple<T[TKey][number], TCustoms>> | {flag: 'byte-array'; elements: 'bit'}
     : T[TKey][number] extends string | boolean
-    ? SDArray<Simple<T[TKey][number]>>
+    ? SDArray<Simple<T[TKey][number], TCustoms>>
     : T[TKey][number] extends {type: string}
-    ? SDArray<SDTypeLookupElements<T[TKey][number]>> | SDArray<SDSimpleObject<T[TKey][number]>>
-    : SDArray<SDSimpleObject<T[TKey][number]>>
+    ? SDArray<SDTypeLookupElements<T[TKey][number], TCustoms>> | SDArray<SDSimpleObject<T[TKey][number], TCustoms>>
+    : SDArray<SDSimpleObject<T[TKey][number], TCustoms>>
   : T[TKey] extends {[key in keyof T[TKey]]: boolean}
   ? SDBitmask<T[TKey]>
   : T[TKey] extends {type: string}
-  ? SDTypeLookupElements<T[TKey]> | SDSimpleObject<T[TKey]>
+  ? SDTypeLookupElements<T[TKey], TCustoms> | SDSimpleObject<T[TKey], TCustoms>
   : T[TKey] extends {}
-  ? SDSimpleObject<T[TKey]>
+  ? SDSimpleObject<T[TKey], TCustoms>
   : never;
 
 export type ABFlags =
@@ -73,3 +76,11 @@ export type ABFlags =
   | {elements: {[key: string]: ABSchemaDef}; flag: 'type-lookup'}
   | ({flag: undefined} & {[key: string]: any});
 export type ABSchemaDef = ABFlags | string;
+
+export type CustomSchemaTypes<TTypes> = {
+  [key in keyof TTypes]: {
+    read: (buffer: ArrayBufferReader) => TTypes[key];
+    write: (model: TTypes[key], buffer: ArrayBufferBuilder) => void;
+    size: (model: TTypes[key]) => number;
+  };
+};

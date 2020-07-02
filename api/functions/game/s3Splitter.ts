@@ -18,13 +18,8 @@ import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {SocketManager} from './socketManager';
 import {SchemaDefiner} from 'swg-common/src/schemaDefiner/schemaDefiner';
-import {GameStateSchemaAdderFunction, GameStateSchemaAdderSizeFunction} from 'swg-common/src/models/gameState';
-import {
-  RoundStateSchemaAdderFunction,
-  RoundStateSchemaAdderSizeFunction,
-  RoundStateToModel,
-  RoundStateWrite,
-} from 'swg-common/src/models/roundState';
+import {GameStateRead, GameStateWrite} from 'swg-common/src/models/gameState';
+import {RoundStateWrite} from 'swg-common/src/models/roundState';
 
 export class S3Splitter {
   static async generateFactionTokens(game: GameModel): Promise<OfFaction<string>> {
@@ -82,11 +77,7 @@ export class S3Splitter {
       if (outputGameState) {
         // await this.RedisManager.set(`faction-token-${generation}-${1}`, ``);
         // todo encrypt using factionTokens[faction].split('.').map((a) => parseInt(a))
-        const gameStateBits = SchemaDefiner.startAddSchemaBuffer(
-          factionGameState,
-          GameStateSchemaAdderSizeFunction,
-          GameStateSchemaAdderFunction
-        );
+        const gameStateBits = GameStateWrite(factionGameState);
 
         await S3Manager.uploadBytes(
           game.id,
