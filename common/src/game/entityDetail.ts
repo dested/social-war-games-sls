@@ -33,7 +33,7 @@ export type NoFaction = 0;
 export type ShroudedTile = 7;
 export type PlayableFactionId = 1 | 2 | 3;
 
-export type OfFaction<T> = {[faction in PlayableFactionId]: T};
+export type OfFaction<T> = {[faction in PlayableFactionId]?: T};
 
 export function emptyFactionObject<T>(callback: () => T): OfFaction<T> {
   return {1: callback(), 2: callback(), 3: callback()};

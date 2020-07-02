@@ -21,7 +21,7 @@ export interface ProcessedVote {
 
 export interface GameModel {
   id: string;
-  factionDetails: {[key in PlayableFactionId]: FactionDetail};
+  factionDetails: {[key in PlayableFactionId]?: FactionDetail};
   roundStart: number;
   roundEnd: number;
   layout: GameLayout;

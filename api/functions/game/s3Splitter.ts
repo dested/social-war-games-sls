@@ -11,14 +11,20 @@ import {PointHashKey} from '@swg-common/hex/hex';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {GameState, GameStateEntity, GameStateResource} from '@swg-common/models/gameState';
 import {RoundState, RoundStateEntityVote} from '@swg-common/models/roundState';
-import {GameStateParser} from '@swg-common/parsers/gameStateParser';
-import {RoundStateParser} from '@swg-common/parsers/roundStateParser';
 import {DoubleHashArray, HashArray} from '@swg-common/utils/hashArray';
 import {Point} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
 import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {SocketManager} from './socketManager';
+import {SchemaDefiner} from 'swg-common/src/schemaDefiner/schemaDefiner';
+import {GameStateSchemaAdderFunction, GameStateSchemaAdderSizeFunction} from 'swg-common/src/models/gameState';
+import {
+  RoundStateSchemaAdderFunction,
+  RoundStateSchemaAdderSizeFunction,
+  RoundStateToModel,
+  RoundStateWrite,
+} from 'swg-common/src/models/roundState';
 
 export class S3Splitter {
   static async generateFactionTokens(game: GameModel): Promise<OfFaction<string>> {
@@ -72,23 +78,25 @@ export class S3Splitter {
         visibleHexes
       );
 
-      const roundStateJson = RoundStateParser.fromRoundState(factionRoundState);
+      const roundStateJson = RoundStateWrite(factionRoundState);
       if (outputGameState) {
         // await this.RedisManager.set(`faction-token-${generation}-${1}`, ``);
-        const gameStateBits = GameStateParser.fromGameState(
+        // todo encrypt using factionTokens[faction].split('.').map((a) => parseInt(a))
+        const gameStateBits = SchemaDefiner.startAddSchemaBuffer(
           factionGameState,
-          factionTokens[faction].split('.').map((a) => parseInt(a))
+          GameStateSchemaAdderSizeFunction,
+          GameStateSchemaAdderFunction
         );
 
         await S3Manager.uploadBytes(
           game.id,
           `generation-outcomes/generation-outcome-${game.generation}-${faction}.swg`,
-          gameStateBits,
+          Buffer.from(gameStateBits),
           true
         );
       }
       /*await*/
-      SocketManager.publish(game.id, `round-state-${faction}`, roundStateJson);
+      SocketManager.publish(game.id, `round-state-${faction}`, Buffer.from(roundStateJson));
     }
     // console.timeEnd('faction split');
   }
@@ -125,7 +133,7 @@ export class S3Splitter {
         if (visibleHexes.exists(entity)) {
           if (faction !== factionId) {
             // if its not my faction then dont show if its busy
-            visibleEntities[faction].push({...entity, busy: null});
+            visibleEntities[faction].push({...entity, busy: undefined});
           } else {
             visibleEntities[faction].push(entity);
           }

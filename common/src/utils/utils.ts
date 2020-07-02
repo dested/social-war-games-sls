@@ -120,6 +120,18 @@ export class Utils {
 
     return maps;
   }
+  static groupByArr<T, TKey>(items: T[], predicate: (pred: T) => TKey): {key: TKey; items: T[]}[] {
+    const groups: {key: TKey; items: T[]}[] = [];
+    for (const item of items) {
+      const key = predicate(item);
+      let group = groups.find((a) => a.key === key);
+      if (!group) {
+        groups.push((group = {key, items: []}));
+      }
+      group.items.push(item);
+    }
+    return groups;
+  }
 
   static groupByReduce<T, TKey extends number, TResult>(
     array: T[],

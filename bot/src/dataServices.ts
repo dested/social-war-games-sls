@@ -1,12 +1,12 @@
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
-import {GameState} from '@swg-common/models/gameState';
+import {GameState, GameStateSchemaReaderFunction} from '@swg-common/models/gameState';
 import {HttpGame} from '@swg-common/models/http/httpGame';
 import {JwtGetUserResponse} from '@swg-common/models/http/userController';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResponse} from '@swg-common/models/http/voteResults';
 import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
-import {GameStateParser} from '@swg-common/parsers/gameStateParser';
 import fetch from 'node-fetch';
+import {SchemaDefiner} from '@swg-common/schemaDefiner/schemaDefiner';
 
 export class Config {
   static env: 'LOCAL' | 'PROD' = 'PROD';
@@ -136,10 +136,9 @@ export class DataService {
       }
     );
     const arrayBuffer = await response.arrayBuffer();
-    const gameState = GameStateParser.toGameState(
-      arrayBuffer,
-      factionToken.split('.').map((a) => parseInt(a))
-    );
+    // todo decrypt with factionToken.split('.').map((a) => parseInt(a))
+    const gameState: GameState = SchemaDefiner.startReadSchemaBuffer(arrayBuffer, GameStateSchemaReaderFunction);
+
     return gameState;
   }
 

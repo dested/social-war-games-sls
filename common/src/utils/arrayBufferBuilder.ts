@@ -74,7 +74,7 @@ export class ArrayBufferBuilder {
   }
 
   buildBuffer(encryptionToken: number[]): Buffer {
-    const size = Utils.sum(this.array, a => a.size / 8);
+    const size = Utils.sum(this.array, (a) => a.size / 8);
     const buffer = new ArrayBuffer(size);
     const view = new DataView(buffer);
     let curPosition = 0;

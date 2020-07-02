@@ -3,7 +3,6 @@ import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {DBLadder} from '@swg-server-common/db/models/dbLadder';
 import {DBGameStateResult} from '@swg-server-common/db/models/dbGameStateResult';
 import {ServerGameLogic} from '@swg-server-common/game/serverGameLogic';
-import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import {DBUserRoundStats} from '@swg-server-common/db/models/dbUserRoundStats';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {DBGame} from '@swg-server-common/db/models/dbGame';
@@ -12,6 +11,9 @@ import {RedisManager} from '@swg-server-common/redis/redisManager';
 import {StateManager} from './game/stateManager';
 import {S3Splitter} from './game/s3Splitter';
 import {HttpResponse, respond} from '../utils/respond';
+import {SchemaDefiner} from 'swg-common/src/schemaDefiner/schemaDefiner';
+import {GameStateSchemaAdderFunction, GameStateSchemaAdderSizeFunction} from 'swg-common/src/models/gameState';
+import {GameLayoutSchemaAdderFunction, GameLayoutSchemaAdderSizeFunction} from 'swg-common/src/models/gameLayout';
 
 export async function setupHandler(event: Event<void>): Promise<HttpResponse<void>> {
   console.time('setup');
@@ -52,8 +54,12 @@ export async function setupHandler(event: Event<void>): Promise<HttpResponse<voi
 
   console.log('built state');
 
-  const gameLayoutBytes = GameLayoutParser.fromGameLayout(gameLayout);
-  await S3Manager.uploadBytes(game.id, `layout.swg`, gameLayoutBytes, true);
+  const gameLayoutBytes = SchemaDefiner.startAddSchemaBuffer(
+    gameLayout,
+    GameLayoutSchemaAdderSizeFunction,
+    GameLayoutSchemaAdderFunction
+  );
+  await S3Manager.uploadBytes(game.id, `layout.swg`, Buffer.from(gameLayoutBytes), true);
   const factionTokens = await S3Splitter.generateFactionTokens(game);
   await S3Splitter.output(game, gameLayout, gameState, roundState, factionTokens, true);
 

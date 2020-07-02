@@ -6,13 +6,29 @@ import {
   GameStateSchemaAdderSizeFunction,
   GameStateSchemaReaderFunction,
 } from 'swg-common/src/models/gameState';
+import {setupHandler} from './functions/setup';
+import {workHandler} from './functions/work';
+import {roundUpdateHandler} from './functions/roundUpdate';
 
 async function main() {
   console.log('here');
-  const GameStateSchemaReaderFunction = SchemaDefiner.generateReaderFunction(GameStateSchema);
-  const GameStateSchemaAdderFunction = SchemaDefiner.generateAdderFunction(GameStateSchema);
-  const GameStateSchemaAdderSizeFunction = SchemaDefiner.generateAdderSizeFunction(GameStateSchema);
- /* debugger;
+  debugger;
+  await setupHandler(undefined);
+  await workHandler(undefined);
+  await roundUpdateHandler(undefined);
+  await roundUpdateHandler(undefined);
+  await roundUpdateHandler(undefined);
+  await workHandler(undefined);
+  await roundUpdateHandler(undefined);
+  await roundUpdateHandler(undefined);
+  await roundUpdateHandler(undefined);
+  await workHandler(undefined);
+  await roundUpdateHandler(undefined);
+  await roundUpdateHandler(undefined);
+  await roundUpdateHandler(undefined);
+  await workHandler(undefined);
+
+  /* debugger;
   const result = SchemaDefiner.startAddSchemaBuffer(
     testGameState,
     GameStateSchemaAdderSizeFunction,

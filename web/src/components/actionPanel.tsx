@@ -243,7 +243,10 @@ export class Component extends React.Component<Props, State> {
 
   private getActionCount(entity: GameEntity, action: EntityAction) {
     return this.props.gameStore.roundState.entities[entity.id]
-      ? Utils.sum(this.props.gameStore.roundState.entities[entity.id].filter(a => a.action === action), a => a.count)
+      ? Utils.sum(
+          this.props.gameStore.roundState.entities[entity.id].filter((a) => a.action === action),
+          (a) => a.count
+        )
       : 0;
   }
 }
