@@ -4,7 +4,7 @@ import {Faction} from './entityDetail';
 import {HexagonTileType} from './hexagonTypes';
 
 export class GameHexagon extends Hexagon {
-  factionId: Faction = '0';
+  factionId: Faction = 0;
   factionDuration: number = 0;
 
   center: Point;

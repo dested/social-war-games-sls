@@ -18,6 +18,7 @@ provider:
   stage: dev
   region: us-west-2
   accountId: 114394156384
+  logRetentionInDays: 7
   websocketsApiName: swg-socket
   websocketsApiRouteSelectionExpression: $request.body.action
   iamRoleStatements:
@@ -131,15 +132,15 @@ resources:
             Projection:
               ProjectionType: ALL
             ProvisionedThroughput:
-              ReadCapacityUnits: 1
-              WriteCapacityUnits: 1
+              ReadCapacityUnits: 4
+              WriteCapacityUnits: 4
         ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+          ReadCapacityUnits: 4
+          WriteCapacityUnits: 4
     redisTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: redis-table
+        TableName: swg-redis-table
         AttributeDefinitions:
           - AttributeName: key
             AttributeType: S
@@ -147,8 +148,8 @@ resources:
           - AttributeName: key
             KeyType: HASH
         ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+          ReadCapacityUnits: 200
+          WriteCapacityUnits: 20
 
 stepFunctions:
   stateMachines:

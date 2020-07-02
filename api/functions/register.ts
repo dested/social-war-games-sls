@@ -9,8 +9,6 @@ import {HttpResponse, respond} from '../utils/respond';
 
 export async function registerHandler(event: Event<RegisterRequestBody>): Promise<HttpResponse<JwtGetUserResponse>> {
   const model = event.body;
-
-
   const register = new Timer();
   const foundUsers = await DBUser.db.count(
     DBUser.db.query.parse((a, m) => a.email === m.email || a.userName === m.userName, model)

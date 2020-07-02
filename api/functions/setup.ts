@@ -29,10 +29,10 @@ export async function setupHandler(event: Event<void>): Promise<HttpResponse<voi
   console.log(game.id);
   await DBGame.db.insertDocument(new DBGame(game));
 
-  await RedisManager.set(game.id, 'stop', true);
+  await RedisManager.set(false, game.id, 'stop', true);
 
   console.log('create game');
-  await RedisManager.set<number>(game.id, 'game-generation', game.generation);
+  await RedisManager.set<number>(false, game.id, 'game-generation', game.generation);
   console.log('set generation', game.generation);
 
   const gameLayout: GameLayout = {
@@ -57,12 +57,12 @@ export async function setupHandler(event: Event<void>): Promise<HttpResponse<voi
   const factionTokens = await S3Splitter.generateFactionTokens(game);
   await S3Splitter.output(game, gameLayout, gameState, roundState, factionTokens, true);
 
-  await RedisManager.set(game.id, `layout`, gameLayout);
-  await RedisManager.set(game.id, `game-state`, gameState);
+  await RedisManager.set(true, game.id, `layout`, gameLayout);
+  await RedisManager.set(true, game.id, `game-state`, gameState);
   console.log('set redis');
   await S3Manager.uploadJson(game.id, `faction-stats.json`, JSON.stringify([]), false);
 
-  await RedisManager.set(game.id, 'stop', false);
+  await RedisManager.set(false, game.id, 'stop', false);
   console.timeEnd('setup');
 
   return respond(200, {});

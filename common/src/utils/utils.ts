@@ -1,4 +1,11 @@
 export class Utils {
+  static switchType<TType extends string | number, TResult>(n: TType, options: {[key in TType]: TResult}): TResult {
+    if (options[n] === undefined) {
+      throw new Error(`'Type not found', ${n}, ${JSON.stringify(options)}`);
+    }
+    return options[n];
+  }
+
   static sort<T>(array: T[], callback: (t: T) => number): T[] {
     const sorted = [...array];
     sorted.sort((a, b) => callback(a) - callback(b));
@@ -12,29 +19,23 @@ export class Utils {
   }
 
   static arrayToDictionary<T>(array: T[], callback: (t: T) => string | number): {[key: string]: T} {
-    return array.reduce(
-      (a, b) => {
-        a[callback(b)] = b;
-        return a;
-      },
-      {} as any
-    );
+    return array.reduce((a, b) => {
+      a[callback(b)] = b;
+      return a;
+    }, {} as any);
   }
 
-  static mapToObj<TKey extends string, TResult>(
+  static mapToObj<TKey extends number, TResult>(
     array: TKey[],
     callback: (t: TKey) => TResult
   ): {[key in TKey]: TResult} {
-    return array.reduce(
-      (a, b) => {
-        a[b] = callback(b);
-        return a;
-      },
-      {} as any
-    );
+    return array.reduce((a, b) => {
+      a[b] = callback(b);
+      return a;
+    }, {} as any);
   }
 
-  static mapObjToObj<TKey extends string, TBefore, TAfter>(
+  static mapObjToObj<TKey extends number, TBefore, TAfter>(
     obj: {[key in TKey]: TBefore},
     callback: (t: TKey, b: TBefore) => TAfter
   ): {[key in TKey]: TAfter} {
@@ -79,7 +80,7 @@ export class Utils {
   }
 
   static timeout(timeout: number): Promise<void> {
-    return new Promise(res => {
+    return new Promise((res) => {
       setTimeout(() => {
         res();
       }, timeout);
@@ -114,13 +115,13 @@ export class Utils {
     const maps: {[key in TKey]: TResult[]} = {} as any;
 
     for (const group in groups) {
-      maps[group] = groups[group].map(a => resultCallback(a));
+      maps[group] = groups[group].map((a) => resultCallback(a));
     }
 
     return maps;
   }
 
-  static groupByReduce<T, TKey extends string, TResult>(
+  static groupByReduce<T, TKey extends number, TResult>(
     array: T[],
     callback: (t: T) => TKey,
     resultCallback: (t: T[]) => TResult
@@ -175,4 +176,19 @@ export class Utils {
   static roundUpTo8(value: number) {
     return value + (8 - (value % 8));
   }
+
+  static safeKeys<T>(obj: T): (keyof T)[] {
+    return Object.keys(obj) as (keyof T)[];
+  }
+
+  static safeKeysExclude<T, TExclude extends keyof T>(obj: T, exclude: TExclude): Exclude<keyof T, TExclude>[] {
+    return Object.keys(obj).filter((key) => key !== exclude) as Exclude<keyof T, TExclude>[];
+  }
 }
+
+export function objectSafeKeys<T>(obj: T): (keyof T)[] {
+  return Object.keys(obj) as (keyof T)[];
+}
+
+export function assert(assertion: boolean): asserts assertion {}
+export function assertType<T>(assertion: any): asserts assertion is T {}

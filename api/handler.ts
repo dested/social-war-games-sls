@@ -19,7 +19,9 @@ module.exports.vote = async (event: Event<VoteRequestBody>) => {
 module.exports.userDetails = async (event: Event<UserDetailsRequestBody>) => {
   event.headers.Authorization = event.headers.Authorization || event.headers.authorization;
   event.body = JSON.parse((event.body as any) as string);
-  return await userDetailsHandler(event);
+  const response = await userDetailsHandler(event);
+  console.log(response);
+  return response;
 };
 
 module.exports.register = async (event: Event<RegisterRequestBody>) => {

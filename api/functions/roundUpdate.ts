@@ -17,12 +17,18 @@ export async function roundUpdateHandler(event: Event<void>): Promise<void> {
   await processRoundUpdate(gameId);
 }
 
+let gameState: GameState;
+let layout: GameLayout;
+
 async function processRoundUpdate(gameId: string) {
   try {
     console.time('round update');
     console.log('update round state');
-    const gameState = await RedisManager.get<GameState>(gameId, 'game-state');
-    const layout = await RedisManager.get<GameLayout>(gameId, 'layout');
+    gameState = gameState || (await RedisManager.get<GameState>(true, gameId, 'game-state'));
+    if (gameState.generation !== (await RedisManager.get<number>(false, gameId, 'game-generation'))) {
+      gameState = await RedisManager.get<GameState>(true, gameId, 'game-state');
+    }
+    layout = layout || (await RedisManager.get<GameLayout>(true, gameId, 'layout'));
 
     const game = GameLogic.buildGameFromState(layout, gameState);
 

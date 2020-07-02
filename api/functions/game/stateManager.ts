@@ -75,7 +75,7 @@ export class StateManager {
 
     const gameState: GameState = {
       gameId: game.id,
-      factions: game.grid.hexes.map((a) => a.factionId + '' + a.factionDuration).join(''),
+      factions: Utils.flattenArray(game.grid.hexes.map((a) => [a.factionId, a.factionDuration])),
       factionDetails: game.factionDetails,
       resources: game.resources.map((a) => ({
         x: a.x,

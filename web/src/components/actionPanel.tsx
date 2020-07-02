@@ -71,6 +71,7 @@ export class Component extends React.Component<Props, State> {
   private renderEntity() {
     const entity = this.props.gameStore.selectedEntity;
     const entityDetails = EntityDetails[entity.entityType];
+    debugger;
     const myEntity = this.props.mainStore.user.factionId === entity.factionId;
 
     const healthPercent = entity.health / entityDetails.health;

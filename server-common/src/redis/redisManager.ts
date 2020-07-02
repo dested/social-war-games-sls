@@ -16,74 +16,102 @@ export class RedisManager {
     return gameId + '-' + key;
   }
 
-  static async get<T>(gameId: string, key: string, def?: T): Promise<T> {
-    const result = await this.getString(gameId, key);
+  static async get<T>(big: boolean, gameId: string, key: string, def?: T): Promise<T> {
+    const result = await this.getString(big, gameId, key);
 
     return result ? (JSON.parse(result) as T) : def;
   }
 
-  static async getString(gameId: string, key: string, def?: string): Promise<string> {
-    const result = await ddb
-      .get({
-        TableName: 'redis-table',
-        Key: {
-          key: this.getKey(gameId, key) + '-size',
-        },
-      })
-      .promise();
+  static async getString(big: boolean, gameId: string, key: string, def?: string): Promise<string> {
+    if (big) {
+      const result = await ddb
+        .get({
+          TableName: 'swg-redis-table',
+          Key: {
+            key: this.getKey(gameId, key) + '-size',
+          },
+        })
+        .promise();
 
-    if (result.Item?.value) {
-      const items = await Promise.all(
-        Array.from(Array(result.Item?.value)).map((item, index) =>
-          ddb
-            .get({
-              TableName: 'redis-table',
-              Key: {
-                key: this.getKey(gameId, key) + '-' + index,
-              },
-            })
-            .promise()
-        )
-      );
-      return items.map((a) => a.Item.value).join('');
+      if (result.Item?.value) {
+        const items = await Promise.all(
+          Array.from(Array(result.Item?.value)).map((item, index) =>
+            ddb
+              .get({
+                TableName: 'swg-redis-table',
+                Key: {
+                  key: this.getKey(gameId, key) + '-' + index,
+                },
+              })
+              .promise()
+          )
+        );
+        return items.map((a) => a.Item.value).join('');
+      } else {
+        return def;
+      }
     } else {
-      return def;
+      const result = await ddb
+        .get({
+          TableName: 'swg-redis-table',
+          Key: {
+            key: this.getKey(gameId, key),
+          },
+        })
+        .promise();
+      if (result.Item?.value) {
+        return result.Item?.value;
+      } else {
+        return def;
+      }
     }
   }
 
-  static async setString(gameId: string, key: string, value: string): Promise<void> {
-    const items = value.match(new RegExp('.{1,' + (400 * 1000 - 1) + '}', 'g'));
-    await Promise.all([
-      ddb
-        .put({
-          TableName: 'redis-table',
-          Item: {
-            key: this.getKey(gameId, key) + '-size',
-            value: items.length,
-          },
-        })
-        .promise(),
-      ...items.map((a, ind) =>
+  static async setString(big: boolean, gameId: string, key: string, value: string): Promise<void> {
+    if (big) {
+      const items = value.match(new RegExp('.{1,' + (400 * 1000 - 1) + '}', 'g'));
+      await Promise.all([
         ddb
           .put({
-            TableName: 'redis-table',
+            TableName: 'swg-redis-table',
             Item: {
-              key: this.getKey(gameId, key) + '-' + ind,
-              value: a,
+              key: this.getKey(gameId, key) + '-size',
+              value: items.length,
             },
           })
-          .promise()
-      ),
-    ]);
+          .promise(),
+        ...items.map((a, ind) =>
+          ddb
+            .put({
+              TableName: 'swg-redis-table',
+              Item: {
+                key: this.getKey(gameId, key) + '-' + ind,
+                value: a,
+              },
+            })
+            .promise()
+        ),
+      ]);
+    } else {
+      await ddb
+        .put({
+          TableName: 'swg-redis-table',
+          Item: {
+            key: this.getKey(gameId, key),
+            value,
+          },
+        })
+        .promise();
+    }
   }
 
-  static async set<T>(gameId: string, key: string, value: T): Promise<void> {
-    await this.setString(gameId, key, JSON.stringify(value));
+  static async set<T>(big: boolean, gameId: string, key: string, value: T): Promise<void> {
+    await this.setString(big, gameId, key, JSON.stringify(value));
   }
 
-  static async append(gameId: string, key: string, value: string): Promise<void> {
-    const old = await this.getString(gameId, key);
-    await this.setString(gameId, key, old + value);
+  static async append(big: boolean, gameId: string, key: string, value: string): Promise<void> {
+    const old = await this.getString(big, gameId, key);
+    await this.setString(big, gameId, key, old + value);
   }
 
   static async flushAll(): Promise<void> {
@@ -100,11 +128,11 @@ export class RedisManager {
 */
   }
 
-  static async expire(gameId: string, key: string, duration: number): Promise<void> {
+  static async expire(big: boolean, gameId: string, key: string, duration: number): Promise<void> {
     return;
     const result = await ddb
       .get({
-        TableName: 'redis-table',
+        TableName: 'swg-redis-table',
         Key: {
           key: this.getKey(gameId, key),
         },
@@ -114,7 +142,7 @@ export class RedisManager {
     if (!result.Item?.value) return;
     await ddb
       .put({
-        TableName: 'redis-table',
+        TableName: 'swg-redis-table',
         Item: {
           ...result.Item,
         },
@@ -125,16 +153,16 @@ export class RedisManager {
   static async incr(gameId: string, key: string) {
     const result = await ddb
       .get({
-        TableName: 'redis-table',
+        TableName: 'swg-redis-table',
         Key: {
-          key: this.getKey(gameId, key) + '-0',
+          key: this.getKey(gameId, key),
         },
       })
       .promise();
     if (result.Item) {
       await ddb
         .put({
-          TableName: 'redis-table',
+          TableName: 'swg-redis-table',
           Item: {
             ...result.Item,
             value: (parseInt(result.Item.value) + 1).toString(),

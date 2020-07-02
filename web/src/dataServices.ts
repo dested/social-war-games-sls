@@ -11,7 +11,7 @@ import {gameStore} from './store/game/store';
 import {mainStore} from './store/main/store';
 
 export class Config {
-  static env: 'LOCAL' | 'PROD' = 'PROD';
+  static env: 'LOCAL' | 'PROD' = 'LOCAL';
 
   static apiServer = Config.env === 'LOCAL' ? 'http://localhost:5103' : 'https://api.socialwargames.com';
   static s3Server =
@@ -55,7 +55,6 @@ export class DataService {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        gameid: gameStore.currentGameId,
       },
     });
     if (!response.ok) {
@@ -150,6 +149,7 @@ export class DataService {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         ...(mainStore.jwt ? {Authorization: 'Bearer ' + mainStore.jwt} : {}),
+        gameid: gameStore.currentGameId,
       },
     });
     const json = await response.json();

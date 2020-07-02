@@ -37,10 +37,10 @@ export class Drawing {
       }
 
       if (!neighbor[i] || neighbor[i].factionId !== hex.factionId) {
-        if (hex.factionId === '9' || (neighbor[i] && neighbor[i].factionId === '9')) {
+        if (hex.factionId === 7 || (neighbor[i] && neighbor[i].factionId === 7)) {
           continue;
         }
-        const color = HexColors.factionIdToColor(hex.factionId, !neighbor[i] ? '0' : neighbor[i].factionId, '1');
+        const color = HexColors.factionIdToColor(hex.factionId, !neighbor[i] ? 0 : neighbor[i].factionId, '1');
         if (!color) {
           continue;
         }

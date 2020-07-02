@@ -27,7 +27,7 @@ export class GameStateParser {
     buff.addInt8(Object.keys(gameState.entities).length);
     for (const factionKey in gameState.entities) {
       buff.addInt8(parseInt(factionKey));
-      const entities = gameState.entities[factionKey as PlayableFactionId];
+      const entities = gameState.entities[parseInt(factionKey) as PlayableFactionId];
       buff.addInt16(entities.length);
       for (const entity of entities) {
         buff.addInt32(entity.id);
@@ -49,7 +49,7 @@ export class GameStateParser {
     buff.addInt8(Object.keys(gameState.factionDetails).length);
     for (const factionsKey in gameState.factionDetails) {
       buff.addInt8(parseInt(factionsKey));
-      buff.addInt32(gameState.factionDetails[factionsKey as PlayableFactionId].resourceCount);
+      buff.addInt32(gameState.factionDetails[parseInt(factionsKey) as PlayableFactionId].resourceCount);
     }
 
     let empty = 0;
@@ -72,10 +72,10 @@ export class GameStateParser {
     }
 
     for (let i = 0; i < gameState.factions.length; i += 2) {
-      const factionId = parseInt(gameState.factions.charAt(i));
-      const duration = parseInt(gameState.factions.charAt(i + 1));
+      const factionId = gameState.factions[i];
+      const duration = gameState.factions[i + 1];
 
-      if (factionId === 9 && duration === 0) {
+      if (factionId === 7 && duration === 0) {
         tryFlushEmpty();
         hidden++;
         continue;
@@ -110,7 +110,7 @@ export class GameStateParser {
         buff.addInt8(ParserEnumUtils.actionToInt(winningVote.action));
         buff.addInt32(winningVote.entityId);
         buff.addInt16(winningVote.voteCount);
-        buff.addInt8(parseInt(winningVote.factionId));
+        buff.addInt8(winningVote.factionId);
         ParserEnumUtils.writeHexId(winningVote.hexId, buff);
       }
     }
@@ -131,7 +131,7 @@ export class GameStateParser {
         buff.addInt32(note.toEntityId || -1);
         ParserEnumUtils.writeHexId(note.toHexId, buff);
         ParserEnumUtils.writeHexId(note.fromHexId, buff);
-        buff.addInt8(parseInt(note.factionId));
+        buff.addInt8(note.factionId);
         buff.addInt16(note.voteCount);
         buff.addString(note.note);
 
@@ -171,7 +171,7 @@ export class GameStateParser {
     const entities: OfFaction<GameStateEntity[]> = {} as any;
 
     for (let f = 0; f < entitiesFactionsLength; f++) {
-      const factionId = reader.readInt8().toString() as PlayableFactionId;
+      const factionId = reader.readInt8() as PlayableFactionId;
       const entitiesLength = reader.readInt16();
       const entitiesInFaction: GameStateEntity[] = [];
 
@@ -214,14 +214,14 @@ export class GameStateParser {
     const factionDetailsLength = reader.readInt8();
     const factionDetails: OfFaction<FactionDetail> = {} as any;
     for (let i = 0; i < factionDetailsLength; i++) {
-      const factionKey = reader.readInt8().toString() as PlayableFactionId;
+      const factionKey = reader.readInt8() as PlayableFactionId;
       const resourceCount = reader.readInt32();
       factionDetails[factionKey] = {
         resourceCount,
       };
     }
 
-    const factions: string[] = [];
+    const factions: number[] = [];
     let over = false;
     while (!over) {
       const type = reader.readUint8();
@@ -230,8 +230,8 @@ export class GameStateParser {
           {
             const len = reader.readInt32();
             for (let i = 0; i < len; i++) {
-              factions.push('9');
-              factions.push('0');
+              factions.push(7);
+              factions.push(0);
             }
           }
           break;
@@ -239,14 +239,14 @@ export class GameStateParser {
           {
             const len = reader.readInt32();
             for (let i = 0; i < len; i++) {
-              factions.push('0');
-              factions.push('0');
+              factions.push(0);
+              factions.push(0);
             }
           }
           break;
         case 3:
-          factions.push(reader.readInt8().toString());
-          factions.push(reader.readInt8().toString());
+          factions.push(reader.readInt8());
+          factions.push(reader.readInt8());
           break;
         case 255:
           over = true;
@@ -267,7 +267,7 @@ export class GameStateParser {
         const action = ParserEnumUtils.intToAction(reader.readInt8());
         const entityId = reader.readInt32();
         const voteCount = reader.readInt16();
-        const factionId = reader.readInt8().toString() as PlayableFactionId;
+        const factionId = reader.readInt8() as PlayableFactionId;
         const hexId = ParserEnumUtils.readHexId(reader);
         factionWinningVotes.push({
           voteCount,
@@ -308,7 +308,7 @@ export class GameStateParser {
         }
         const toHexId = ParserEnumUtils.readHexId(reader);
         const fromHexId = ParserEnumUtils.readHexId(reader);
-        const factionId = reader.readInt8().toString() as PlayableFactionId;
+        const factionId = reader.readInt8() as PlayableFactionId;
         const voteCount = reader.readInt16();
         const note = reader.readString();
 
@@ -335,7 +335,7 @@ export class GameStateParser {
 
     const gameState = {
       gameId,
-      factions: factions.join(''),
+      factions,
       factionDetails,
       resources,
       entities,

@@ -58,7 +58,7 @@ export class Component extends React.Component<Props, State> {
 
     return (
       <div style={{display: 'flex', flexDirection: 'column'}}>
-        {this.props.uiStore.ladder.ladder.map(l => (
+        {this.props.uiStore.ladder.ladder.map((l) => (
           <span key={l._id}>
             {l.rank + 1}: {l.userName || l._id} - {l.score}
           </span>
@@ -89,8 +89,8 @@ export class Component extends React.Component<Props, State> {
     const entityImage = {width: '50px'};
 
     return this.props.gameStore.game.entities.array
-      .filter(a => a.factionId === this.props.mainStore.user.factionId && a.entityType === 'factory')
-      .map(factory => {
+      .filter((a) => a.factionId === this.props.mainStore.user.factionId && a.entityType === 'factory')
+      .map((factory) => {
         return (
           <div
             key={factory.id}
@@ -98,7 +98,7 @@ export class Component extends React.Component<Props, State> {
             style={{
               ...entityCircle,
               cursor: 'hand',
-              backgroundColor: HexColors.factionIdToColor(factory.factionId, '0', '.8'),
+              backgroundColor: HexColors.factionIdToColor(factory.factionId, 0, '.8'),
             }}
           >
             <img src={GameAssets[factory.entityType].imageUrl} style={entityImage} />
@@ -195,7 +195,7 @@ export class Component extends React.Component<Props, State> {
   }
 
   goToHex(hexId: string) {
-    this.props.gameStore.gameRenderer.moveToHexagon(this.props.gameStore.game.grid.hexes.find(a => a.id === hexId));
+    this.props.gameStore.gameRenderer.moveToHexagon(this.props.gameStore.game.grid.hexes.find((a) => a.id === hexId));
   }
 
   private renderNote(a: VoteNote) {
@@ -222,9 +222,7 @@ export class Component extends React.Component<Props, State> {
       }
       clean = clean.replace(
         match[0],
-        `<a href="javascript:${linkTap}" style="display:inline-block;text-decoration: none; color:grey; ">${
-          match[2]
-        }</a>`
+        `<a href="javascript:${linkTap}" style="display:inline-block;text-decoration: none; color:grey; ">${match[2]}</a>`
       );
       match = noteParser.exec(note);
     }

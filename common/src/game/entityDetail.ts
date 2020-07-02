@@ -29,9 +29,9 @@ export type EntityAction = 'attack' | 'move' | 'spawn-infantry' | 'spawn-tank' |
 export type EntityType = 'infantry' | 'tank' | 'plane' | 'factory';
 
 export type Faction = NoFaction | ShroudedTile | PlayableFactionId;
-export type NoFaction = '0';
-export type ShroudedTile = '9';
-export type PlayableFactionId = '1' | '2' | '3';
+export type NoFaction = 0;
+export type ShroudedTile = 7;
+export type PlayableFactionId = 1 | 2 | 3;
 
 export type OfFaction<T> = {[faction in PlayableFactionId]: T};
 
@@ -47,7 +47,7 @@ export function foreachFaction<T>(callback: (factionId: PlayableFactionId) => T)
   return result;
 }
 
-export let Factions: PlayableFactionId[] = ['1', '2', '3'];
+export let Factions: PlayableFactionId[] = [1, 2, 3];
 export let FactionNames: OfFaction<string> = {'1': 'Red', '2': 'Green', '3': 'Purple'};
 export let EntityTypeNames: {[entity in EntityType]: string} = {
   infantry: 'Infantry',

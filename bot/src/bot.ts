@@ -14,7 +14,7 @@ let gameId: string;
 const startBot = async (userResponse: JwtGetUserResponse) => {
   const layout = await DataService.getLayout(gameId);
   let userDetails = await DataService.currentUserDetails(userResponse.jwt, gameId);
-  console.log(userDetails);
+  // console.log(userDetails);
   let localGameState = await DataService.getGameState(
     userResponse.user.factionId,
     userDetails.generation,
@@ -93,8 +93,9 @@ const seed = Math.round(Math.random() * 100000);
 
 async function register(ind: number) {
   const email = `test-${seed}-${ind}@test.com`;
+  console.log(email);
   const password = `test`;
-  const userName = `Test ${ind}`;
+  const userName = `Test-${seed}-${ind}`;
 
   try {
     const userResponse = await DataService.register(email, userName, password);
@@ -345,7 +346,7 @@ async function start() {
   const startNum = parseInt(process.argv[2]);
   for (let i = 0; i < startNum; i++) {
     // login(`test-${i}@test.com`, 'test').catch(ex => console.error(ex));
-    await Promise.all([register(i)]);
+    await register(i);
   }
 }
 start().catch((ex) => console.error(ex));

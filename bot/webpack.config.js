@@ -2,24 +2,25 @@ const webpack = require('webpack');
 const fs = require('fs');
 const path = require('path');
 
-module.exports = env => {
+module.exports = (env) => {
   return {
     entry: './src/bot.ts',
     output: {
       path: path.join(__dirname, 'dist'),
       filename: 'index.js',
-      libraryTarget: 'commonjs2'
+      libraryTarget: 'commonjs2',
     },
     target: 'node',
+    mode: 'development',
     resolve: {
       extensions: ['.ts', '.tsx', '.js'],
       alias: {
         '@swg-server-common': path.resolve(__dirname, '../server-common/src/'),
-        '@swg-common': path.resolve(__dirname, '../common/src/')
-      }
+        '@swg-common': path.resolve(__dirname, '../common/src/'),
+      },
     },
     externals: {},
-    plugins: [].filter(a => a),
+    plugins: [].filter((a) => a),
     module: {
       rules: [
         // loaders will work with webpack 1 or 2; but will be renamed "rules" in future
@@ -28,10 +29,10 @@ module.exports = env => {
           test: /\.tsx?$/,
           loader: 'ts-loader',
           options: {
-            compilerOptions: {noEmit: false}
-          }
-        }
-      ]
-    }
+            compilerOptions: {noEmit: false},
+          },
+        },
+      ],
+    },
   };
 };

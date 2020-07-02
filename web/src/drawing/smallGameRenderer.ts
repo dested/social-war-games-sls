@@ -34,7 +34,7 @@ export class SmallGameRenderer {
         finish: 1,
         duration: 250,
         easing: AnimationUtils.easings.easeInCubic,
-        callback: c => {
+        callback: (c) => {
           gameRendererView.setPosition(AnimationUtils.lerp(startX, endX, c), AnimationUtils.lerp(startY, endY, c));
         },
       });
@@ -74,7 +74,7 @@ export class SmallGameRenderer {
         return false;
       }
 
-      const distances = game.grid.hexes.array.map(h => ({
+      const distances = game.grid.hexes.array.map((h) => ({
         h,
         distance: Math.sqrt(
           (position.x - h.smallCenter.x) * (position.x - h.smallCenter.x) +
@@ -88,10 +88,10 @@ export class SmallGameRenderer {
       }
     };
 
-    manager.on('tap', e => {
+    manager.on('tap', (e) => {
       goToPosition(e, false);
     });
-    manager.on('pan', e => {
+    manager.on('pan', (e) => {
       DebounceUtils.wait('small-pan', 16, () => goToPosition(e, true));
     });
 
@@ -147,16 +147,16 @@ export class SmallGameRenderer {
         Math.round(HexConstants.smallHeight * 1.1)
       );
 
-      if (hexagon.factionId === '9') {
+      if (hexagon.factionId === 7) {
         context.fillStyle = 'rgba(0,0,0,.6)';
       } else {
-        if (hexagon.factionId === '0') {
+        if (hexagon.factionId === 0) {
           continue;
         }
         if (hasEntity) {
-          context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '1');
+          context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, 0, '1');
         } else {
-          context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '.3');
+          context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, 0, '.3');
         }
       }
 

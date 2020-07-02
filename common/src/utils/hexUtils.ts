@@ -18,6 +18,8 @@ export class HexUtils {
       } else {
         return FacingDirection.BottomLeft;
       }
+    } else {
+      throw new Error();
     }
   }
 

@@ -9,7 +9,7 @@ import {GameStateParser} from '@swg-common/parsers/gameStateParser';
 import fetch from 'node-fetch';
 
 export class Config {
-  static env: 'LOCAL' | 'PROD' = 'LOCAL';
+  static env: 'LOCAL' | 'PROD' = 'PROD';
 
   static apiServer = Config.env === 'LOCAL' ? 'http://localhost:5103' : 'https://api.socialwargames.com';
   static s3Server =
@@ -55,14 +55,15 @@ export class DataService {
         'Content-Type': 'application/json',
       },
     });
+    const text = await response.text();
     if (!response.ok) {
-      // or check for response.status
       throw new Error(response.statusText);
     }
-    const json = await response.json();
+    const json = JSON.parse(text);
     if (response.status === 200) {
       return json;
     } else {
+      console.error(response);
       throw new Error();
     }
   }

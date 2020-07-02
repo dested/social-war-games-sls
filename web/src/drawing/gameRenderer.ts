@@ -62,7 +62,7 @@ export class GameRenderer {
         finish: 1,
         duration: 250,
         easing: AnimationUtils.easings.easeInCubic,
-        callback: c => {
+        callback: (c) => {
           this.view.scale = c;
         },
       });
@@ -81,7 +81,7 @@ export class GameRenderer {
       finish: 1,
       duration: 250,
       easing: AnimationUtils.easings.easeInCubic,
-      callback: c => {
+      callback: (c) => {
         this.view.setPosition(AnimationUtils.lerp(startX, endX, c), AnimationUtils.lerp(startY, endY, c));
       },
     });
@@ -90,7 +90,7 @@ export class GameRenderer {
       finish: 2,
       duration: 250,
       easing: AnimationUtils.easings.easeInCubic,
-      callback: c => {
+      callback: (c) => {
         this.view.scale = c;
       },
     });
@@ -122,14 +122,14 @@ export class GameRenderer {
 
     this.view = new GameView(this.canvas, gameStore.game);
 
-    manager.on('panmove', e => {
+    manager.on('panmove', (e) => {
       if (e.velocity === 0) {
         return;
       }
       this.view.setPosition(startViewX + (startX - e.center.x), startViewY + (startY - e.center.y));
     });
 
-    manager.on('panstart', e => {
+    manager.on('panstart', (e) => {
       UIStore.setUI('None');
 
       this.swipeVelocity.x = this.swipeVelocity.y = 0;
@@ -139,7 +139,7 @@ export class GameRenderer {
       startViewY = this.view.y;
     });
 
-    manager.on('panend', e => {});
+    manager.on('panend', (e) => {});
 
     manager.on('swipe', (ev: {velocityX: number; velocityY: number}) => {
       UIStore.setUI('None');
@@ -147,7 +147,7 @@ export class GameRenderer {
       this.swipeVelocity.y = ev.velocityY * 10;
     });
 
-    manager.on('tap', e => {
+    manager.on('tap', (e) => {
       this.swipeVelocity.x = this.swipeVelocity.y = 0;
       UIStore.setUI('None');
       if (!gameStore.game) {
@@ -220,7 +220,7 @@ export class GameRenderer {
     const vheight = this.view.heightSlop;
 
     const visibleHexes = grid.hexes.filter(
-      hexagon =>
+      (hexagon) =>
         hexagon.center.x > vx &&
         hexagon.center.x < vx + vwidth &&
         hexagon.center.y > vy &&
@@ -245,25 +245,25 @@ export class GameRenderer {
       const hasEntity = game.entities.get1(hexagon);
       context.lineWidth = isViableHex ? 4 : 2;
 
-      if (hexagon.factionId === '9') {
+      if (hexagon.factionId === 7) {
         context.fillStyle = 'rgba(0,0,0,.6)';
       } else {
         if (isViableHex) {
           context.fillStyle = 'rgba(226,238,54,.25)';
         } else {
-          if (hexagon.factionId === '0') {
+          if (hexagon.factionId === 0) {
             continue;
           }
           if (hasEntity) {
             if (selectedEntity && hasEntity.id === selectedEntity.id) {
               context.fillStyle = '#f1f1f1';
             } else {
-              context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, '0', '1');
+              context.fillStyle = HexColors.factionIdToColor(hexagon.factionId, 0, '1');
             }
           } else {
             context.fillStyle = HexColors.factionIdToColor(
               hexagon.factionId,
-              '0',
+              0,
               hexagon.factionDuration === 1 ? '.3' : '.8'
             );
           }
@@ -288,7 +288,9 @@ export class GameRenderer {
 
       if (selectedVoteEntity && selectedVoteEntity.length > 0) {
         if (isViableHex) {
-          const isVotedHex = selectedVoteEntity.find(a => a.hexId === hexagon.id && selectedEntityAction === a.action);
+          const isVotedHex = selectedVoteEntity.find(
+            (a) => a.hexId === hexagon.id && selectedEntityAction === a.action
+          );
           if (isVotedHex) {
             context.save();
             const count = isVotedHex.count;
@@ -311,7 +313,7 @@ export class GameRenderer {
         const voteEntities = roundState.entities[hasEntity.id];
         if (voteEntities && voteEntities.length > 0) {
           context.save();
-          const count = Utils.sum(voteEntities, a => a.count);
+          const count = Utils.sum(voteEntities, (a) => a.count);
           context.strokeStyle = '#dfdfdf';
           if (count < 2) {
             context.lineWidth = 2;

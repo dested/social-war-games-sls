@@ -14,18 +14,18 @@ import {DBUserRoundStats} from '../db/models/dbUserRoundStats';
 
 export class ServerGameLogic extends GameLogic {
   static calculateScore(game: GameModel, faction: PlayableFactionId): number {
-    const factionHexes = game.grid.hexes.map(a => a.factionId);
-    const hexCount = factionHexes.filter(a => a === faction).length;
-    const entities = game.entities.filter(a => a.factionId === faction);
+    const factionHexes = game.grid.hexes.map((a) => a.factionId);
+    const hexCount = factionHexes.filter((a) => a === faction).length;
+    const entities = game.entities.filter((a) => a.factionId === faction);
 
     let score = 0;
 
     score += hexCount;
     score += 3 * game.factionDetails[faction].resourceCount;
-    score += 5 * entities.filter(a => a.entityType === 'factory').length;
-    score += 3 * entities.filter(a => a.entityType === 'plane').length;
-    score += 2 * entities.filter(a => a.entityType === 'tank').length;
-    score += 1 * entities.filter(a => a.entityType === 'infantry').length;
+    score += 5 * entities.filter((a) => a.entityType === 'factory').length;
+    score += 3 * entities.filter((a) => a.entityType === 'plane').length;
+    score += 2 * entities.filter((a) => a.entityType === 'tank').length;
+    score += 1 * entities.filter((a) => a.entityType === 'infantry').length;
 
     return score;
   }
@@ -56,7 +56,7 @@ export class ServerGameLogic extends GameLogic {
   static nextId(entities: GameEntity[]): number {
     while (true) {
       const random = Math.floor(Math.random() * 10000);
-      if (!entities.find(a => a.id === random)) {
+      if (!entities.find((a) => a.id === random)) {
         return random;
       }
     }
@@ -125,7 +125,7 @@ export class ServerGameLogic extends GameLogic {
 
         for (let i = 1; i < entitiesPerBase.length; i++) {
           const hex = innerBaseHexes[Math.floor(Math.random() * innerBaseHexes.length)];
-          if (entities.find(a => a.x === hex.x && a.y === hex.y)) {
+          if (entities.find((a) => a.x === hex.x && a.y === hex.y)) {
             i--;
             continue;
           }
@@ -186,7 +186,7 @@ export class ServerGameLogic extends GameLogic {
       roundEnd: +new Date() + Config.gameDuration,
       generation: 10000001,
       resources: HashArray.create(resources, PointHashKey),
-      entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
+      entities: DoubleHashArray.create(entities, PointHashKey, (e) => e.id),
       factionDetails,
       layout: null,
       grid,
@@ -249,13 +249,13 @@ export class ServerGameLogic extends GameLogic {
 
         const center = Utils.randomElement(allHexes7In);
 
-        if (factionCenters.some(a => HexUtils.getDistance({x: center.x, y: center.y}, a) < baseRadius * 2.5)) {
+        if (factionCenters.some((a) => HexUtils.getDistance({x: center.x, y: center.y}, a) < baseRadius * 2.5)) {
           base--;
           tries++;
           continue;
         }
 
-        if (myFactionCenters.some(a => HexUtils.getDistance({x: center.x, y: center.y}, a) < baseRadius * 2.5 * 3)) {
+        if (myFactionCenters.some((a) => HexUtils.getDistance({x: center.x, y: center.y}, a) < baseRadius * 2.5 * 3)) {
           base--;
           tries++;
           continue;
@@ -281,7 +281,7 @@ export class ServerGameLogic extends GameLogic {
 
         for (let i = 1; i < entitiesPerBase.length; i++) {
           const hex = innerBaseHexes[Math.floor(Math.random() * innerBaseHexes.length)];
-          if (entities.find(a => a.x === hex.x && a.y === hex.y)) {
+          if (entities.find((a) => a.x === hex.x && a.y === hex.y)) {
             i--;
             continue;
           }
@@ -322,7 +322,7 @@ export class ServerGameLogic extends GameLogic {
       for (let i = 0; i < resource.count; i++) {
         const center = grid.hexes.getIndex(Math.floor(Math.random() * grid.hexes.length));
 
-        if (factionCenters.some(a => HexUtils.getDistance({x: center.x, y: center.y}, a) <= baseRadius + 1)) {
+        if (factionCenters.some((a) => HexUtils.getDistance({x: center.x, y: center.y}, a) <= baseRadius + 1)) {
           i--;
           continue;
         }
@@ -345,7 +345,7 @@ export class ServerGameLogic extends GameLogic {
       const far = grid.getRange(
         grid.getHexAt(start),
         Math.floor(Math.random() * 80) + 30,
-        new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id)
+        new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, (e) => e.id)
       );
 
       const number = Math.floor((far.length / 4) * 3 + (far.length / 4) * Math.random());
@@ -353,7 +353,7 @@ export class ServerGameLogic extends GameLogic {
 
       const line = grid.getThickLine(start, end, Math.floor(Math.random() * 4) + 3);
 
-      if (line.some(a => a.factionId !== '0')) {
+      if (line.some((a) => a.factionId !== 0)) {
         i--;
         continue;
       }
@@ -384,7 +384,7 @@ export class ServerGameLogic extends GameLogic {
       roundEnd: +new Date() + Config.gameDuration,
       generation: 1,
       resources: HashArray.create(resources, PointHashKey),
-      entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
+      entities: DoubleHashArray.create(entities, PointHashKey, (e) => e.id),
       factionDetails,
       layout: null,
       grid,
@@ -426,7 +426,7 @@ export class ServerGameLogic extends GameLogic {
       return VoteResult.FromHexNotFound;
     }
 
-    const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
+    const toHex = game.grid.hexes.find((a) => a.id === vote.hexId);
     if (!toHex) {
       return VoteResult.ToHexNotFound;
     }
@@ -460,7 +460,7 @@ export class ServerGameLogic extends GameLogic {
     if (path.length - 1 > range) {
       return VoteResult.PathOutOfRange;
     }
-    vote.path = path.map(a => a.id);
+    vote.path = path.map((a) => a.id);
 
     const toEntity = game.entities.get1(toHex);
     const toResource = game.resources.get(toHex);

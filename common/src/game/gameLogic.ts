@@ -61,7 +61,7 @@ export class GameLogic {
       this.grid = grid;
     }
 
-    const resources: GameResource[] = gameState.resources.map(a => ({
+    const resources: GameResource[] = gameState.resources.map((a) => ({
       x: a.x,
       y: a.y,
       resourceType: a.type,
@@ -69,8 +69,8 @@ export class GameLogic {
     }));
 
     const entities: GameEntity[] = [
-      ...gameState.entities['1'].map(a => ({
-        factionId: '1' as PlayableFactionId,
+      ...gameState.entities['1'].map((a) => ({
+        factionId: 1 as PlayableFactionId,
         busy: a.busy,
         id: a.id,
         health: a.health,
@@ -80,8 +80,8 @@ export class GameLogic {
         healthRegenStep: a.healthRegenStep,
         facingDirection: a.facingDirection,
       })),
-      ...gameState.entities['2'].map(a => ({
-        factionId: '2' as PlayableFactionId,
+      ...gameState.entities['2'].map((a) => ({
+        factionId: 2 as PlayableFactionId,
         busy: a.busy,
         id: a.id,
         health: a.health,
@@ -91,8 +91,8 @@ export class GameLogic {
         healthRegenStep: a.healthRegenStep,
         facingDirection: a.facingDirection,
       })),
-      ...gameState.entities['3'].map(a => ({
-        factionId: '3' as PlayableFactionId,
+      ...gameState.entities['3'].map((a) => ({
+        factionId: 3 as PlayableFactionId,
         busy: a.busy,
         id: a.id,
         health: a.health,
@@ -112,7 +112,7 @@ export class GameLogic {
       generation: gameState.generation,
       factionDetails: gameState.factionDetails,
       resources: HashArray.create(resources, PointHashKey),
-      entities: DoubleHashArray.create(entities, PointHashKey, e => e.id),
+      entities: DoubleHashArray.create(entities, PointHashKey, (e) => e.id),
       layout,
       grid: this.grid,
     };
@@ -135,7 +135,7 @@ export class GameLogic {
       return VoteResult.FromHexNotFound;
     }
 
-    const toHex = game.grid.hexes.find(a => a.id === vote.hexId);
+    const toHex = game.grid.hexes.find((a) => a.id === vote.hexId);
     if (!toHex) {
       return VoteResult.ToHexNotFound;
     }
@@ -236,7 +236,7 @@ export class GameLogic {
 
     switch (action) {
       case 'attack':
-        entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, e => e.id);
+        entityHash = new DoubleHashArray<GameEntity, Point, {id: number}>(PointHashKey, (e) => e.id);
         break;
       case 'move':
         entityHash = game.entities;
@@ -253,11 +253,11 @@ export class GameLogic {
     return entityHash;
   }
 
-  static getFactionId(factions: string, index: number): Faction {
-    return factions.charAt(index * 2) as Faction;
+  static getFactionId(factions: number[], index: number): Faction {
+    return factions[index * 2] as Faction;
   }
 
-  static getFactionDuration(factions: string, index: number): number {
-    return parseInt(factions.charAt(index * 2 + 1));
+  static getFactionDuration(factions: number[], index: number): number {
+    return factions[index * 2 + 1];
   }
 }

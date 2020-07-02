@@ -12,7 +12,6 @@ export async function ladderHandler(event: Event<void>): Promise<HttpResponse<La
     return respond(403, {error: 'auth'});
   }
 
-
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
 
   const ladder = await DBLadder.getLadder(event.headers.gameid, user.id);

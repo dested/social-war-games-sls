@@ -27,7 +27,7 @@ export class S3Splitter {
       tokens[faction] = Utils.range(0, 16)
         .map((a) => Math.floor(Math.random() * 254) + 1)
         .join('.');
-      await RedisManager.setString(game.id, `faction-token-${game.generation}-${faction}`, tokens[faction]);
+      await RedisManager.setString(false, game.id, `faction-token-${game.generation}-${faction}`, tokens[faction]);
     }
     return tokens;
   }
@@ -146,7 +146,7 @@ export class S3Splitter {
         factionStr.push(GameLogic.getFactionId(gameState.factions, h));
         factionStr.push(GameLogic.getFactionDuration(gameState.factions, h));
       } else {
-        factionStr.push(9);
+        factionStr.push(7);
         factionStr.push(0);
       }
     }
@@ -159,7 +159,7 @@ export class S3Splitter {
       resources: visibleResources,
       factionDetails: visibleFactionDetails,
       entities: visibleEntities,
-      factions: factionStr.join(''),
+      factions: factionStr,
       totalPlayersVoted: Utils.sum(Factions, (f) => gameState.playersVoted[f] || 0),
       generation: gameState.generation,
 

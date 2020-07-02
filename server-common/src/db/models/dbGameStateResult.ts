@@ -29,7 +29,7 @@ export class DBGameStateResult extends MongoDocument implements GameState {
   }
 
   gameId: string;
-  factions: string;
+  factions: number[];
   factionDetails: OfFaction<FactionDetail>;
   entities: OfFaction<GameStateEntity[]>;
   resources: GameStateResource[];

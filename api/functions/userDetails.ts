@@ -24,9 +24,9 @@ export async function userDetailsHandler(
 
   const user = jwt.verify(event.headers.Authorization.replace('Bearer ', ''), Config.jwtKey) as HttpUser;
   try {
-    const generation = await RedisManager.get<number>(gameId, 'game-generation');
-    const totalVotes = await RedisManager.get<number>(gameId, `user-${user.id}-${generation}-votes`, 0);
-    const factionToken = await RedisManager.getString(gameId, `faction-token-${generation}-${user.factionId}`);
+    const generation = await RedisManager.get<number>(false, gameId, 'game-generation');
+    const totalVotes = await RedisManager.get<number>(false, gameId, `user-${user.id}-${generation}-votes`, 0);
+    const factionToken = await RedisManager.getString(false, gameId, `faction-token-${generation}-${user.factionId}`);
 
     return respond(200, {
       generation,

@@ -3,7 +3,12 @@ import {RoundStateParser} from '@swg-common/parsers/roundStateParser';
 import {Config, DataService} from '../dataServices';
 
 export class SocketUtils {
-  static connect(gameId: string, clientId: string, factionToken: string, onMessage: (roundState: RoundState) => void) {
+  static connect(
+    gameId: string,
+    clientId: string,
+    factionToken: string /*todo faction token isnt right, its currently just id which is wrong*/,
+    onMessage: (roundState: RoundState) => void
+  ) {
     const socket = new WebSocket(`${Config.socketServer}?gameId=${gameId}&faction=round-state-${factionToken}`);
     socket.binaryType = 'arraybuffer';
     socket.onmessage = (message) => {

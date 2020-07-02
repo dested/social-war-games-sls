@@ -212,12 +212,20 @@ export class GameStore {
     const userDetails = await DataService.currentUserDetails();
     gameStore.updateUserDetails(userDetails);
 
-    const gameState = await DataService.getGameState(
-      mainStore.user.factionId,
-      userDetails.generation,
-      userDetails.factionToken
-    );
-    SocketUtils.connect(gameState.gameId, mainStore.user.id, mainStore.user.factionId, (roundState) => {
+    let gameState: GameState;
+    try {
+      gameState = await DataService.getGameState(
+        mainStore.user.factionId,
+        userDetails.generation,
+        userDetails.factionToken
+      );
+    } catch (ex) {
+      console.error(ex);
+      gameStore.setCurrentGameId(undefined);
+      window.location.reload();
+      return;
+    }
+    SocketUtils.connect(gameState.gameId, mainStore.user.id, mainStore.user.factionId.toString(), (roundState) => {
       GameStore.getNewState(roundState).catch((ex) => console.error(ex));
     });
     const game = GameLogic.buildGameFromState(layout, gameState);
