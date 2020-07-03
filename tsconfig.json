@@ -4,7 +4,7 @@
     "experimentalDecorators": true,
     "allowUnreachableCode": true,
     "strict": true,
-    "target": "es2015",
+    "target": "ES6",
     "lib": [
       "esnext",
       "dom",

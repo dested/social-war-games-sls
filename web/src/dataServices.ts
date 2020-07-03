@@ -11,7 +11,7 @@ import {SchemaDefiner} from '@swg-common/schemaDefiner/schemaDefiner';
 import {GameLayoutRead} from '@swg-common/models/gameLayout';
 
 export class Config {
-  static env: 'LOCAL' | 'PROD' = 'LOCAL';
+  static env: 'LOCAL' | 'PROD' = 'PROD';
 
   static apiServer = Config.env === 'LOCAL' ? 'http://localhost:5103' : 'https://api.socialwargames.com';
   static s3Server =

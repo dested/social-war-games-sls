@@ -25,7 +25,7 @@ export async function setupHandler(event: Event<void>): Promise<HttpResponse<voi
   await DBGameStateResult.db.deleteMany({});
   await DBLadder.db.deleteMany({});
 
-  const game = await ServerGameLogic.createDebugGame();
+  const game = await ServerGameLogic.createGame();
   console.log(game.id);
   await DBGame.db.insertDocument(new DBGame(game));
 

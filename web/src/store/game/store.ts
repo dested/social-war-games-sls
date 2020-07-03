@@ -24,7 +24,6 @@ import {UIConstants} from '../../utils/uiConstants';
 import {mainStore} from '../main/store';
 
 export class GameStore {
-
   @observable currentGameState?: GameState;
   @observable game?: GameModel;
   @observable roundState?: RoundState;
@@ -215,7 +214,6 @@ export class GameStore {
     }
     const userDetails = await DataService.currentUserDetails();
     gameStore.updateUserDetails(userDetails);
-
     let gameState: GameState;
     try {
       gameState = await DataService.getGameState(

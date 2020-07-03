@@ -40,30 +40,32 @@ type RequiredPropertyOf<T> = Exclude<
 >;
 
 type Simple<T, TCustoms> = T extends string
-  ? 'string' | SDEnum<T> | TCustoms
+  ? 'string' | SDEnum<T>
   : T extends number
-  ? 'uint8' | 'uint16' | 'uint32' | 'int8' | 'int16' | 'int32' | 'float32' | 'float64' | SDNumberEnum<T> | TCustoms
-  : T extends boolean | TCustoms
+  ? 'uint8' | 'uint16' | 'uint32' | 'int8' | 'int16' | 'int32' | 'float32' | 'float64' | SDNumberEnum<T>
+  : T extends boolean
   ? 'boolean'
   : never;
 
-export type SDElement<T, TKey extends keyof T, TCustoms> = T[TKey] extends string | boolean | number
-  ? Simple<T[TKey], TCustoms>
-  : T[TKey] extends Array<any>
-  ? T[TKey][number] extends number
-    ? SDArray<Simple<T[TKey][number], TCustoms>> | {flag: 'byte-array'; elements: 'bit'}
-    : T[TKey][number] extends string | boolean
-    ? SDArray<Simple<T[TKey][number], TCustoms>>
-    : T[TKey][number] extends {type: string}
-    ? SDArray<SDTypeLookupElements<T[TKey][number], TCustoms>> | SDArray<SDSimpleObject<T[TKey][number], TCustoms>>
-    : SDArray<SDSimpleObject<T[TKey][number], TCustoms>>
-  : T[TKey] extends {[key in keyof T[TKey]]: boolean}
-  ? SDBitmask<T[TKey]>
-  : T[TKey] extends {type: string}
-  ? SDTypeLookupElements<T[TKey], TCustoms> | SDSimpleObject<T[TKey], TCustoms>
-  : T[TKey] extends {}
-  ? SDSimpleObject<T[TKey], TCustoms>
-  : never;
+export type SDElement<T, TKey extends keyof T, TCustoms> =
+  | (T[TKey] extends string | boolean | number
+      ? Simple<T[TKey], TCustoms>
+      : T[TKey] extends Array<any>
+      ? T[TKey][number] extends number
+        ? SDArray<Simple<T[TKey][number], TCustoms>> | {flag: 'byte-array'; elements: 'bit'}
+        : T[TKey][number] extends string | boolean
+        ? SDArray<Simple<T[TKey][number], TCustoms>>
+        : T[TKey][number] extends {type: string}
+        ? SDArray<SDTypeLookupElements<T[TKey][number], TCustoms>> | SDArray<SDSimpleObject<T[TKey][number], TCustoms>>
+        : SDArray<SDSimpleObject<T[TKey][number], TCustoms>>
+      : T[TKey] extends {[key in keyof T[TKey]]: boolean}
+      ? SDBitmask<T[TKey]>
+      : T[TKey] extends {type: string}
+      ? SDTypeLookupElements<T[TKey], TCustoms> | SDSimpleObject<T[TKey], TCustoms>
+      : T[TKey] extends {}
+      ? SDSimpleObject<T[TKey], TCustoms>
+      : never)
+  | TCustoms;
 
 export type ABFlags =
   | {flag: 'enum'}
