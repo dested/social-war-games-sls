@@ -15,7 +15,7 @@
     "watch": "cross-env NODE_ENV=development webpack --progress --hide-modules --watch"
   },
   "dependencies": {
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.19",
     "moment": "^2.22.0",
     "node-fetch": "^2.1.2"
   },
