@@ -2,12 +2,12 @@ import {OfFaction} from '@swg-common/game/entityDetail';
 import {ProcessedVote} from '@swg-common/game/gameLogic';
 import {FactionDetail, GameState, GameStateEntity, GameStateResource} from '@swg-common/models/gameState';
 import {VoteNote} from '@swg-common/models/voteNote';
-import {DocumentManager} from '../dataManager';
+import {DataManager} from '../dataManager'; import {DocumentManager} from 'mongo-safe';
 import {MongoDocument} from './mongoDocument';
 
 export class DBGameStateResult extends MongoDocument implements GameState {
   static collectionName = 'gameStateResult';
-  static db = new DocumentManager<DBGameStateResult>(DBGameStateResult.collectionName);
+  static db = new DocumentManager<DBGameStateResult>(DBGameStateResult.collectionName,DataManager.dbConnection);
 
   constructor(gameState: GameState) {
     super();

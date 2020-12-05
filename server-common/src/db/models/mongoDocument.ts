@@ -1,4 +1,4 @@
-import {ObjectID} from 'bson';
+import {ObjectID} from 'mongodb';
 
 export class MongoDocument {
   // tslint:disable variable-name

@@ -201,12 +201,7 @@ async function cleanupVotes(gameId: string) {
     const generation = await SwgRemoteStore.getGameGeneration(gameId);
 
     // todo, aggregate votes and store them for users later
-    await DBVote.db.deleteMany(
-      DBVote.db.query.parse((a, data) => a.gameId === data.gameId && a.generation < data.generation, {
-        generation: generation - 2,
-        gameId,
-      })
-    );
+    await DBVote.db.deleteMany({gameId, generation: {$lt: generation - 2}});
   } catch (ex) {
     console.error(ex);
   }

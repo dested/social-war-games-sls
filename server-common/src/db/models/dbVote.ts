@@ -1,5 +1,6 @@
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
-import {DocumentManager} from '../dataManager';
+import {DataManager} from '../dataManager';
+import {Aggregator, DocumentManager} from 'mongo-safe';
 import {MongoDocument} from './mongoDocument';
 
 export interface VoteCountResult {
@@ -14,7 +15,7 @@ export interface RoundUserStats {
 
 export class DBVote extends MongoDocument {
   static collectionName = 'vote';
-  static db = new DocumentManager<DBVote>(DBVote.collectionName);
+  static db = new DocumentManager<DBVote>(DBVote.collectionName, DataManager.dbConnection);
 
   userId: string;
   gameId: string;
@@ -24,27 +25,27 @@ export class DBVote extends MongoDocument {
   hexId: string;
   factionId: PlayableFactionId;
 
-  static getVoteCount(gameId: string, generation: number): Promise<VoteCountResult[]> {
-    return this.db.aggregate([
-      {
-        $match: {
-          gameId,
-          generation,
-        },
-      },
-      {
-        $group: {
+  static async getVoteCount(gameId: string, generation: number): Promise<VoteCountResult[]> {
+    const result = await Aggregator.start<DBVote>()
+      .$match({
+        gameId,
+        generation,
+      })
+      .$group(
+        {
           _id: {
             entityId: '$entityId',
             action: '$action',
             hexId: '$hexId',
           },
-          count: {$sum: 1},
         },
-      },
-      {
-        $group: {
-          _id: '$_id.entityId',
+        {
+          count: {$sum: 1},
+        }
+      )
+      .$group(
+        {_id: '$_id.entityId'},
+        {
           actions: {
             $push: {
               action: '$_id.action',
@@ -52,22 +53,24 @@ export class DBVote extends MongoDocument {
               count: '$count',
             },
           },
-        },
-      },
-    ]);
+        }
+      )
+      .result(await this.db.getCollection());
+
+    return result;
   }
 
-  static getRoundUserStats(gameId: string, generation: number): Promise<RoundUserStats[]> {
-    return this.db.aggregate([
-      {
-        $match: {
-          gameId,
-          generation,
-        },
-      },
-      {
-        $group: {
+  static async getRoundUserStats(gameId: string, generation: number): Promise<RoundUserStats[]> {
+    const result = await Aggregator.start<DBVote>()
+      .$match({
+        gameId,
+        generation,
+      })
+      .$group(
+        {
           _id: {userId: '$userId', factionId: '$factionId'},
+        },
+        {
           count: {$sum: 1},
           votes: {
             $push: {
@@ -76,8 +79,10 @@ export class DBVote extends MongoDocument {
               hexId: '$hexId',
             },
           },
-        },
-      },
-    ]);
+        }
+      )
+      .result(await this.db.getCollection());
+
+    return result;
   }
 }

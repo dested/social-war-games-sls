@@ -11,7 +11,7 @@ export async function registerHandler(event: Event<RegisterRequestBody>): Promis
   const model = event.body;
   const register = new Timer();
   const foundUsers = await DBUser.db.count(
-    DBUser.db.query.parse((a, m) => a.email === m.email || a.userName === m.userName, model)
+      {$or: [{email: model.email}, {userName: model.userName}]}
   );
   register.add('found users');
   if (foundUsers > 0) {

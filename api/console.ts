@@ -26,7 +26,7 @@ async function vote(gameId: string, users: JwtGetUserResponse[]) {
   const votes: Promise<any>[] = [];
   for (const user of users) {
     votes.push(
-      new Promise(async (res) => {
+      new Promise<void>(async (res) => {
         console.log('getting action ', user.user.userName);
         const action = await randomAction(game, user.user.factionId);
         if (action) {

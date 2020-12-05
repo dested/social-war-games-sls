@@ -400,7 +400,7 @@ export class ServerGameLogic extends GameLogic {
         gameId += possible.charAt(Math.floor(Math.random() * possible.length));
       }
 
-      const count = await DBGame.db.count(DBGame.db.query.parse((a, code) => a.gameId === code, gameId));
+      const count = await DBGame.db.count({gameId});
       if (count === 0) {
         return gameId;
       }

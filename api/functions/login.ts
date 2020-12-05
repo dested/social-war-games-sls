@@ -11,9 +11,8 @@ export async function loginHandler(event: Event<LoginRequestBody>): Promise<Http
 
 
   const login = new Timer();
-  const query = DBUser.db.query.parse((a, email) => a.email === email, model.email);
   login.add('query');
-  const user = await DBUser.db.getOne(query);
+  const user = await DBUser.db.getOne({email:model.email});
   login.add('get db');
   if (!user) {
     await bcrypt.compare('dog', 'cat');

@@ -3,12 +3,12 @@ import {GameModel, ProcessedVote} from '@swg-common/game/gameLogic';
 import {FactionDetail, GameState, GameStateEntity, GameStateResource} from '@swg-common/models/gameState';
 import {HttpGame} from '@swg-common/models/http/httpGame';
 import {VoteNote} from '@swg-common/models/voteNote';
-import {DocumentManager} from '../dataManager';
+import {DataManager} from '../dataManager'; import {DocumentManager} from 'mongo-safe';
 import {MongoDocument} from './mongoDocument';
 
 export class DBGame extends MongoDocument {
   static collectionName = 'swg-game';
-  static db = new DocumentManager<DBGame>(DBGame.collectionName);
+  static db = new DocumentManager<DBGame>(DBGame.collectionName,DataManager.dbConnection);
 
   constructor(gameModel: GameModel) {
     super();
