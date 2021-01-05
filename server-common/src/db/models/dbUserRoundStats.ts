@@ -1,8 +1,9 @@
 import {Config} from '../../config';
 import {DataManager} from '../dataManager';
-import {Aggregator, DocumentManager} from 'mongo-safe';
+import {Aggregator, DocumentManager, tableName} from 'mongo-safe';
 import {DBUser} from './dbUser';
 import {MongoDocument} from './mongoDocument';
+import {DBLadder} from '@swg-server-common/db/models/dbLadder';
 
 export class DBUserRoundStats extends MongoDocument {
   static collectionName = 'user-round-stats';
@@ -85,11 +86,10 @@ export class DBUserRoundStats extends MongoDocument {
       .$group(
         {
           _id: '$userId',
-        },
-        {userName: {$first: '$userName'}, gameId: {$first: '$gameId'}, score: {$sum: '$score'}}
+      userName: {$first: '$userName'}, gameId: {$first: '$gameId'}, score: {$sum: '$score'}}
       )
       .$sort({score: -1})
-      .$group({_id: 1}, {ranks: {$push: '$$CURRENT'}})
+      .$group({_id: 1,ranks: {$push: '$$CURRENT'}})
       .$unwind({path: '$ranks', includeArrayIndex: 'rank'})
       .$project({
         _id: '$ranks._id',
@@ -98,7 +98,7 @@ export class DBUserRoundStats extends MongoDocument {
         score: '$ranks.score',
         rank: '$rank',
       })
-      .$out('ladder')
+      .$out(tableName<DBLadder>('ladder'))
       .result(await this.db.getCollection());
   }
 }

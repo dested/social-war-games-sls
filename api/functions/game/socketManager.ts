@@ -1,5 +1,4 @@
 import {DynamoDB, ApiGatewayManagementApi} from 'aws-sdk';
-import {Config} from '@swg-server-common/config';
 import {DocumentClient} from 'aws-sdk/lib/dynamodb/document_client';
 
 const options: DocumentClient.DocumentClientOptions & DynamoDB.Types.ClientConfiguration = {

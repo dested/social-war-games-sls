@@ -1,12 +1,11 @@
 import {EntityAction, PlayableFactionId} from '@swg-common/game/entityDetail';
-import {GameState, GameStateRead, GameStateSchemaReaderFunction} from '@swg-common/models/gameState';
+import {GameState, GameStateSchemaGenerator} from '@swg-common/models/gameState';
 import {HttpGame} from '@swg-common/models/http/httpGame';
 import {JwtGetUserResponse} from '@swg-common/models/http/userController';
 import {UserDetails} from '@swg-common/models/http/userDetails';
 import {VoteResponse} from '@swg-common/models/http/voteResults';
-import {GameLayoutParser} from '@swg-common/parsers/gameLayoutParser';
 import fetch from 'node-fetch';
-import {SchemaDefiner} from '@swg-common/schemaDefiner/schemaDefiner';
+import {GameLayoutSchemaGenerator} from '@swg-common/models/gameLayout';
 
 export class Config {
   static env: 'LOCAL' | 'PROD' = 'PROD';
@@ -116,7 +115,7 @@ export class DataService {
       },
     });
     const arrayBuffer = await response.arrayBuffer();
-    return GameLayoutParser.toGameLayout(arrayBuffer);
+    return GameLayoutSchemaGenerator.fromBuffer(arrayBuffer);
   }
 
   static async getGameState(
@@ -137,7 +136,7 @@ export class DataService {
     );
     const arrayBuffer = await response.arrayBuffer();
     // todo decrypt with factionToken.split('.').map((a) => parseInt(a))
-    const gameState: GameState = GameStateRead(arrayBuffer);
+    const gameState: GameState = GameStateSchemaGenerator.fromBuffer(arrayBuffer);
 
     return gameState;
   }

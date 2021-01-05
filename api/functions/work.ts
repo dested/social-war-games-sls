@@ -17,9 +17,7 @@ import {FactionStats} from '@swg-common/models/factionStats';
 import {Utils} from '@swg-common/utils/utils';
 import {Config} from '@swg-server-common/config';
 import fetch from 'node-fetch';
-import {SchemaDefiner} from 'swg-common/src/schemaDefiner/schemaDefiner';
-import {GameStateRead, GameStateWrite} from 'swg-common/src/models/gameState';
-import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
+import {SwgRemoteStore} from '@swg-server-common/redis/swgRemoteStore';
 
 const s3Url = process.env.IS_OFFLINE ? `http://localhost:4569` : `https://s3-us-west-2.amazonaws.com`;
 

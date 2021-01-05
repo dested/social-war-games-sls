@@ -12,7 +12,7 @@ import {DBVote} from '@swg-server-common/db/models/dbVote';
 import * as jwt from 'jsonwebtoken';
 import {Event} from '../utils/models';
 import {HttpResponse, respond} from '../utils/respond';
-import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
+import {SwgRemoteStore} from '@swg-server-common/redis/swgRemoteStore';
 
 let layout: GameLayout;
 let gameState: GameState;

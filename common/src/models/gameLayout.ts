@@ -1,7 +1,6 @@
 import {TileSubType, TileType} from '../game/hexagonTypes';
-import {SDSimpleObject} from '@swg-common/schemaDefiner/schemaDefinerTypes';
-import {SchemaDefiner} from '@swg-common/schemaDefiner/schemaDefiner';
 import {customSchemaTypes} from '@swg-common/models/customSchemaTypes';
+import {generateSchema, makeSchema} from 'safe-schema';
 
 export interface GameLayout {
   boardWidth: number;
@@ -14,7 +13,7 @@ export interface GameLayoutHex {
   type: TileType;
   subType: TileSubType;
 }
-export const GameLayoutSchema: SDSimpleObject<GameLayout> = {
+export const GameLayoutSchema = makeSchema<GameLayout, typeof customSchemaTypes>({
   boardWidth: 'uint16',
   boardHeight: 'uint16',
   hexes: {
@@ -40,20 +39,9 @@ export const GameLayoutSchema: SDSimpleObject<GameLayout> = {
       },
     },
   },
-};
+});
 
-const GameLayoutSchemaReaderFunction = SchemaDefiner.generateReaderFunction(GameLayoutSchema);
-const GameLayoutSchemaAdderFunction = SchemaDefiner.generateAdderFunction(GameLayoutSchema);
-const GameLayoutSchemaAdderSizeFunction = SchemaDefiner.generateAdderSizeFunction(GameLayoutSchema);
-
-export function GameLayoutRead(buffer: ArrayBuffer): GameLayout {
-  return SchemaDefiner.startReadSchemaBuffer(buffer, GameLayoutSchemaReaderFunction, customSchemaTypes);
-}
-export function GameLayoutWrite(gameState: GameLayout): ArrayBuffer {
-  return SchemaDefiner.startAddSchemaBuffer(
-    gameState,
-    GameLayoutSchemaAdderSizeFunction,
-    GameLayoutSchemaAdderFunction,
-    customSchemaTypes
-  );
-}
+export const GameLayoutSchemaGenerator = generateSchema<GameLayout, typeof customSchemaTypes>(
+  GameLayoutSchema,
+  customSchemaTypes
+);

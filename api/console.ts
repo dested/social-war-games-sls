@@ -5,17 +5,17 @@ import {setupHandler} from './functions/setup';
 import {workHandler} from './functions/work';
 import {roundUpdateHandler} from './functions/roundUpdate';
 import {debug_setValues, voteHandler, VoteRequestBody} from './functions/vote';
-import {GameLogic, GameModel} from 'swg-common/src/game/gameLogic';
-import {DBGame} from 'swg-server-common/src/db/models/dbGame';
+import {GameLogic, GameModel} from '@swg-common/game/gameLogic';
+import {DBGame} from '@swg-server-common/db/models/dbGame';
 import {loginHandler} from './functions/login';
-import {JwtGetUserResponse} from 'swg-common/src/models/http/userController';
-import {Utils} from 'swg-common/src/utils/utils';
-import {EntityAction, EntityDetails, GameEntity, PlayableFactionId} from 'swg-common/src/game/entityDetail';
-import {VoteResult} from 'swg-common/src/game/voteResult';
-import {DoubleHashArray} from 'swg-common/src/utils/hashArray';
-import {Point} from 'swg-common/src/utils/hexUtils';
-import {PointHashKey} from 'swg-common/src/hex/hex';
-import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
+import {JwtGetUserResponse} from '@swg-common/models/http/userController';
+import {Utils} from '@swg-common/utils/utils';
+import {EntityAction, EntityDetails, GameEntity, PlayableFactionId} from '@swg-common/game/entityDetail';
+import {VoteResult} from '@swg-common/game/voteResult';
+import {DoubleHashArray} from '@swg-common/utils/hashArray';
+import {Point} from '@swg-common/utils/hexUtils';
+import {PointHashKey} from '@swg-common/hex/hex';
+import {SwgRemoteStore} from '@swg-server-common/redis/swgRemoteStore';
 
 async function vote(gameId: string, users: JwtGetUserResponse[]) {
   const layout = await SwgRemoteStore.getGameLayout(gameId);

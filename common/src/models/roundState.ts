@@ -1,9 +1,8 @@
 import {EntityAction} from '../game/entityDetail';
-import {CustomSchemaTypes, SDElement, SDSimpleObject} from '@swg-common/schemaDefiner/schemaDefinerTypes';
-import {SchemaDefiner} from '@swg-common/schemaDefiner/schemaDefiner';
 import {Utils} from '@swg-common/utils/utils';
-import {ArrayBufferBuilder, ArrayBufferReader} from '@swg-common/schemaDefiner/parsers/arrayBufferBuilder';
 import {customSchemaTypes} from '@swg-common/models/customSchemaTypes';
+import {generateSchema, makeSchema} from 'safe-schema';
+import {GameState, GameStateSchema} from '@swg-common/models/gameState';
 
 export interface RoundState {
   thisUpdateTime: number;
@@ -48,7 +47,7 @@ export type RoundStateEntityVote = {
   count: number;
 };
 
-export const RoundStateSchema: SDSimpleObject<RoundStateModel, keyof typeof customSchemaTypes> = {
+export const RoundStateSchema = makeSchema<RoundStateModel, typeof customSchemaTypes>({
   generation: 'uint32',
   thisUpdateTime: 'float64',
   entityVotes: {
@@ -73,22 +72,9 @@ export const RoundStateSchema: SDSimpleObject<RoundStateModel, keyof typeof cust
       },
     },
   },
-};
+});
 
-const RoundStateSchemaReaderFunction = SchemaDefiner.generateReaderFunction(RoundStateSchema, customSchemaTypes);
-const RoundStateSchemaAdderFunction = SchemaDefiner.generateAdderFunction(RoundStateSchema, customSchemaTypes);
-const RoundStateSchemaAdderSizeFunction = SchemaDefiner.generateAdderSizeFunction(RoundStateSchema, customSchemaTypes);
-
-export function RoundStateRead(buffer: ArrayBuffer): RoundState {
-  return RoundStateModelToRoundState(
-    SchemaDefiner.startReadSchemaBuffer(buffer, RoundStateSchemaReaderFunction, customSchemaTypes)
-  );
-}
-export function RoundStateWrite(roundState: RoundState): ArrayBuffer {
-  return SchemaDefiner.startAddSchemaBuffer(
-    RoundStateToModel(roundState),
-    RoundStateSchemaAdderSizeFunction,
-    RoundStateSchemaAdderFunction,
-    customSchemaTypes
-  );
-}
+export const RoundStateSchemaGenerator = generateSchema<RoundStateModel, typeof customSchemaTypes>(
+  RoundStateSchema,
+  customSchemaTypes
+);

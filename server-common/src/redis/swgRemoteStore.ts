@@ -1,23 +1,23 @@
 import {RedisManager} from '@swg-server-common/redis/redisManager';
-import {GameLayout, GameLayoutRead, GameLayoutWrite} from '@swg-common/models/gameLayout';
-import {GameState, GameStateRead, GameStateWrite} from '@swg-common/models/gameState';
+import {GameLayout, GameLayoutSchemaGenerator} from '@swg-common/models/gameLayout';
+import {GameState, GameStateSchemaGenerator} from '@swg-common/models/gameState';
 import {PlayableFactionId} from '@swg-common/game/entityDetail';
 import {Config} from '@swg-server-common/config';
 
 export class SwgRemoteStore {
   static async getGameLayout(gameId: string) {
     const buffer = await RedisManager.getBinary(gameId, 'layout');
-    return GameLayoutRead(buffer);
+    return GameLayoutSchemaGenerator.fromBuffer(buffer);
   }
   static async setGameLayout(gameId: string, gameLayout: GameLayout) {
-    await RedisManager.setBinary(gameId, `layout`, GameLayoutWrite(gameLayout));
+    await RedisManager.setBinary(gameId, `layout`, GameLayoutSchemaGenerator.toBuffer(gameLayout));
   }
 
   static async getGameState(gameId: string) {
-    return GameStateRead(await RedisManager.getBinary(gameId, 'game-state'));
+    return GameStateSchemaGenerator.fromBuffer(await RedisManager.getBinary(gameId, 'game-state'));
   }
   static async setGameState(gameId: string, gameState: GameState) {
-    await RedisManager.setBinary(gameId, `game-state`, GameStateWrite(gameState));
+    await RedisManager.setBinary(gameId, `game-state`, GameStateSchemaGenerator.toBuffer(gameState));
   }
 
   static async getStop(gameId: string) {

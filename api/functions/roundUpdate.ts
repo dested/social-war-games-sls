@@ -10,7 +10,7 @@ import {GameLogic, ProcessedVote} from '@swg-common/game/gameLogic';
 import {DBVote} from '@swg-server-common/db/models/dbVote';
 import {GameLayout} from '@swg-common/models/gameLayout';
 import {VoteResult} from '@swg-common/game/voteResult';
-import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
+import {SwgRemoteStore} from '@swg-server-common/redis/swgRemoteStore';
 
 export async function roundUpdateHandler(event: Event<void>): Promise<void> {
   const {gameId} = await DBGame.db.getOneProject({}, {gameId: 1});

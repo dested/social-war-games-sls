@@ -25,39 +25,37 @@ export class DBVote extends MongoDocument {
   hexId: string;
   factionId: PlayableFactionId;
 
-  static async getVoteCount(gameId: string, generation: number): Promise<VoteCountResult[]> {
+  static async getVoteCount(
+    gameId: string,
+    generation: number
+  ): Promise<
+    VoteCountResult[]
+  > {
     const result = await Aggregator.start<DBVote>()
       .$match({
         gameId,
         generation,
       })
-      .$group(
-        {
-          _id: {
-            entityId: '$entityId',
-            action: '$action',
-            hexId: '$hexId',
+      .$group({
+        _id: {
+          entityId: '$entityId',
+          action: '$action',
+          hexId: '$hexId',
+        },
+        count: {$sum: 1},
+      })
+      .$group({
+        _id: '$_id.entityId',
+        actions: {
+          $push: {
+            action: '$_id.action',
+            hexId: '$_id.hexId',
+            count: '$count',
           },
         },
-        {
-          count: {$sum: 1},
-        }
-      )
-      .$group(
-        {_id: '$_id.entityId'},
-        {
-          actions: {
-            $push: {
-              action: '$_id.action',
-              hexId: '$_id.hexId',
-              count: '$count',
-            },
-          },
-        }
-      )
+      })
       .result(await this.db.getCollection());
-
-    return result;
+    return (result as unknown) as VoteCountResult[];
   }
 
   static async getRoundUserStats(gameId: string, generation: number): Promise<RoundUserStats[]> {
@@ -66,23 +64,19 @@ export class DBVote extends MongoDocument {
         gameId,
         generation,
       })
-      .$group(
-        {
-          _id: {userId: '$userId', factionId: '$factionId'},
-        },
-        {
-          count: {$sum: 1},
-          votes: {
-            $push: {
-              action: '$action',
-              entityId: '$entityId',
-              hexId: '$hexId',
-            },
+      .$group({
+        _id: {userId: '$userId', factionId: '$factionId'},
+        count: {$sum: 1},
+        votes: {
+          $push: {
+            action: '$action',
+            entityId: '$entityId',
+            hexId: '$hexId',
           },
-        }
-      )
+        },
+      })
       .result(await this.db.getCollection());
 
-    return result;
+    return (result as unknown) as RoundUserStats[];
   }
 }

@@ -3,9 +3,8 @@ import {VoteNote} from '@swg-common/models/voteNote';
 import {FacingDirection} from '@swg-common/utils/hexUtils';
 import {EntityAction, EntityType, OfFaction, PlayableFactionId} from '../game/entityDetail';
 import {ResourceType} from '../game/gameResource';
-import {SDArray, SDSimpleObject, SDTypeElement} from '@swg-common/schemaDefiner/schemaDefinerTypes';
-import {SchemaDefiner} from '@swg-common/schemaDefiner/schemaDefiner';
 import {customSchemaTypes} from '@swg-common/models/customSchemaTypes';
+import {generateSchema, makeSchema} from 'safe-schema';
 
 export interface GameState {
   gameId: string;
@@ -70,12 +69,9 @@ function OfFactionArraySchema<T>(schema: SDArray<SDSimpleObject<T>>): SDSimpleOb
   };
 }*/
 
-export const GameStateSchema: SDSimpleObject<GameState, keyof typeof customSchemaTypes> = {
+export const GameStateSchema = makeSchema<GameState, typeof customSchemaTypes>({
   gameId: 'string',
-  factions: {
-    flag: 'byte-array',
-    elements: 'bit',
-  },
+  factions: 'byteArray',
   factionDetails: {
     '1': {
       flag: 'optional',
@@ -468,20 +464,9 @@ export const GameStateSchema: SDSimpleObject<GameState, keyof typeof customSchem
       },
     },
   },
-};
+});
+export const GameStateSchemaGenerator = generateSchema<GameState, typeof customSchemaTypes>(
+  GameStateSchema,
+  customSchemaTypes
+);
 
-const GameStateSchemaReaderFunction = SchemaDefiner.generateReaderFunction(GameStateSchema, customSchemaTypes);
-const GameStateSchemaAdderFunction = SchemaDefiner.generateAdderFunction(GameStateSchema, customSchemaTypes);
-const GameStateSchemaAdderSizeFunction = SchemaDefiner.generateAdderSizeFunction(GameStateSchema, customSchemaTypes);
-
-export function GameStateRead(buffer: ArrayBuffer): GameState {
-  return SchemaDefiner.startReadSchemaBuffer(buffer, GameStateSchemaReaderFunction, customSchemaTypes);
-}
-export function GameStateWrite(gameState: GameState): ArrayBuffer {
-  return SchemaDefiner.startAddSchemaBuffer(
-    gameState,
-    GameStateSchemaAdderSizeFunction,
-    GameStateSchemaAdderFunction,
-    customSchemaTypes
-  );
-}

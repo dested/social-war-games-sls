@@ -10,8 +10,8 @@ import {GameLayout} from '@swg-common/models/gameLayout';
 import {StateManager} from './game/stateManager';
 import {S3Splitter} from './game/s3Splitter';
 import {HttpResponse, respond} from '../utils/respond';
-import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
-import {GameLayoutWrite} from 'swg-common/src/models/gameLayout';
+import {SwgRemoteStore} from '@swg-server-common/redis/swgRemoteStore';
+import {GameLayoutSchemaGenerator} from '@swg-common/models/gameLayout';
 
 export async function setupHandler(event: Event<void>): Promise<HttpResponse<void>> {
   console.time('setup');
@@ -51,7 +51,7 @@ export async function setupHandler(event: Event<void>): Promise<HttpResponse<voi
 
   console.log('built state');
 
-  const gameLayoutBytes = GameLayoutWrite(gameLayout);
+  const gameLayoutBytes = GameLayoutSchemaGenerator.toBuffer(gameLayout);
   await S3Manager.uploadBytes(game.id, `layout.swg`, Buffer.from(gameLayoutBytes), true);
   const factionTokens = await S3Splitter.generateFactionTokens(game);
   await S3Splitter.output(game, gameLayout, gameState, roundState, factionTokens, true);

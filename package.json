@@ -19,7 +19,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "ts-loader": "^7.0.5",
-    "ts-prettier-group": "latest"
+    "ts-prettier-group": "latest",
+    "typescript": "^4.1.3"
   }
 }

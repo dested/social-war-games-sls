@@ -16,10 +16,9 @@ import {Point} from '@swg-common/utils/hexUtils';
 import {Utils} from '@swg-common/utils/utils';
 import {S3Manager} from '@swg-server-common/s3/s3Manager';
 import {SocketManager} from './socketManager';
-import {SchemaDefiner} from 'swg-common/src/schemaDefiner/schemaDefiner';
-import {GameStateRead, GameStateWrite} from 'swg-common/src/models/gameState';
-import {RoundStateWrite} from 'swg-common/src/models/roundState';
-import {SwgRemoteStore} from 'swg-server-common/src/redis/swgRemoteStore';
+import {SwgRemoteStore} from '@swg-server-common/redis/swgRemoteStore';
+import {RoundStateSchemaGenerator, RoundStateToModel} from '@swg-common/models/roundState';
+import {GameStateSchemaGenerator} from '@swg-common/models/gameState';
 
 export class S3Splitter {
   static async generateFactionTokens(game: GameModel): Promise<OfFaction<string>> {
@@ -73,11 +72,11 @@ export class S3Splitter {
         visibleHexes
       );
 
-      const roundStateJson = RoundStateWrite(factionRoundState);
+      const roundStateJson = RoundStateSchemaGenerator.toBuffer(RoundStateToModel(factionRoundState));
       if (outputGameState) {
         // await this.RedisManager.set(`faction-token-${generation}-${1}`, ``);
         // todo encrypt using factionTokens[faction].split('.').map((a) => parseInt(a))
-        const gameStateBits = GameStateWrite(factionGameState);
+        const gameStateBits = GameStateSchemaGenerator.toBuffer(factionGameState);
 
         await S3Manager.uploadBytes(
           game.id,

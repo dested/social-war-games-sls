@@ -1,4 +1,9 @@
-import {RoundState, RoundStateModelToRoundState, RoundStateRead} from '@swg-common/models/roundState';
+import {
+  RoundState,
+  RoundStateModelToRoundState,
+  RoundStateSchemaGenerator,
+  RoundStateToModel,
+} from '@swg-common/models/roundState';
 import {Config, DataService} from '../dataServices';
 
 export class SocketUtils {
@@ -11,12 +16,12 @@ export class SocketUtils {
     const socket = new WebSocket(`${Config.socketServer}?gameId=${gameId}&faction=round-state-${factionToken}`);
     socket.binaryType = 'arraybuffer';
     socket.onmessage = (message) => {
-      const round = RoundStateRead(
+      const round = RoundStateSchemaGenerator.fromBuffer(
         // todo send bytes
         new Uint8Array((message.data as string).match(/[\da-f]{2}/gi).map((h) => parseInt(h, 16))).buffer
       );
 
-      onMessage(round);
+      onMessage(RoundStateModelToRoundState(round));
     };
     socket.onclose = (e) => {
       console.log('closed');
