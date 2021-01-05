@@ -25,7 +25,7 @@ export class Drawing {
 
     hex.points = hex.points || Drawing.getCorners(hex.center, options);
 
-    hex.pointsSvg = hex.pointsSvg || new Path2D('M' + hex.points.map(a => `${a.x},${a.y}`).join(' ') + 'Z');
+    hex.pointsSvg = hex.pointsSvg || new Path2D('M' + hex.points.map((a) => `${a.x},${a.y}`).join(' ') + 'Z');
 
     const neighbor = grid.getNeighbors(hex);
     hex.lines = [];
@@ -97,10 +97,7 @@ export class Drawing {
       y = (p.y * 2) / 3 / options.size;
     }
 
-    const a = new Axial(x, y)
-      .toCube()
-      .round()
-      .toAxial();
+    const a = new Axial(x, y).toCube().round().toAxial();
 
     return grid.getHexAt(a);
   }

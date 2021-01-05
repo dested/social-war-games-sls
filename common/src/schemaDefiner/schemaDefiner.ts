@@ -1,7 +1,6 @@
 import {ArrayBufferBuilder, ArrayBufferReader} from './parsers/arrayBufferBuilder';
 import {ABFlags, ABSchemaDef, CustomSchemaTypes} from './schemaDefinerTypes';
 import {assertType, Utils} from '../utils/utils';
-import {customSchemaTypes} from '@swg-common/models/customSchemaTypes';
 
 export class SchemaDefiner {
   static generateAdderFunction(schema: any, customSchema: CustomSchemaTypes<any> = {}): AdderFunction {

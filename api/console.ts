@@ -48,7 +48,7 @@ async function vote(gameId: string, users: JwtGetUserResponse[]) {
 
 async function main() {
   console.log('here');
-  const seed = Math.round(Math.random() * 100000);
+  /*  const seed = Math.round(Math.random() * 100000);
   const users: JwtGetUserResponse[] = [];
 
   for (let ind = 0; ind < 100; ind++) {
@@ -64,9 +64,11 @@ async function main() {
     const loginBody = JSON.parse(result.body) as JwtGetUserResponse;
     users.push(loginBody);
     console.log('register ', userName);
-  }
+  }*/
 
-  await setupHandler(undefined);
+  await setupHandler(
+    undefined
+  ); /*
   await workHandler(undefined);
   const {gameId} = await DBGame.db.getOneProject({}, {gameId: 1});
 
@@ -80,7 +82,7 @@ async function main() {
     await roundUpdateHandler(undefined);
     await workHandler(undefined);
   }
-
+*/
   /* debugger;
   const result = SchemaDefiner.startAddSchemaBuffer(
     testGameState,
